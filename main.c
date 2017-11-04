@@ -121,5 +121,6 @@ int main() {
   printf("%lu\n", root->length);
 
   sexp_print(root);
+  printf("\n");
   return 0;
 }
