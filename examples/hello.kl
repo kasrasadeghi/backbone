@@ -1,0 +1,2 @@
+(main (-> (Void) (Int))
+  (puts "hello world"))
