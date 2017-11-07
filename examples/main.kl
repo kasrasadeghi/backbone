@@ -1,0 +1,7 @@
+typedef Sexp
+  union String
+    list Sexp
+
+def main
+  fopen("../examples/hello.kl", "r")
+  pSexp

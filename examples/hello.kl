@@ -1,2 +1,8 @@
-(main (-> (Void) (Int))
-  (puts "hello world"))
+
+
+(typedef Sexp
+  (union String
+         (List Sexp*)))
+
+(type push (Sexp*)
+(def push
