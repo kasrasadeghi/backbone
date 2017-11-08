@@ -1,0 +1,10 @@
+
+
+(def main
+  (let program (pProgram (fopen "../examples/hello.kl" "r"))
+  (printf "%lu\n" (.length program))
+  (each (.children root) (lambda (child) (sexp_print child) (puts "")))))
+
+(def pProgram
+  (let program (calloc 1 (sizeof Sexp)))
+  ()

@@ -134,8 +134,7 @@ int main() {
 
   for (size_t i = 0; i < root->length; ++i) {
     sexp_print(root->list[i]);
-    puts("");
+    putchar('\n');
   }
-  puts("");
   return 0;
 }

@@ -1,6 +1,15 @@
-(def main
-  (let program (pProgram (fopen "../examples/hello.kl" "r"))
-  (printf "%lu" )
+(typedef Sexp
+  (union
+    ((ptr char) value)
+    ((slice (ptr Sexp)) children)))
 
-(def hi
-  (printf "hi"))
+(def main
+  (let program (pProgram (fopen "../examples/hello.kl" "r")))
+  (printf "%lu\n" (.length program))
+  (for (let i 0) (< i (.length (.children root))) (++ i)
+    (sexp_print (index i (.children root)))
+    (putchar '\n')))
+
+(def pProgram
+  (let program (Sexp (make-slice 0 5)))
+  ())
