@@ -1,0 +1,14 @@
+typedef Sexp
+  union String
+    list Sexp
+
+def pSexp
+
+
+def main
+  fopen("../examples/hello.kl", "r")
+     ~pSexp=root
+  root.length~printf("\n%lu\n")
+  root~sexp_print()
+  printf("\n")
+  0

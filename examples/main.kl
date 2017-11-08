@@ -1,7 +1,6 @@
-typedef Sexp
-  union String
-    list Sexp
+(def main
+  (let program (pProgram (fopen "../examples/hello.kl" "r"))
+  (printf "%lu" )
 
-def main
-  fopen("../examples/hello.kl", "r")
-  pSexp
+(def hi
+  (printf "hi"))

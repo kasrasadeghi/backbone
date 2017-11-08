@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "str.h"
+#include <ctype.h>
 
 /**
  * An S-expression is either a list or an atom.
@@ -14,12 +15,13 @@ typedef struct __Sexp__ {
   size_t capacity;
 } Sexp;
 
-void sexp_push(Sexp* sexp, Sexp* child) {
-  sexp->list[sexp->length] = child;
-  ++sexp->length;
-  if (sexp->length == sexp->capacity) {
-    sexp->capacity *= 2;
-    sexp->list = (Sexp**)realloc(sexp->list, sexp->capacity);
+void sexp_push(Sexp* l, Sexp* child) {
+  l->list[l->length] = child;
+  ++l->length;
+  if (l->length == l->capacity) {
+    printf("resizing %lu\n", l->capacity);
+    l->capacity *= 2;
+    l->list = (Sexp**)realloc(l->list, l->capacity);
   }
 }
 
@@ -55,7 +57,8 @@ void pList(Sexp* curr, FILE* file) {
     exit(1);
   }
 
-  curr->capacity = 2;
+  curr->capacity = 5;
+  curr->length = 0;
   curr->list = (Sexp**) calloc(curr->capacity, sizeof(Sexp*));
 
   int c;
@@ -77,7 +80,7 @@ void pAtom(Sexp* curr, FILE* file) {
   int c;
   while (1) {
     c = getc(file);
-    if (c == ' ' || c == '\n' || c == '\r' || c == ')') break;
+    if (isspace(c) || c == ')') break;
     str_push(str, (char)c);
   }
 
@@ -91,36 +94,49 @@ void pAtom(Sexp* curr, FILE* file) {
 Sexp* pSexp(FILE* file) {
   Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
 
-  int c;
-ignore:
-  c = peekc(file);
-  printf("%c: ", c);
-  switch (c) {
-  case ' ':
-  case '\n':
+  while (isspace(peekc(file))) {
     getc(file);
-    puts("ignore");
-    goto ignore;
+  }
+
+  int c = peekc(file);
+  switch (c) {
   case '(':
+    printf("%c: ", c);
     pList(curr, file);
     return curr;
   default:
+    printf("%c: ", c);
     pAtom(curr, file);
     return curr;
   }
 }
 
+Sexp* pProgram(FILE* file) {
+  Sexp* program = (Sexp*) calloc(1, sizeof(Sexp));
+  program->capacity = 5;
+  program->length = 0;
+  program->list = (Sexp**) calloc(program->capacity, sizeof(Sexp*));
+
+  while (peekc(file) != EOF) {
+    sexp_push(program, pSexp(file));
+  }
+  return program;
+}
+
 int main() {
   // open a file
-  FILE* file = fopen("../examples/hello.kl", "r");
+  FILE* file = fopen("../examples/main.kl", "r");
 
   // parse into tree
-  Sexp* root = pSexp(file);
+  Sexp* root = pProgram(file);
 
   puts("");
   printf("%lu\n", root->length);
 
-  sexp_print(root);
+  for (size_t i = 0; i < root->length; ++i) {
+    sexp_print(root->list[i]);
+    puts("");
+  }
   printf("\n");
   return 0;
 }
