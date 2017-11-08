@@ -130,13 +130,12 @@ int main() {
   // parse into tree
   Sexp* root = pProgram(file);
 
-  puts("");
-  printf("%lu\n", root->length);
+  printf("\n%lu\n", root->length);
 
   for (size_t i = 0; i < root->length; ++i) {
     sexp_print(root->list[i]);
     puts("");
   }
-  printf("\n");
+  puts("");
   return 0;
 }
