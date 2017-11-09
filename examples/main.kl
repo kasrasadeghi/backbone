@@ -21,12 +21,13 @@
    (set (->length program)   0)
    (set (->list program) (Sexp** (calloc (->capacity program) (sizeof Sexp*))))
    (while (!= (peekc file) EOF)
-     (sexp_push program (pSexp file)))))
+     (sequence
+      (sexp_push program (pSexp file))
+      (pWhitespace file)))))
 
 (def (pSexp file)
   (do
-   (while (isspace (peekc file))
-     (getc file))
+   (pWhitespace file)
    (printf "%c: " (peekc file))
    (if (== "(" (peekc file))
        (return (pList file))
@@ -36,11 +37,11 @@
   (do
    (puts "parse atom")
    (let str (str_make))
-   ;; parse string literals
-   (if (== "\"" (peekc file))
+   (;; parse string literals)
+   (if (== '"' (peekc file))
        (do
         (str_push str (Char (getc file)))
-        (while (!= "\"" (peekc file))
+        (while (!= '"' (peekc file))
           (str_push str (Char (getc file))))
         (str_push str (Char (getc file)))))
    (while (and (not (isspace (peekc file))) (!= ")" (peekc file)))
@@ -79,6 +80,17 @@
    (let c (getc file))
    (if (!= EOF c) (ungetc c file))
    (return c)))
+
+(global LINE 1)
+(def (getch file)
+  (do
+   (let c (getc file))
+   (if (== c '\n') (++ LINE))
+   (return c)))
+
+(def (pWhitespace file)
+  (while (isspace (peekc file))
+         (getch file)))
 
 (def (sexp_push l child)
   (do

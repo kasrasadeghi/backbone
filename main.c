@@ -53,10 +53,20 @@ int getch(FILE* file) {
 }
 
 int error(const char* msg) {
-  fprintf(stderr, "%s", msg);
+  fprintf(stderr, "%s\n", msg);
   perror("backbone");
   exit(1);
 }
+
+void pWhitespace(FILE* file) {
+  while (isspace(peekc(file)) && peekc(file) != EOF) {
+    getch(file);
+  }
+  if (peekc(file) == EOF) {
+    error("ran into end of file while parsing whitespace");
+  }
+}
+
 
 Sexp* pSexp(FILE*);
 
@@ -74,7 +84,8 @@ Sexp* pList(FILE* file) {
 
   while (peekc(file) != ')') {
     if (peekc(file) == EOF) error("unmatched parenthesis");
-    sexp_push(curr, pSexp(file));
+    Sexp* child = pSexp(file);
+    sexp_push(curr, child);
   }
 
   printf("%c: end of list\n", getch(file));
@@ -83,37 +94,44 @@ Sexp* pList(FILE* file) {
 }
 
 Sexp* pAtom(FILE* file) {
-  printf("parse atom %d\n", LINE);
+  puts("parse atom");
+  printf("LINE: %d\n", LINE);
 
-  String* str = str_make();
+  static String str = {NULL, 0, 10};
+  if (!str.list) str.list = (char*)calloc(10, 1);
 
-  // parse string literals
-  /*
+  // parse char literal
+  if (peekc(file) == '\'') {
+    str_push(&str, (char)getch(file));
+
+    while (peekc(file) != '\'') {
+      str_push(&str, (char)getch(file));
+    }
+    str_push(&str, (char)getch(file));
+  }
+
+  // parse string literal
   if (peekc(file) == '"') {
-    str_push(str, (char)getch(file));
+    str_push(&str, (char)getch(file));
 
     while (peekc(file) != '"') {
-      str_push(str, (char)getch(file));
+      str_push(&str, (char)getch(file));
     }
-    str_push(str, (char)getch(file));
+    str_push(&str, (char)getch(file));
   }
-  */
 
-  while (!isspace(peekc(file)) && peekc(file) != ')') {
-    str_push(str, (char)getch(file));
+  else while (!isspace(peekc(file)) && peekc(file) != ')') {
+    str_push(&str, (char)getch(file));
   }
 
   Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
-  curr->value = str_flush(str);
-  free(str);
+  curr->value = str_flush(&str);
   
   return curr;
 }
 
 Sexp* pSexp(FILE* file) {
-  while (isspace(peekc(file))) {
-    getch(file);
-  }
+  pWhitespace(file);
 
   printf("%c: ", peekc(file));
   if (peekc(file) == '(') {
@@ -131,12 +149,13 @@ Sexp* pProgram(FILE* file) {
   
   while (peekc(file) != EOF) {
     sexp_push(program, pSexp(file));
+    pWhitespace(file);
   }
   return program;
 }
 
 int main() {
-  Sexp* root = pProgram(fopen("../examples/str.kl", "r"));
+  Sexp* root = pProgram(fopen("../examples/sigabrt.kl", "r"));
 
   printf("\n%lu\n", root->length);
 
