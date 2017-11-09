@@ -1,15 +1,104 @@
-(typedef Sexp
-  (Union
-    (atom ((Slice Char) value))
-    (list ((Slice (Ptr Sexp)) children))))
+(struct Sexp
+        (value Char*)
+        (list Sexp**)
+        (length size_t)
+        (capacity size_t))
 
-(def main
-  (let program (pProgram (fopen "../examples/hello.kl" "r")))
-  (printf "%lu\n" (.length program))
-  (for (let i 0) (< i (.length (.children root))) (++ i)
-    (sexp_print (index i (.children root)))
-    (putchar '\n')))
+(def (main)
+  (do
+   (let root (pProgram (fopen "../examples/main.kl" "r")))
+   (printf "\n%lu\n" (->length root))
+   (for (let i 0) (< i (-> length root)) (++ i)
+        (do
+         (sexp_print (index i (->list root)))
+         (putchar "\n")))
+   (return 0)))
 
-(def pProgram
-  (let program (Sexp (make-slice 0 5)))
-  ())
+(def (pProgram file)
+  (do
+   (let program (Sexp* (calloc 1 (sizeof Sexp))))
+   (set (->capacity program) 5)
+   (set (->length program)   0)
+   (set (->list program) (Sexp** (calloc (->capacity program) (sizeof Sexp*))))
+   (while (!= (peekc file) EOF)
+     (sexp_push program (pSexp file)))))
+
+(def (pSexp file)
+  (do
+   (while (isspace (peekc file))
+     (getc file))
+   (printf "%c: " (peekc file))
+   (if (== "(" (peekc file))
+       (return (pList file))
+       (return (pAtom file)))))
+
+(def (pAtom file)
+  (do
+   (puts "parse atom")
+   (let str (str_make))
+   ;; parse string literals
+   (if (== "\"" (peekc file))
+       (do
+        (str_push str (Char (getc file)))
+        (while (!= "\"" (peekc file))
+          (str_push str (Char (getc file))))
+        (str_push str (Char (getc file)))))
+   (while (and (not (isspace (peekc file))) (!= ")" (peekc file)))
+     (str_push str (Char (getc file))))
+   (let curr (Sexp* (calloc 1 (sizeof Sexp))))
+   (set (->value curr) (str_flush str))
+   (free str)
+   (return str)))
+
+(def (pList file)
+  (do
+   (puts "parse list")
+   (if (!= "(" (getc file))
+       (error "expecting left-paren while parsing list"))
+   (set curr (Sexp* (calloc 1 (sizeof Sexp))))
+   (set (->capacity curr) 5)
+   (set (->length curr) 0)
+   (set (->list curr) (Sexp** (calloc (->capacity curr) (sizeof Sexp*))))
+   (while (!= ")" (peekc file))
+     (do
+      (if (== EOF (peekc file))
+          (error "unmatched parentheses"))
+      (sexp_push curr (pSexp file))))
+
+   (printf "%c: end of list\n" (getc file))
+   (return curr)))
+
+(def (error msg)
+  (do
+   (fprintf stderr "%s" msg)
+   (perror "backbone")
+   (exit 1)))
+
+(def (peekc file)
+  (do
+   (let c (getc file))
+   (if (!= EOF c) (ungetc c file))
+   (return c)))
+
+(def (sexp_push l child)
+  (do
+   (set (index (->length l) (->list l)) child)
+   (++ (->length l))
+   (if (== (->length l) (->capacity l))
+       (do
+        (*= (->capacity l) 2)
+        (set (->list l) (Sexp** (realloc (->list l) (->capacity l))))))))
+
+(def (sexp_print s)
+  (do
+   (if (-> list s)
+       (do
+        (printf "(")
+        (for (let i 0) (< i (->length s)) (++ i)
+             (do
+              (sexp_print (index i (->list s)))
+              (if (!= i (- (->length s) 1))
+                  (putchar " "))))
+        (printf ")"))
+       (printf "%s" (->value s)))))
+

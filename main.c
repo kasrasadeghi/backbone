@@ -8,9 +8,9 @@
  * An atom is a char*
  * A list is a list of Sexps.
  */
-typedef struct __Sexp__ {
+typedef struct Sexp {
   char* value;
-  struct __Sexp__** list; // an array of pointers to Sexps
+  struct Sexp** list; // an array of pointers to Sexps
   size_t length;
   size_t capacity;
 } Sexp;
@@ -19,7 +19,6 @@ void sexp_push(Sexp* l, Sexp* child) {
   l->list[l->length] = child;
   ++l->length;
   if (l->length == l->capacity) {
-    printf("resizing %lu to %lu\n", l->capacity, l->capacity*2);
     l->capacity *= 2;
     l->list = (Sexp**)realloc(l->list, l->capacity);
   }
@@ -46,8 +45,15 @@ int peekc(FILE* file) {
   return c;
 }
 
+int LINE = 1;
+int getch(FILE* file) {
+  int c = getc(file);
+  if (c == '\n') ++LINE;
+  return c;
+}
+
 int error(const char* msg) {
-  fprintf(stderr, msg);
+  fprintf(stderr, "%s", msg);
   perror("backbone");
   exit(1);
 }
@@ -57,7 +63,7 @@ Sexp* pSexp(FILE*);
 Sexp* pList(FILE* file) {
   puts("parse list");
 
-  if (getc(file) != '(') {
+  if (getch(file) != '(') {
     error("expecting lParen while parsing list");
   }
   
@@ -71,28 +77,30 @@ Sexp* pList(FILE* file) {
     sexp_push(curr, pSexp(file));
   }
 
-  printf("%c: end of list\n", getc(file));
+  printf("%c: end of list\n", getch(file));
 
   return curr;
 }
 
 Sexp* pAtom(FILE* file) {
-  puts("parse atom");
+  printf("parse atom %d\n", LINE);
 
   String* str = str_make();
 
   // parse string literals
+  /*
   if (peekc(file) == '"') {
-    str_push(str, (char)getc(file));
+    str_push(str, (char)getch(file));
 
     while (peekc(file) != '"') {
-      str_push(str, (char)getc(file));
+      str_push(str, (char)getch(file));
     }
-    str_push(str, (char)getc(file));
+    str_push(str, (char)getch(file));
   }
+  */
 
   while (!isspace(peekc(file)) && peekc(file) != ')') {
-    str_push(str, (char)getc(file));
+    str_push(str, (char)getch(file));
   }
 
   Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
@@ -104,16 +112,13 @@ Sexp* pAtom(FILE* file) {
 
 Sexp* pSexp(FILE* file) {
   while (isspace(peekc(file))) {
-    getc(file);
+    getch(file);
   }
 
-  int c = peekc(file);
-  switch (c) {
-  case '(':
-    printf("%c: ", c);
+  printf("%c: ", peekc(file));
+  if (peekc(file) == '(') {
     return pList(file);
-  default:
-    printf("%c: ", c);
+  } else {
     return pAtom(file);
   }
 }
@@ -131,8 +136,7 @@ Sexp* pProgram(FILE* file) {
 }
 
 int main() {
-  FILE* file = fopen("../examples/string.kl", "r");
-  Sexp* root = pProgram(file);
+  Sexp* root = pProgram(fopen("../examples/str.kl", "r"));
 
   printf("\n%lu\n", root->length);
 

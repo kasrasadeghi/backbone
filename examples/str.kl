@@ -1,0 +1,29 @@
+(struct String
+  (list Char*)
+  (size_t length)
+  (size_t cap))
+
+(def (str_make)
+  (sequence
+   (let result (String* NULL))
+   (str_flush result)
+   (return result)))
+
+(def (str_push s c)
+  (sequence
+   (set (index (->length s) (->list s)) c)
+   (++ (->length s))
+   (if (== (->length s) (->cap s))
+       (sequence
+        (*= (->cap s) 2)
+        (set (->list s) (Char* (realloc (->list s) (->cap s))))))
+   (set (index (->length s) (->list s)) "\0")))
+
+(def (str_flush s)
+  (sequence
+   (let result (->list s))
+   (set (->list s) (Char* (calloc 10 (sizeof Char))))
+   (set (->length s) 0)
+   (set (->cap s) 10)
+   (return result)))
+

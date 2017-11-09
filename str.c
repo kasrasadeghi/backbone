@@ -26,6 +26,7 @@ void str_push(String* s, char c) {
 /**
  * Flushes the String, return the char* it used to point to.
  * The user is required to free the string after the last str_flush.
+ * The user is required to free the result of str_flush.
  */
 char* str_flush(String* s) {
   char* result = s->list;
