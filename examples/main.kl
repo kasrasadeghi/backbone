@@ -1,7 +1,7 @@
 (typedef Sexp
-  (union
-    ((ptr char) value)
-    ((slice (ptr Sexp)) children)))
+  (Union
+    (atom ((Slice Char) value))
+    (list ((Slice (Ptr Sexp)) children))))
 
 (def main
   (let program (pProgram (fopen "../examples/hello.kl" "r")))

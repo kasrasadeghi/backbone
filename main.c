@@ -19,7 +19,7 @@ void sexp_push(Sexp* l, Sexp* child) {
   l->list[l->length] = child;
   ++l->length;
   if (l->length == l->capacity) {
-    printf("resizing %lu\n", l->capacity);
+    printf("resizing %lu to %lu\n", l->capacity, l->capacity*2);
     l->capacity *= 2;
     l->list = (Sexp**)realloc(l->list, l->capacity);
   }
@@ -48,7 +48,7 @@ int peekc(FILE* file) {
 
 Sexp* pSexp(FILE*);
 
-void pList(Sexp* curr, FILE* file) {
+Sexp* pList(FILE* file) {
   puts("parse list");
 
   if (getc(file) != '(') {
@@ -56,7 +56,8 @@ void pList(Sexp* curr, FILE* file) {
     perror("backbone");
     exit(1);
   }
-
+  
+  Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
   curr->capacity = 5;
   curr->length = 0;
   curr->list = (Sexp**) calloc(curr->capacity, sizeof(Sexp*));
@@ -69,11 +70,12 @@ void pList(Sexp* curr, FILE* file) {
   }
 
   printf("%c: end of list\n", getc(file));
+
+  return curr;
 }
 
-void pAtom(Sexp* curr, FILE* file) {
+Sexp* pAtom(FILE* file) {
   puts("parse atom");
-  // ignore whitespace
 
   String* str = str_make();
 
@@ -83,17 +85,16 @@ void pAtom(Sexp* curr, FILE* file) {
     if (isspace(c) || c == ')') break;
     str_push(str, (char)c);
   }
-
   ungetc(c, file);
 
+  Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
   curr->value = str_flush(str);
-
   free(str);
+  
+  return curr;
 }
 
 Sexp* pSexp(FILE* file) {
-  Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
-
   while (isspace(peekc(file))) {
     getc(file);
   }
@@ -102,12 +103,10 @@ Sexp* pSexp(FILE* file) {
   switch (c) {
   case '(':
     printf("%c: ", c);
-    pList(curr, file);
-    return curr;
+    return pList(file);
   default:
     printf("%c: ", c);
-    pAtom(curr, file);
-    return curr;
+    return pAtom(file);
   }
 }
 
@@ -116,7 +115,7 @@ Sexp* pProgram(FILE* file) {
   program->capacity = 5;
   program->length = 0;
   program->list = (Sexp**) calloc(program->capacity, sizeof(Sexp*));
-
+  
   while (peekc(file) != EOF) {
     sexp_push(program, pSexp(file));
   }
