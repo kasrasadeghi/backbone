@@ -46,15 +46,19 @@ int peekc(FILE* file) {
   return c;
 }
 
+int error(const char* msg) {
+  fprintf(stderr, msg);
+  perror("backbone");
+  exit(1);
+}
+
 Sexp* pSexp(FILE*);
 
 Sexp* pList(FILE* file) {
   puts("parse list");
 
   if (getc(file) != '(') {
-    fprintf(stderr, "expecting lParen while parsing list");
-    perror("backbone");
-    exit(1);
+    error("expecting lParen while parsing list");
   }
   
   Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
@@ -62,10 +66,8 @@ Sexp* pList(FILE* file) {
   curr->length = 0;
   curr->list = (Sexp**) calloc(curr->capacity, sizeof(Sexp*));
 
-  int c;
-  while (1) {
-    c = peekc(file);
-    if (c == ')' || c == EOF) break;
+  while (peekc(file) != ')') {
+    if (peekc(file) == EOF) error("unmatched parenthesis");
     sexp_push(curr, pSexp(file));
   }
 
@@ -79,13 +81,9 @@ Sexp* pAtom(FILE* file) {
 
   String* str = str_make();
 
-  int c;
-  while (1) {
-    c = getc(file);
-    if (isspace(c) || c == ')') break;
-    str_push(str, (char)c);
+  while (!isspace(peekc(file)) && peekc(file) != ')') {
+    str_push(str, (char)getc(file));
   }
-  ungetc(c, file);
 
   Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
   curr->value = str_flush(str);
@@ -123,10 +121,7 @@ Sexp* pProgram(FILE* file) {
 }
 
 int main() {
-  // open a file
-  FILE* file = fopen("../examples/main.kl", "r");
-
-  // parse into tree
+  FILE* file = fopen("../examples/test.kl", "r");
   Sexp* root = pProgram(file);
 
   printf("\n%lu\n", root->length);
