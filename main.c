@@ -81,6 +81,16 @@ Sexp* pAtom(FILE* file) {
 
   String* str = str_make();
 
+  // parse string literals
+  if (peekc(file) == '"') {
+    str_push(str, (char)getc(file));
+
+    while (peekc(file) != '"') {
+      str_push(str, (char)getc(file));
+    }
+    str_push(str, (char)getc(file));
+  }
+
   while (!isspace(peekc(file)) && peekc(file) != ')') {
     str_push(str, (char)getc(file));
   }
@@ -121,7 +131,7 @@ Sexp* pProgram(FILE* file) {
 }
 
 int main() {
-  FILE* file = fopen("../examples/test.kl", "r");
+  FILE* file = fopen("../examples/string.kl", "r");
   Sexp* root = pProgram(file);
 
   printf("\n%lu\n", root->length);
