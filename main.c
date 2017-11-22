@@ -2,166 +2,169 @@
 #include <stdio.h>
 #include "str.h"
 #include <ctype.h>
+#include <stdint.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
-/**
- * An S-expression is either a list or an atom.
- * An atom is a char*
- * A list is a list of Sexps.
- */
+//region struct Reader {...}
+
+typedef struct Reader {
+  char* file;
+  size_t size;
+  size_t offset;
+} Reader;
+
+size_t fileSize(char* filename) {
+  struct stat st;
+  stat(filename, &st);
+  if (st.st_size < 0) {
+    fprintf(stderr, "file has negative size???");
+    exit(2);
+  }
+}
+
+Reader* reader(char* filename) {
+  int fd = open(filename, O_RDONLY, 0);
+  if (fd == -1) {
+    return NULL;
+  }
+  Reader* r = (Reader*) calloc(1, sizeof(Reader));
+  r->offset = 0;
+  r->size = fileSize(filename);
+  r->file = (char*) mmap(NULL, r->size, PROT_READ, MAP_FILE|MAP_PRIVATE, fd, r->offset);
+}
+
+char get(Reader* r) {
+  if (r->offset == r->size) {
+    return EOF;
+  }
+  return r->file[r->offset++];
+}
+
+char peek(Reader* r) {
+  return r->file[r->offset];
+}
+
+char prev(Reader* r) {
+  if (r->offset == 0) {
+    // handle lower bound error case
+  }
+  return r->file[r->offset - 1];
+}
+
+int hasNext(Reader* r) {
+  return r->size != r->offset;
+}
+//endregion Reader
+
 typedef struct Sexp {
   char* value;
-  struct Sexp** list; // an array of pointers to Sexps
+  struct Sexp** list;
   size_t length;
-  size_t capacity;
+  size_t cap;
 } Sexp;
 
-void sexp_push(Sexp* l, Sexp* child) {
-  l->list[l->length] = child;
-  ++l->length;
-  if (l->length == l->capacity) {
-    l->capacity *= 2;
-    l->list = (Sexp**)realloc(l->list, l->capacity);
+Sexp* sexp(char* value) {
+  Sexp* result = calloc(1, sizeof(Sexp));
+  result->value = value;
+  result->list = calloc(2, sizeof(Sexp*));
+  result->length = 0;
+  result->cap = 2;
+  return result;
+};
+
+void printSexp(Sexp* s, int l) {
+  for (int i = 0; i < l - 1; ++i) {
+    printf("  ");
+  }
+  printf("%s\n", s->value);
+  for (int i = 0; i < s->length; ++i) {
+    printSexp(s->list[i], l + 1);
   }
 }
 
-void sexp_print(Sexp* s) {
-  if (s->list) {
-    printf("(");
-    for (size_t i = 0; i < s->length; ++i) {
-      sexp_print(s->list[i]);
-      if (i != s->length - 1) {
-        putchar(' ');
-      }
-    }
-    printf(")");
-  } else {
-    printf("%s", s->value);
+void pushSexp(Sexp* s, Sexp* child) {
+  s->list[s->length] = child;
+  ++s->length;
+  if (s->length == s->cap) {
+    s->cap *= 2;
+    s->list = realloc(s->list, s->cap);
   }
 }
 
-int peekc(FILE* file) {
-  int c = getc(file);
-  if (c != EOF) ungetc(c, file);
-  return c;
-}
-
-int LINE = 1;
-int getch(FILE* file) {
-  int c = getc(file);
-  if (c == '\n') ++LINE;
-  return c;
-}
-
-int error(const char* msg) {
-  fprintf(stderr, "%s\n", msg);
-  perror("backbone");
-  exit(1);
-}
-
-void pWhitespace(FILE* file) {
-  while (isspace(peekc(file)) && peekc(file) != EOF) {
-    getch(file);
-  }
-  if (peekc(file) == EOF) {
-    error("ran into end of file while parsing whitespace");
+void pWhitespace(Reader* r) {
+  while (hasNext(r) && isspace(peek(r))) {
+    get(r);
   }
 }
 
-
-Sexp* pSexp(FILE*);
-
-Sexp* pList(FILE* file) {
-  puts("parse list");
-
-  if (getch(file) != '(') {
-    error("expecting lParen while parsing list");
+char* pWord(Reader* r) {
+  String str = str_init();
+  while (peek(r) != '(' && peek(r) != ')' && !isspace(peek(r))) {
+    str_push(&str, get(r));
   }
-  
-  Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
-  curr->capacity = 5;
-  curr->length = 0;
-  curr->list = (Sexp**) calloc(curr->capacity, sizeof(Sexp*));
+  return str.list;
+}
 
-  while (peekc(file) != ')') {
-    if (peekc(file) == EOF) error("unmatched parenthesis");
-    Sexp* child = pSexp(file);
-    sexp_push(curr, child);
+Sexp* pSexp(Reader*);
+
+Sexp* pList(Reader* r) {
+  get(r); // remove leading (
+  Sexp* curr = sexp(pWord(r));
+  while (peek(r) != ')') {
+    pushSexp(curr, pSexp(r));
   }
-
-  printf("%c: end of list\n", getch(file));
-
+  get(r); // remove ending )
   return curr;
 }
 
-Sexp* pAtom(FILE* file) {
-  puts("parse atom");
-  printf("LINE: %d\n", LINE);
-
-  static String str = {NULL, 0, 10};
-  if (!str.list) str.list = (char*)calloc(10, 1);
-
-  // parse char literal
-  if (peekc(file) == '\'') {
-    str_push(&str, (char)getch(file));
-
-    while (peekc(file) != '\'') {
-      str_push(&str, (char)getch(file));
-    }
-    str_push(&str, (char)getch(file));
+Sexp* pChar(Reader* r) {
+  String str = str_init();
+  str_push(&str, get(r));
+  // while we've ended the char and it's not an escaped apostrophe
+  while (!(peek(r) == '\'' && !prev(r) != '\\')) {
+    str_push(&str, get(r));
   }
-
-  // parse string literal
-  if (peekc(file) == '"') {
-    str_push(&str, (char)getch(file));
-
-    while (peekc(file) != '"') {
-      str_push(&str, (char)getch(file));
-    }
-    str_push(&str, (char)getch(file));
-  }
-
-  else while (!isspace(peekc(file)) && peekc(file) != ')') {
-    str_push(&str, (char)getch(file));
-  }
-
-  Sexp* curr = (Sexp*) calloc(1, sizeof(Sexp));
-  curr->value = str_flush(&str);
-  
-  return curr;
+  str_push(&str, get(r));
+  return sexp(str.list);
 }
 
-Sexp* pSexp(FILE* file) {
-  pWhitespace(file);
-
-  printf("%c: ", peekc(file));
-  if (peekc(file) == '(') {
-    return pList(file);
-  } else {
-    return pAtom(file);
+Sexp* pString(Reader* r) {
+  String str = str_init();
+  str_push(&str, get(r));
+  // while we've ended the string and it's not an escaped quote
+  while (!(peek(r) == '\"' && !prev(r) != '\\')) {
+    str_push(&str, get(r));
   }
+  str_push(&str, get(r));
+  return sexp(str.list);
 }
 
-Sexp* pProgram(FILE* file) {
-  Sexp* program = (Sexp*) calloc(1, sizeof(Sexp));
-  program->capacity = 5;
-  program->length = 0;
-  program->list = (Sexp**) calloc(program->capacity, sizeof(Sexp*));
-  
-  while (peekc(file) != EOF) {
-    sexp_push(program, pSexp(file));
-    pWhitespace(file);
+Sexp* pAtom(Reader* r) {
+  return peek(r) == '\'' ? pChar(r) :
+         peek(r) == '"' ? pString(r) :
+         sexp(pWord(r));
+}
+
+Sexp* pSexp(Reader* r) {
+  pWhitespace(r);
+  printf("%c: \n",peek(r));
+  return peek(r) == '('? pList(r) : pAtom(r);
+}
+
+Sexp* pProgram(Reader* r) {
+  Sexp* program = sexp("programName");
+  while (hasNext(r)) {
+    pushSexp(program, pSexp(r));
+    pWhitespace(r);
   }
   return program;
 }
 
 int main() {
-  Sexp* root = pProgram(fopen("../examples/sigabrt.kl", "r"));
-
-  printf("\n%lu\n", root->length);
-
-  for (size_t i = 0; i < root->length; ++i) {
-    sexp_print(root->list[i]);
-    putchar('\n');
-  }
-  return 0;
+  Reader* r = reader("../examples/hello.kl");
+  Sexp* program = pProgram(r);
+  printSexp(program, 0);
+  free(program);
 }

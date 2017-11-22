@@ -7,7 +7,7 @@
 (def (main)
   (do
    (let root (pProgram (fopen "../examples/main.kl" "r")))
-   (printf "\n%lu\n" (->length root))
+   (call printf "\n%lu\n" (->length root))
    (for (let i 0) (< i (-> length root)) (++ i)
         (do
          (sexp_print (index i (->list root)))
@@ -21,7 +21,7 @@
    (set (->length program)   0)
    (set (->list program) (Sexp** (calloc (->capacity program) (sizeof Sexp*))))
    (while (!= (peekc file) EOF)
-     (sequence
+     (do
       (sexp_push program (pSexp file))
       (pWhitespace file)))))
 
@@ -38,12 +38,12 @@
    (puts "parse atom")
    (let str (str_make))
    (;; parse string literals)
-   (if (== '"' (peekc file))
+   (if (== '"' (peekc file))l
        (do
         (str_push str (Char (getc file)))
         (while (!= '"' (peekc file))
-          (str_push str (Char (getc file))))
-        (str_push str (Char (getc file)))))
+          (str_push str (Char (getc file)))))
+        (str_push str (Char (getc file))))
    (while (and (not (isspace (peekc file))) (!= ")" (peekc file)))
      (str_push str (Char (getc file))))
    (let curr (Sexp* (calloc 1 (sizeof Sexp))))
