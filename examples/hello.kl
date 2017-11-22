@@ -1,8 +1,1 @@
-
-
-(typedef Sexp
-  (union String
-         (List Sexp*)))
-
-(type push (Sexp*)
-(def push
+(call puts "hi")

@@ -10,6 +10,12 @@ String* str_make(void) {
   return result;
 }
 
+String str_init(void) {
+  String str = {NULL, 0, 10};
+  str.list = (char*)calloc(10, sizeof(char));
+  return str;
+}
+
 /**
  * Adds a character to the String, doubling size if the capacity doesn't fit it.
  */
