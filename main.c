@@ -67,7 +67,10 @@ typedef struct Sexp {
 
 Sexp* sexp(char* value) {
   Sexp* result = calloc(1, sizeof(Sexp));
-  *result = (Sexp) {value, calloc(2, sizeof(Sexp*)), 0, 2};
+  result->value = value;
+  result->list = calloc(2, sizeof(Sexp*));
+  result->length = 0;
+  result->cap = 2;
   return result;
 };
 
@@ -112,6 +115,7 @@ Sexp* pList(Reader* r) {
   while (peek(r) != ')') {
     pushSexp(curr, pSexp(r));
   }
+  get(r); // remove ending )
   return curr;
 }
 
@@ -152,7 +156,8 @@ Sexp* pSexp(Reader* r) {
 Sexp* pProgram(Reader* r) {
   Sexp* program = sexp("programName");
   while (hasNext(r)) {
-    printf("%c\n", get(r));
+    pushSexp(program, pSexp(r));
+    pWhitespace(r);
   }
   return program;
 }
