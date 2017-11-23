@@ -122,7 +122,7 @@ Sexp* pList(Reader* r) {
 Sexp* pChar(Reader* r) {
   String str = str_init();
   str_push(&str, get(r));
-  // while we've ended the char and it's not an escaped apostrophe
+  // while we've not (ended the char with an unescaped apostrophe)
   while (!(peek(r) == '\'' && !prev(r) != '\\')) {
     str_push(&str, get(r));
   }
@@ -133,7 +133,7 @@ Sexp* pChar(Reader* r) {
 Sexp* pString(Reader* r) {
   String str = str_init();
   str_push(&str, get(r));
-  // while we've ended the string and it's not an escaped quote
+  // while we've not (ended the string with an unescaped quote)
   while (!(peek(r) == '\"' && !prev(r) != '\\')) {
     str_push(&str, get(r));
   }
