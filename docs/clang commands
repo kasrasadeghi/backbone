@@ -1,0 +1,17 @@
+https://clang.llvm.org/docs/Toolchain.html
+
+There are a lot fo steps for the clang C compiler.
+
+source    = the regular c source code
+source -# = the source without preprocessor macros
+AST       = abstract syntax tree
+
+$ clang -E              | Preprocessor :: source    -> source -#
+$ clang -precompile     | Parsing      :: source -# -> AST
+$ clang -emit-llvm (-S) | IR gen       :: AST       -> IR
+    with -S creates text
+    without creates bitcode
+$ clang -S              | Backend      :: IR        -> assembly
+$ clang -c              | Assembler    :: assembly  -> objects
+$ lld                   | Linker       :: objects   -> exec
+    llvm's linker

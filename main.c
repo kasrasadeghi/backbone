@@ -22,6 +22,7 @@ size_t fileSize(char* filename) {
     fprintf(stderr, "file has negative size???");
     exit(2);
   }
+  return (size_t)st.st_size;
 }
 
 Reader* reader(char* filename) {
@@ -33,6 +34,7 @@ Reader* reader(char* filename) {
   r->offset = 0;
   r->size = fileSize(filename);
   r->file = (char*) mmap(NULL, r->size, PROT_READ, MAP_FILE|MAP_PRIVATE, fd, r->offset);
+  return r;
 }
 
 char get(Reader* r) {
@@ -123,7 +125,7 @@ Sexp* pChar(Reader* r) {
   String str = str_init();
   str_push(&str, get(r));
   // while we've not (ended the char with an unescaped apostrophe)
-  while (!(peek(r) == '\'' && !prev(r) != '\\')) {
+  while (!(peek(r) == '\'' && prev(r) != '\\')) {
     str_push(&str, get(r));
   }
   str_push(&str, get(r));
@@ -134,7 +136,7 @@ Sexp* pString(Reader* r) {
   String str = str_init();
   str_push(&str, get(r));
   // while we've not (ended the string with an unescaped quote)
-  while (!(peek(r) == '\"' && !prev(r) != '\\')) {
+  while (!(peek(r) == '\"' && prev(r) != '\\')) {
     str_push(&str, get(r));
   }
   str_push(&str, get(r));

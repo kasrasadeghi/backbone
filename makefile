@@ -1,12 +1,15 @@
-all: build run
+all: prep build run
 
+.PHONY: prep
 prep:
-	if [ ! -d cmake-build-dir ]; then mkdir cmake-build-dir; fi
-	cd cmake-build-dir && \
+	if [ ! -d cmake-build-debug ]; then mkdir cmake-build-debug; fi
+	cd cmake-build-debug && \
 		cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" ..
 
-build: ./cmake-build-dir/Makefile
-	cd cmake-build-dir && make
+.PHONY: build
+build: ./cmake-build-debug/Makefile
+	cd cmake-build-debug && make
 
-run: ./cmake-build-dir/backbone
-	cd cmake-build-dir && ./backbone
+.PHONY: run
+run: ./cmake-build-debug/backbone
+	cd cmake-build-debug && ./backbone
