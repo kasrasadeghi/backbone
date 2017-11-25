@@ -1,5 +1,6 @@
 SOURCES=main.c str.c
 OBJECTS=$(patsubt %.c,%,$(SOURCES)
+IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
 
 .DEFAULT: backbone
 backbone: main.o str.o
@@ -7,10 +8,10 @@ backbone: main.o str.o
 	./backbone
 
 main.ll:
-	clang -emit-llvm -S ../main.c
+	clang $(IR_FLAGS) ../main.c
 
 str.ll:
-	clang -emit-llvm -S ../str.c
+	clang $(IR_FLAGS) ../str.c
 
 main.o: main.ll
 	clang -c main.ll
@@ -18,6 +19,13 @@ main.o: main.ll
 str.o: str.ll
 	clang -c str.ll
 
+.PHONY: clean
 clean:
 	rm -f *.o *.ll
-	rm backbone
+	rm -f backbone
+
+again: clean backbone
+
+end:
+	rm -f backbone
+	(make backbone)

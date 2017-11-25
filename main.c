@@ -7,6 +7,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+//#include <assert.h>
+
+#define assert(exp)
+
 //region struct Reader {...}
 
 typedef struct Reader {
@@ -30,7 +34,7 @@ Reader* reader(char* filename) {
   if (fd == -1) {
     return NULL;
   }
-  Reader* r = (Reader*) calloc(1, sizeof(Reader));
+  Reader* r = calloc(1, sizeof(Reader));
   r->offset = 0;
   r->size = fileSize(filename);
   r->file = (char*) mmap(NULL, r->size, PROT_READ, MAP_FILE|MAP_PRIVATE, fd, r->offset);
@@ -38,9 +42,7 @@ Reader* reader(char* filename) {
 }
 
 char get(Reader* r) {
-  if (r->offset == r->size) {
-    return EOF;
-  }
+  assert(r->offset < r->size);
   return r->file[r->offset++];
 }
 
@@ -49,9 +51,7 @@ char peek(Reader* r) {
 }
 
 char prev(Reader* r) {
-  if (r->offset == 0) {
-    // handle lower bound error case
-  }
+  assert(r->offset != 0);
   return r->file[r->offset - 1];
 }
 
@@ -77,7 +77,7 @@ Sexp* sexp(char* value) {
 };
 
 void printSexp(Sexp* s, int l) {
-  for (int i = 0; i < l - 1; ++i) {
+  for (int i = 0; i < l; ++i) {
     printf("  ");
   }
   printf("%s\n", s->value);
@@ -112,33 +112,41 @@ char* pWord(Reader* r) {
 Sexp* pSexp(Reader*);
 
 Sexp* pList(Reader* r) {
-  get(r); // remove leading (
+  char test = get(r);
+  assert (test == '(');
+
   Sexp* curr = sexp(pWord(r));
   while (peek(r) != ')') {
     pushSexp(curr, pSexp(r));
   }
-  get(r); // remove ending )
+
+  test = get(r);
+  assert (test == ')');
   return curr;
 }
 
 Sexp* pChar(Reader* r) {
   String str = str_init();
+  assert (peek(r) == '\'');
   str_push(&str, get(r));
   // while we've not (ended the char with an unescaped apostrophe)
   while (!(peek(r) == '\'' && prev(r) != '\\')) {
     str_push(&str, get(r));
   }
+  assert (peek(r) == '\'');
   str_push(&str, get(r));
   return sexp(str.list);
 }
 
 Sexp* pString(Reader* r) {
   String str = str_init();
+  assert (peek(r) == '\"');
   str_push(&str, get(r));
   // while we've not (ended the string with an unescaped quote)
   while (!(peek(r) == '\"' && prev(r) != '\\')) {
     str_push(&str, get(r));
   }
+  assert (peek(r) == '\"');
   str_push(&str, get(r));
   return sexp(str.list);
 }
@@ -165,7 +173,12 @@ Sexp* pProgram(Reader* r) {
 }
 
 int main() {
-  Reader* r = reader("../examples/hello.kl");
+  char* filename = "../examples/hello.kl";
+  Reader* r = reader(filename);
+  if (r == NULL) {
+    fprintf(stderr, "backbone: error making reader for file: %s", filename);
+    exit(2);
+  }
   Sexp* program = pProgram(r);
   printSexp(program, 0);
   free(program);
