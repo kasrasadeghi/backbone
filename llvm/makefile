@@ -1,10 +1,8 @@
-SOURCES=main.c str.c
-OBJECTS=$(patsubt %.c,%,$(SOURCES)
 IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
 
 .DEFAULT: backbone
-backbone: main.o str.o
-	gcc main.o str.o -o $@
+backbone: main.o str.o parser.o
+	gcc main.o str.o parser.o -o $@
 
 %.ll: ../%.c
 	clang $(IR_FLAGS) ../$*.c
