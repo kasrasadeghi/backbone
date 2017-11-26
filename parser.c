@@ -63,6 +63,8 @@ char prev(Reader* r) {
 
 //endregion Reader
 
+//region struct Sexp {...}
+
 typedef struct Sexp {
   char* value;
   struct Sexp** list;
@@ -97,6 +99,10 @@ void pushSexp(Sexp* s, Sexp* child) {
     s->list = realloc(s->list, s->cap * sizeof(Sexp*));
   }
 }
+
+//endregion
+
+//region Sexp* parse(char* filename)
 
 void pWhitespace(Reader* r) {
   while (hasNext(r) && isspace(peek(r))) {
@@ -160,7 +166,7 @@ Sexp* pAtom(Reader* r) {
 
 Sexp* pSexp(Reader* r) {
   pWhitespace(r);
-  printf("%c: \n",peek(r));
+  //printf("%c: \n",peek(r)); // <- useful for debugging
   return peek(r) == '('? pList(r) : pAtom(r);
 }
 
@@ -173,11 +179,6 @@ Sexp* pProgram(Reader* r) {
   return program;
 }
 
-void destroySexp(Sexp* s) {
-  //TODO actually finish
-  free(s);
-}
-
 Sexp* parse(char* filename) {
   Reader* r = reader(filename);
   if (r == NULL) {
@@ -186,4 +187,11 @@ Sexp* parse(char* filename) {
     exit(EXIT_FAILURE);
   }
   return pProgram(r);
+}
+
+//endregion
+
+void destroySexp(Sexp* s) {
+  //TODO actually finish
+  free(s);
 }

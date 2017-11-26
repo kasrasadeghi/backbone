@@ -8,14 +8,14 @@ def call(cmd):
     try:
         result = check_output(cmd.split(), stderr=STDOUT, timeout=5).decode('utf-8')
     except CalledProcessError as e:
-        result = str(e.returncode) + e.output.decode('utf-8')
+        result = e.output.decode('utf-8') + f"exit code: {e.returncode}"
     return result
 
 
 def testall():
     test_names = [x[:-3] for x in os.listdir('parser-tests')
                   if x.endswith('.bb')
-                  if os.path.isfile(x[:-3] + 'ok')]
+                  if os.path.isfile('parser-tests/' + x[:-3] + '.ok')]
     if not test_names:
         print(' nothing to do...')
         return
@@ -25,9 +25,10 @@ def testall():
 
 def test(testname):
     print(" --- ", testname, end=" ...")
-    output = call('cmake-build-debug/backbone ' + testname + ".bb")
-    with open(testname + ".ok", "r") as f:
+    output = call('cmake-build-debug/backbone parse parser-tests/' + testname + '.bb')
+    with open('parser-tests/' + testname + ".ok", "r") as f:
         reference = f.read()
+    reference = reference.strip()
     output = output.strip()
     if output != reference:
         print(" fail --- ")
