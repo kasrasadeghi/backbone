@@ -1,8 +1,9 @@
+OBJECTS=main.o str.o parser.o
 IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
 
 .DEFAULT: backbone
-backbone: main.o str.o parser.o
-	gcc main.o str.o parser.o -o $@
+backbone: $(OBJECTS)
+	gcc $(OBJECTS) -o $@
 
 %.ll: ../%.c
 	clang $(IR_FLAGS) ../$*.c
@@ -19,8 +20,9 @@ clean:
 
 again: clean backbone
 
-end:
-	rm -f backbone
-	(make backbone)
+from\:%.ll:
+	clang -c $*.ll
+	gcc $(OBJECTS) -o backbone
+	./backbone parse ../parser-tests/main.bb
 
 run\:%: backbone
