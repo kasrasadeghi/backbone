@@ -172,8 +172,12 @@ Sexp* pProgram(Reader* r) {
   return program;
 }
 
-int main() {
-  char* filename = "../examples/hello.kl";
+int main(int argc, char *argv[]) {
+  if (argc == 1) {
+    printf("Usage: %s <file>\n", argv[0]);
+    return 1;
+  }
+  char* filename = argv[1];
   Reader* r = reader(filename);
   if (r == NULL) {
     fprintf(stderr, "backbone: error making reader for file: %s", filename);
