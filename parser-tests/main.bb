@@ -6,4 +6,4 @@
     (call (puts int) (arglist ((char*-from-str 0) char*)))
     (return 1))
   (let filename (load char** (index (argv char**) 2)))
-  (let program (call (parse Sexp* (arglist (filename char*))))))
+  (let program (call parse Sexp* (arglist (filename char*)))))

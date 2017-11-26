@@ -1,6 +1,6 @@
 DIR=cmake-build-debug
 
-all: prep build run\:some.bb
+all: prep build parse\:string.bb
 
 .PHONY: prep
 prep:
