@@ -1,0 +1,8 @@
+Makefile usage:
+
+To run a file called some.bb from ./examples/
+$ make run:some.bb
+
+To rebuild llvm files
+$ cd llvm
+$ make again

@@ -7,9 +7,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-//#include <assert.h>
+#include <assert.h>
 
-#define assert(exp)
+//#define assert(exp) (exp)
 
 //region struct Reader {...}
 
@@ -41,8 +41,12 @@ Reader* reader(char* filename) {
   return r;
 }
 
+int hasNext(Reader* r) {
+  return r->size > r->offset;
+}
+
 char get(Reader* r) {
-  assert(r->offset < r->size);
+  assert(hasNext(r));
   return r->file[r->offset++];
 }
 
@@ -55,9 +59,6 @@ char prev(Reader* r) {
   return r->file[r->offset - 1];
 }
 
-int hasNext(Reader* r) {
-  return r->size != r->offset;
-}
 //endregion Reader
 
 typedef struct Sexp {
@@ -91,7 +92,7 @@ void pushSexp(Sexp* s, Sexp* child) {
   ++s->length;
   if (s->length == s->cap) {
     s->cap *= 2;
-    s->list = realloc(s->list, s->cap);
+    s->list = realloc(s->list, s->cap * sizeof(Sexp*));
   }
 }
 
@@ -172,6 +173,11 @@ Sexp* pProgram(Reader* r) {
   return program;
 }
 
+void destroySexp(Sexp* s) {
+  //TODO actually finish
+  free(s);
+}
+
 int main(int argc, char *argv[]) {
   if (argc == 1) {
     printf("Usage: %s <file>\n", argv[0]);
@@ -180,10 +186,10 @@ int main(int argc, char *argv[]) {
   char* filename = argv[1];
   Reader* r = reader(filename);
   if (r == NULL) {
-    fprintf(stderr, "backbone: error making reader for file: %s", filename);
-    exit(2);
+    fprintf(stderr, "backbone: error making reader for file: %s\n", filename);
+    return EXIT_FAILURE;
   }
   Sexp* program = pProgram(r);
   printSexp(program, 0);
-  free(program);
+  destroySexp(program);
 }

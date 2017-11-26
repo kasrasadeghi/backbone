@@ -5,19 +5,14 @@ IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
 .DEFAULT: backbone
 backbone: main.o str.o
 	gcc main.o str.o -o $@
-	./backbone
 
-main.ll:
-	clang $(IR_FLAGS) ../main.c
+%.ll: ../%.c
+	clang $(IR_FLAGS) ../$*.c
 
-str.ll:
-	clang $(IR_FLAGS) ../str.c
+.PRECIOUS: %.ll
+%.o: %.ll
+	clang -c $*.ll
 
-main.o: main.ll
-	clang -c main.ll
-
-str.o: str.ll
-	clang -c str.ll
 
 .PHONY: clean
 clean:
@@ -29,3 +24,5 @@ again: clean backbone
 end:
 	rm -f backbone
 	(make backbone)
+
+run\:%: backbone
