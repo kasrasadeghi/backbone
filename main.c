@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include "parser.h"
 
@@ -31,8 +33,8 @@ void gProgram(FILE* file, Sexp* s) {
 
 void generateLLVM(char* filename, Sexp* sexp) {
 
-//  system("mkdir -p output"); or something
-//  chdir(output);
+//  system("mkdir -p output &> /dev/null");// or something
+//  chdir("output");
 
   /* NOTE!!: don't uncomment below code as is. we have to strcat the filename with output/ or chdir
    * into output
@@ -44,12 +46,22 @@ void generateLLVM(char* filename, Sexp* sexp) {
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
-    puts("Usage: backbone parse <file>");
+    puts("Usage: backbone <parse|generateLLVM> <file>");
     return 1;
   }
-  char* filename = argv[2];
-  Sexp* program = parse(filename);
-  printSexp(program, 0);
-  generateLLVM(filename, program);
-  destroySexp(program);
+  if (strcmp(argv[1], "parse") == 0) {
+    char* filename = argv[2];
+    printf("filename: %s\n", filename);
+    Sexp* program = parse(filename);
+    printSexp(program, 0);
+    destroySexp(program);
+  }
+  if (strcmp(argv[1], "generateLLVM") == 0) {
+    char* filename = argv[2];
+    printf("filename: %s\n", filename);
+    Sexp* program = parse(filename);
+    printSexp(program, 0);
+    generateLLVM(filename, program);
+    destroySexp(program);
+  }
 }

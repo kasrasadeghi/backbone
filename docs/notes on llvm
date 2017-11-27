@@ -7,7 +7,12 @@ Maybe: Where you see "attributes #\d = { ... }" you can replace it with "{ nounw
  - investigate assembly
  - see if that's true in all cases
 
+LLVM doesn't even seem to need the attributes. We don't need to generate those.
+
 === Notes: ===
 
 LLVM doesn't store string literals as char*'s. They're constants somewhere in memory and then casted
  to char*'s when used.
+
+The line we're going to draw for type inference is drawn from the following rule of thumb:
+  If the LLVM IR needs the type, we're going to include it in the regular language.
