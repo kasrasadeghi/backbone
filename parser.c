@@ -118,6 +118,10 @@ Sexp* pList(Reader* r) {
 
   Sexp* curr = sexp(pWord(r));
   while (peek(r) != ')') {
+    if (!hasNext(r)) {
+      fprintf(stderr, "backbone: unmatched paren for list\n"); //TODO ...on line \d
+      exit(EXIT_FAILURE);
+    }
     pushSexp(curr, pSexp(r));
   }
 
@@ -131,6 +135,10 @@ Sexp* pChar(Reader* r) {
   str_push(&str, get(r));
   // while we've not (ended the char with an unescaped apostrophe)
   while (!(peek(r) == '\'' && prev(r) != '\\')) {
+    if (!hasNext(r)) {
+      fprintf(stderr, "backbone: unmatched apostrophe for char\n"); //TODO ...on line \d
+      exit(EXIT_FAILURE);
+    }
     str_push(&str, get(r));
   }
   assert (peek(r) == '\'');
@@ -144,6 +152,10 @@ Sexp* pString(Reader* r) {
   str_push(&str, get(r));
   // while we've not (ended the string with an unescaped quote)
   while (!(peek(r) == '\"' && prev(r) != '\\')) {
+    if (!hasNext(r)) {
+      fprintf(stderr, "backbone: unmatched quote for string\n"); //TODO ...on line \d
+      exit(EXIT_FAILURE);
+    }
     str_push(&str, get(r));
   }
   assert (peek(r) == '\"');

@@ -9,12 +9,11 @@ prep:
 
 .PHONY: build
 build: ${DIR}/Makefile
-	@cd ${DIR} && make &> /dev/null
+	@cd ${DIR} && make
 
-.PHONY: run
+.PHONY: parse
 parse\:%: build
 	@cd ${DIR} && ./backbone parse ../parser-tests/$*
 
 test:
-	ls
-	./test.py
+	@./test.py

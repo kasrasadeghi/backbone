@@ -30,9 +30,16 @@ void gProgram(FILE* file, Sexp* s) {
 }
 
 void generateLLVM(char* filename, Sexp* sexp) {
-  remove(filename);
-  FILE* result = fopen(filename, "a+");
-  gProgram(result, sexp);
+
+//  system("mkdir -p output"); or something
+//  chdir(output);
+
+  /* NOTE!!: don't uncomment below code as is. we have to strcat the filename with output/ or chdir
+   * into output
+   */
+//  remove(filename);
+//  FILE* result = fopen(filename, "a+");
+//  gProgram(result, sexp);
 }
 
 int main(int argc, char *argv[]) {
