@@ -65,13 +65,6 @@ char prev(Reader* r) {
 
 //region struct Sexp {...}
 
-typedef struct Sexp {
-  char* value;
-  struct Sexp** list;
-  size_t length;
-  size_t cap;
-} Sexp;
-
 Sexp* sexp(char* value) {
   Sexp* result = calloc(1, sizeof(Sexp));
   result->value = value;

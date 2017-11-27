@@ -15,3 +15,15 @@ typedef struct Map {
 Map *map_create();
 Sexp *map_get(Map *map, char *key);
 void map_put(Map *map, char *key, Sexp *s);
+
+/*
+ * parse
+ * ->
+ * (Sexp* char*)
+ */
+
+/*
+ * Sexp
+ * ->
+ * (char* Sexp** size size)
+ */
