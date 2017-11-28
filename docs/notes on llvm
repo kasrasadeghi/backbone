@@ -16,3 +16,17 @@ LLVM doesn't store string literals as char*'s. They're constants somewhere in me
 
 The line we're going to draw for type inference is drawn from the following rule of thumb:
   If the LLVM IR needs the type, we're going to include it in the regular language.
+
+On Clang-5 numbering!!!:
+  Say you're defining a function. see print_int.ll for the example I'm talking about.
+  Clang generates LLVM IR that starts counting from some number, according to the following rules:
+
+  It starts at 0, as it should. This only counts the arguments (and the instructions/values) that are unnamed. If they are
+  named they are skipped by the counter.
+
+  If it has arguments, the arguments are counted.
+
+  Once the arguments are finished, the instruction pointer to the start of
+  the function is counted.
+
+  Then all of the unnamed values and labels are counted.
