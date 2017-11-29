@@ -27,6 +27,6 @@ On Clang-5 numbering!!!:
   If it has arguments, the arguments are counted.
 
   Once the arguments are finished, the instruction pointer to the start of
-  the function is counted.
+  the function is counted if it is not named.
 
   Then all of the unnamed values and labels are counted.
