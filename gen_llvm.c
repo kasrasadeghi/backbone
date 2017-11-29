@@ -4,8 +4,17 @@
 #include <unistd.h>
 #include "gen_llvm.h"
 
+/*
+ * Calculates the length of the given string, counting escaped characters only once.
+ * The string must be well formed. (Doesn't end in \, backslashes escaped, etc.)
+ */
 size_t atomStrLen(char* s) {
-  //TODO
+  size_t len = 0;
+  while (s) {
+    if (*s != '\\') len++;
+    s++;
+  }
+  return len;
 }
 
 void gStrTable(FILE* file, Sexp* s) {
