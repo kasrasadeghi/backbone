@@ -12,14 +12,12 @@ int main(int argc, char *argv[]) {
   }
   if (strcmp(argv[1], "parse") == 0) {
     char* filename = argv[2];
-    printf("filename: %s\n", filename);
     Sexp* program = parse(filename);
     printSexp(program, 0);
     destroySexp(program);
   }
   if (strcmp(argv[1], "generateLLVM") == 0) {
     char* filename = argv[2];
-    printf("filename: %s\n", filename);
     Sexp* program = parse(filename);
     printSexp(program, 0);
     generateLLVM(filename, program);

@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <libgen.h>
 #include "parser.h"
 
 //#include <assert.h>
@@ -105,7 +106,12 @@ void pWhitespace(Reader* r) {
 
 char* pWord(Reader* r) {
   String str = str_init();
-  while (peek(r) != '(' && peek(r) != ')' && !isspace(peek(r))) {
+  pWhitespace(r);
+  if (!hasNext(r)) {
+    fprintf(stderr, "backbone: list does not start with word.\n");
+    exit(EXIT_FAILURE);
+  }
+  while (hasNext(r) && peek(r) != '(' && peek(r) != ')' && !isspace(peek(r))) {
     str_push(&str, get(r));
   }
   return str.list;
@@ -175,8 +181,8 @@ Sexp* pSexp(Reader* r) {
   return peek(r) == '('? pList(r) : pAtom(r);
 }
 
-Sexp* pProgram(Reader* r) {
-  Sexp* program = sexp("programName");
+Sexp* pProgram(char* filename, Reader* r) {
+  Sexp* program = sexp(basename(filename));
   while (hasNext(r)) {
     pushSexp(program, pSexp(r));
     pWhitespace(r);
@@ -191,7 +197,7 @@ Sexp* parse(char* filename) {
     perror("");
     exit(EXIT_FAILURE);
   }
-  return pProgram(r);
+  return pProgram(filename, r);
 }
 
 //endregion
