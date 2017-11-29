@@ -4,15 +4,24 @@
 #include <unistd.h>
 #include "gen_llvm.h"
 
+
 /**
  * Calculates the length of the given string, counting escaped characters only once.
  * The string must be well formed. (Doesn't end in \, backslashes escaped, etc.)
+ * \<any character> --> 1 character
  */
 size_t atomStrLen(char* s) {
   size_t len = 0;
-  while (s) {
-    if (*s != '\\') len++;
-    s++;
+  while (*s) {
+    if (*s == '\\') {
+        s++;
+        if (*s < '0' || *s > '9' || *(s+1) < '0' || *(s+1) > '9') {
+            // assertion failed.
+            puts("*** Fatal: Backslash not followed by two digits.");
+        }
+        s++;
+    }
+    s++; len++;
   }
   return len;
 }
@@ -26,10 +35,24 @@ void gStrTable(FILE* file, Sexp* s) {
 }
 
 /**
- * Checks if the type is a user-defined type or a primitive struct, and then
+ * Takes as input a type name and writes the qualified LLVM type to the output file
+ * Precondition: type satisfies [a-zA-Z0-9]+[\*]*
  */
-char* gQualified(char* type) {
-  //TODO
+void gQualified(char* type) {
+  char *primitive_types[] = {"i1", "i8", "i32", "i64", "u1", "u8", "u32", "u64"};
+
+  for (int i = 0; i < 8; i++) {
+    char *prim = primitive_types[i];
+    size_t prim_len = strlen(prim);
+    if (strncmp(type, prim, prim_len) == 0) {
+      if (type + prim_len || *(type + prim_len) == '*') {
+        // primitive type
+        printf("i%s ", type + 1);
+        return;
+      }
+    }
+  } 
+  printf("%%struct.%s", type);
 }
 
 void gStruct(FILE* file, Sexp* s) {
