@@ -3,7 +3,7 @@ RESULTS=$(patsubst %.c,%.ll,$(FILES))
 IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
 
 .DEFAULT: translate
-translate: clean $(RESULTS)
+translate: $(RESULTS)
 
 %.ll: %.c
 	clang $(IR_FLAGS) $*.c
@@ -11,10 +11,6 @@ translate: clean $(RESULTS)
 .PRECIOUS: %.ll
 %.o: %.ll
 	clang -c $*.ll
-
-.PHONY: clean
-clean:
-	rm -f *.ll
 
 print:
 	@echo $(RESULTS)
