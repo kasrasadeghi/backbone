@@ -13,7 +13,14 @@
 size_t atomStrLen(char* s) {
   size_t len = 0;
   while (*s) {
-    if (*s == '\\') s++;
+    if (*s == '\\') {
+        s++;
+        if (*s < '0' || *s > '9' || *(s+1) < '0' || *(s+1) > '9') {
+            // assertion failed.
+            puts("*** Fatal: Backslash not followed by two digits.");
+        }
+        s++;
+    }
     s++; len++;
   }
   return len;
