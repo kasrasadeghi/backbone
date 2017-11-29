@@ -2,26 +2,30 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "gen_llvm.h"
-
 
 /**
  * Calculates the length of the given string, counting escaped characters only once.
- * The string must be well formed. (Doesn't end in \, backslashes escaped, etc.)
- * \<any character> --> 1 character
+ * The string must be well formed:
+ *  - Doesn't end in \
+ *  - backslashes escaped
+ *
+ * Escaped Characters: \xx
+ *  - x stands for any capital hexadecimal digit.
  */
 size_t atomStrLen(char* s) {
   size_t len = 0;
-  while (*s) {
+  for (;*s; s++, len++) {
     if (*s == '\\') {
-        s++;
-        if (*s < '0' || *s > '9' || *(s+1) < '0' || *(s+1) > '9') {
-            // assertion failed.
-            puts("*** Fatal: Backslash not followed by two digits.");
-        }
-        s++;
+      int counter = 0;
+      s++; counter += isxdigit(*s) != 0;
+      s++; counter += isxdigit(*s) != 0;
+      if (counter != 2) {
+        fprintf(stderr, "backbone: Backslash not followed by two hexadecimal digits.");
+        exit(EXIT_FAILURE);
+      }
     }
-    s++; len++;
   }
   return len;
 }
@@ -47,11 +51,11 @@ void gQualified(char* type) {
     if (strncmp(type, prim, prim_len) == 0) {
       if (type + prim_len || *(type + prim_len) == '*') {
         // primitive type
-        printf("i%s ", type + 1);
+        printf("i%s", type + 1);
         return;
       }
     }
-  } 
+  }
   printf("%%struct.%s", type);
 }
 
@@ -66,14 +70,16 @@ void gStruct(FILE* file, Sexp* s) {
 }
 
 void gDef(FILE* file, Sexp* s) {
-  //TODO
+  printf("define ");
+  gQualified(s->list[2]->value);
+
 }
 
 void gProgram(FILE* file, Sexp* s) {
-  printf("; ============= generate program ====================== ; \n");
   printf("; ModuleID = %s\n", s->value);
   printf("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\""
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
+
   for (int i = 0; i < s->length; ++i) {
     Sexp* child = s->list[i];
     if (strcmp(child->value, "str-table") == 0) {
