@@ -16,14 +16,14 @@ parse\:%: build
 	@cd ${DIR} && ./backbone parse ../parser-tests/$*
 
 gen\:%: build
-    @{DIR}/backbone generateLLVM parser-tests/$*
+	@{DIR}/backbone generateLLVM parser-tests/$*
 
 test:
 	@./test.py
 
 version:
-    cmake --version
-    make --version
-    bash --version
-    gcc --version
-    clang --version
+	cmake --version
+	make --version
+	bash --version
+	gcc --version
+	clang --version
