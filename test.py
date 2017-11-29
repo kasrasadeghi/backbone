@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from subprocess import check_output, STDOUT, CalledProcessError
 import sys
 import os
@@ -8,7 +8,7 @@ def call(cmd):
     try:
         result = check_output(cmd.split(), stderr=STDOUT, timeout=5).decode('utf-8')
     except CalledProcessError as e:
-        result = e.output.decode('utf-8') + f"exit code: {e.returncode}"
+        result = e.output.decode('utf-8') + "exit code: " + str(e.returncode)
     return result
 
 
