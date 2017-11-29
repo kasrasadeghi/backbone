@@ -4,8 +4,8 @@
 (struct Sexp
   (value char*)
   (list Sexp**)
-  (len u32)
-  (cap u32))
+  (len u64)
+  (cap u64))
 
 (def main ((argc i32) (argv i8**)) i32
   (if (< i32 argc 3)
