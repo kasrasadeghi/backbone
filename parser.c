@@ -48,7 +48,7 @@ int hasNext(Reader* r) {
 }
 
 char get(Reader* r) {
-  assert(hasNext(r));
+  assert (hasNext(r));
   return r->file[r->offset++];
 }
 
@@ -57,7 +57,7 @@ char peek(Reader* r) {
 }
 
 char prev(Reader* r) {
-  assert(r->offset != 0);
+  assert (r->offset != 0);
   return r->file[r->offset - 1];
 }
 
