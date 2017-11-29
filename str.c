@@ -4,6 +4,7 @@
 String str_init(void) {
   String str = {NULL, 0, 10};
   str.list = malloc(10 * sizeof(char));
+  str.list[0] = 0;
   return str;
 }
 
