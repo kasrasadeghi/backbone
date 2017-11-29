@@ -17,3 +17,10 @@ parse\:%: build
 
 test:
 	@./test.py
+
+version:
+    cmake --version
+    make --version
+    bash --version
+    gcc --version
+    clang --version
