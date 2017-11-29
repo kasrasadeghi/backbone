@@ -81,6 +81,7 @@ void gProgram(FILE* file, Sexp* s) {
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
 
   for (int i = 0; i < s->length; ++i) {
+    puts("");
     Sexp* child = s->list[i];
     if (strcmp(child->value, "str-table") == 0) {
       gStrTable(file, child);
