@@ -15,6 +15,9 @@ build: ${DIR}/Makefile
 parse\:%: build
 	@cd ${DIR} && ./backbone parse ../parser-tests/$*
 
+gen\:%: build
+    @{DIR}/backbone generateLLVM parser-tests/$*
+
 test:
 	@./test.py
 
