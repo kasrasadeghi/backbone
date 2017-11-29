@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "gen_llvm.h"
 
-/*
+/**
  * Calculates the length of the given string, counting escaped characters only once.
  * The string must be well formed. (Doesn't end in \, backslashes escaped, etc.)
  */
@@ -20,13 +20,26 @@ size_t atomStrLen(char* s) {
 void gStrTable(FILE* file, Sexp* s) {
   for (int i = 0; i < s->length; ++i) {
     char* string_entry = s->list[i]->list[0]->value;
-    printf("@str.%d = private unnamed_addr constant [%lu x i8] c%s, align 1",
+    printf("@str.%d = private unnamed_addr constant [%lu x i8] c%s, align 1\n",
            i, atomStrLen(string_entry), string_entry);
   }
 }
 
-void gStruct(FILE* file, Sexp* s) {
+/**
+ * Checks if the type is a user-defined type or a primitive struct, and then
+ */
+char* gQualified(char* type) {
   //TODO
+}
+
+void gStruct(FILE* file, Sexp* s) {
+  printf("%%struct.%s = type { ", s->value);
+  for (int i = 1; i < s->length; ++i) {
+    char* type = s->list[i]->list[0]->value;
+    gQualified(type);
+    if (i != s->length - 1) printf(", ");
+  }
+  printf(" }\n");
 }
 
 void gDef(FILE* file, Sexp* s) {
@@ -34,6 +47,7 @@ void gDef(FILE* file, Sexp* s) {
 }
 
 void gProgram(FILE* file, Sexp* s) {
+  printf("; ============= generate program ====================== ; \n");
   printf("; ModuleID = %s\n", s->value);
   printf("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\""
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
