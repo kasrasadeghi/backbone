@@ -1,0 +1,1 @@
+This directory is for testing the output of the compiler with handwritten llvm.
