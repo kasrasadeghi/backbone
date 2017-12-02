@@ -1,4 +1,4 @@
-=== Simplification: ===
+## Simplification
 
 Where you see "tail call", you can replace it with "call". It's just an optimization.
  - investigate assembly
@@ -9,7 +9,7 @@ Maybe: Where you see "attributes #\d = { ... }" you can replace it with "{ nounw
 
 LLVM doesn't even seem to need the attributes. We don't need to generate those.
 
-=== Notes: ===
+## Notes
 
 LLVM doesn't store string literals as char*'s. They're constants somewhere in memory and then casted
  to char*'s when used.
