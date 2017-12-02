@@ -11,5 +11,11 @@ run\:%: %.ll
 	@-./$*.exe
 	@rm $*.exe $*.o
 
-test\:%:
+build:
+	(cd ..; make) &> /dev/null
+
+test\:%: build
 	python3 test_llvm.py hello
+
+parse\:%: %.bb
+	../cmake-build-debug/backbone parse $*.bb

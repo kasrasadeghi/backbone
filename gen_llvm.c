@@ -30,11 +30,18 @@ size_t atomStrLen(char* s) {
   return len;
 }
 
+static size_t* _str_table;
+static size_t _str_table_len;
+
 void gStrTable(FILE* file, Sexp* s) {
+  _str_table_len = s->length;
+  _str_table = calloc(_str_table_len, sizeof(long));
   for (int i = 0; i < s->length; ++i) {
     char* string_entry = s->list[i]->list[0]->value;
+    size_t len = atomStrLen(string_entry) - 2;
     printf("@str.%d = private unnamed_addr constant [%lu x i8] c%s, align 1\n",
-           i, atomStrLen(string_entry) - 2, string_entry);
+           i, len, string_entry);
+    _str_table[i] = len;
   }
 }
 
@@ -69,11 +76,79 @@ void gStruct(FILE* file, Sexp* s) {
   printf(" }\n");
 }
 
+void gExpr(FILE*, Sexp*);
+
+void gCall(FILE* file, Sexp* s) {
+  printf("call ");
+  gQualified(s->list[2]->value);
+  printf(" (");
+  Sexp* types = s->list[1];
+  for (int i = 0; i < types->length; ++i) {
+    gQualified(types->list[i]->value);
+    if (i != types->length - 1) printf(", ");
+  }
+  printf(") ");
+
+  printf("@%s(", s->list[0]->value);
+  Sexp* args = s->list[3];
+  for (int i = 0; i < types->length; ++i) {
+    gQualified(types->list[i]->value);
+    printf(" ");
+    gExpr(file, args->list[0]);
+  }
+  printf(")");
+}
+
+void gStrGet(FILE* file, Sexp* s) {
+  size_t index = strtoul(s->list[0]->value, NULL, 10);
+  size_t len = _str_table[index];
+  printf("getelementptr inbounds ([%lu x i8], [%lu x i8]* @str.%lu, i64 0, i64 0)",
+         len, len, index);
+}
+
+void gExpr(FILE* file, Sexp* s) {
+  if (strcmp(s->value, "call") == 0) {
+    gCall(file, s);
+  }
+  if (strcmp(s->value, "str-get") == 0) {
+    gStrGet(file, s);
+  }
+}
+
+void gLet(FILE* file, Sexp* l) {
+  printf("  %%%s = ", l->list[0]->value);
+  gExpr(file, l->list[1]);
+}
+
+void gReturn(FILE* file, Sexp* s) {
+  printf("  ret %s %s", s->list[1]->value, s->list[0]->value);
+}
+
+void gStmt(FILE* file, Sexp* s) {
+  if (strcmp(s->value, "let") == 0) {
+    gLet(file, s);
+  }
+  if (strcmp(s->value, "return") == 0) {
+    gReturn(file, s);
+  }
+  printf("\n");
+}
+
 void gDef(FILE* file, Sexp* s) {
   printf("define ");
   gQualified(s->list[2]->value);
+  printf(" @%s", s->list[0]->value);
 
-  printf("\n");
+  printf("(");
+  //TODO parameters
+  printf(") ");
+
+  printf("{\n");
+  printf("entry:\n");
+  for (int i = 3; i < s->length; ++i) {
+    gStmt(file, s->list[i]);
+  }
+  printf("}\n");
 }
 
 void gDecl(FILE* file, Sexp* s) {
@@ -85,7 +160,7 @@ void gDecl(FILE* file, Sexp* s) {
   Sexp* typelist = s->list[1];
   printf("(");
   for (int i = 0; i < typelist->length; ++i) {
-    printf("%s", typelist->list[i]->value);
+    gQualified(typelist->list[i]->value);
     if (i != typelist->length - 1) printf(", ");
   }
 

@@ -7,6 +7,7 @@ target triple = "x86_64-unknown-linux-gnu"
 declare i32 @puts(i8*)
 
 define i32 @main() {
-  %1 = call i32 (i8*) @puts(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @str.0, i64 0, i64 0))
+entry:
+  %ignore = call i32 (i8*) @puts(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @str.0, i64 0, i64 0))
   ret i32 0
 }
