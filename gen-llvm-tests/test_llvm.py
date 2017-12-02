@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 from subprocess import check_output, STDOUT, CalledProcessError
-from subprocess import call as _call
 import sys
 import os
 
@@ -36,7 +35,6 @@ def test(testname):
     output = output.strip()
     if output != reference:
         print(" fail --- ")
-        print(" OUTPUT:")
         print(" EXPECTED:")
         print(reference)
         print(" FOUND:")
