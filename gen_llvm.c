@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include "gen_llvm.h"
 
 /**
@@ -33,7 +34,7 @@ size_t atomStrLen(char* s) {
 static size_t* _str_table;
 static size_t _str_table_len;
 
-void gStrTable(FILE* file, Sexp* s) {
+void gStrTable(Sexp* s) {
   _str_table_len = s->length;
   _str_table = calloc(_str_table_len, sizeof(long));
   for (int i = 0; i < s->length; ++i) {
@@ -66,7 +67,7 @@ void gQualified(char* type) {
   printf("%%struct.%s", type);
 }
 
-void gStruct(FILE* file, Sexp* s) {
+void gStruct(Sexp* s) {
   printf("%%struct.%s = type { ", s->value);
   for (int i = 1; i < s->length; ++i) {
     char* type = s->list[i]->list[0]->value;
@@ -76,9 +77,9 @@ void gStruct(FILE* file, Sexp* s) {
   printf(" }\n");
 }
 
-void gExpr(FILE*, Sexp*);
+void gExpr(Sexp*);
 
-void gCall(FILE* file, Sexp* s) {
+void gCall(Sexp* s) {
   printf("call ");
   gQualified(s->list[2]->value);
   printf(" (");
@@ -94,47 +95,47 @@ void gCall(FILE* file, Sexp* s) {
   for (int i = 0; i < types->length; ++i) {
     gQualified(types->list[i]->value);
     printf(" ");
-    gExpr(file, args->list[0]);
+    gExpr(args->list[0]);
   }
   printf(")");
 }
 
-void gStrGet(FILE* file, Sexp* s) {
+void gStrGet(Sexp* s) {
   size_t index = strtoul(s->list[0]->value, NULL, 10);
   size_t len = _str_table[index];
   printf("getelementptr inbounds ([%lu x i8], [%lu x i8]* @str.%lu, i64 0, i64 0)",
          len, len, index);
 }
 
-void gExpr(FILE* file, Sexp* s) {
+void gExpr(Sexp* s) {
   if (strcmp(s->value, "call") == 0) {
-    gCall(file, s);
+    gCall(s);
   }
   if (strcmp(s->value, "str-get") == 0) {
-    gStrGet(file, s);
+    gStrGet(s);
   }
 }
 
-void gLet(FILE* file, Sexp* l) {
+void gLet(Sexp* l) {
   printf("  %%%s = ", l->list[0]->value);
-  gExpr(file, l->list[1]);
+  gExpr(l->list[1]);
 }
 
-void gReturn(FILE* file, Sexp* s) {
+void gReturn(Sexp* s) {
   printf("  ret %s %s", s->list[1]->value, s->list[0]->value);
 }
 
-void gStmt(FILE* file, Sexp* s) {
+void gStmt(Sexp* s) {
   if (strcmp(s->value, "let") == 0) {
-    gLet(file, s);
+    gLet(s);
   }
   if (strcmp(s->value, "return") == 0) {
-    gReturn(file, s);
+    gReturn(s);
   }
   printf("\n");
 }
 
-void gDef(FILE* file, Sexp* s) {
+void gDef(Sexp* s) {
   printf("define ");
   gQualified(s->list[2]->value);
   printf(" @%s", s->list[0]->value);
@@ -146,12 +147,12 @@ void gDef(FILE* file, Sexp* s) {
   printf("{\n");
   printf("entry:\n");
   for (int i = 3; i < s->length; ++i) {
-    gStmt(file, s->list[i]);
+    gStmt(s->list[i]);
   }
   printf("}\n");
 }
 
-void gDecl(FILE* file, Sexp* s) {
+void gDecl(Sexp* s) {
   printf("declare ");
   gQualified(s->list[2]->value);
 
@@ -169,7 +170,7 @@ void gDecl(FILE* file, Sexp* s) {
   printf("\n");
 }
 
-void gProgram(FILE* file, Sexp* s) {
+void gProgram(Sexp* s) {
   printf("; ModuleID = '%s'\n", s->value);
   printf("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\""
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
@@ -178,29 +179,38 @@ void gProgram(FILE* file, Sexp* s) {
     puts("");
     Sexp* child = s->list[i];
     if (strcmp(child->value, "str-table") == 0) {
-      gStrTable(file, child);
+      gStrTable(child);
     }
     if (strcmp(child->value, "struct") == 0) {
-      gStruct(file, child);
+      gStruct(child);
     }
     if (strcmp(child->value, "def") == 0) {
-      gDef(file, child);
+      gDef(child);
     }
     if (strcmp(child->value, "decl") == 0) {
-      gDecl(file, child);
+      gDecl(child);
     }
   }
 }
 
+void redirect_output(char* filename) {
+  size_t namelen = strlen(filename) + 1;
+  char out[namelen];
+  strncpy(out, filename, namelen);
+  out[namelen - 2] = 'l';
+  out[namelen - 3] = 'l';
+  printf("default output: %s\n", out);
+  if (access(out, F_OK) != -1) {
+    remove(out);
+  }
+  close(STDOUT_FILENO);
+  int fd = open(out, O_WRONLY|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
+  if (fd != STDOUT_FILENO) {
+    fprintf(stderr, "backbone: not directory to %s for some reason", out);
+  }
+}
+
 void generateLLVM(char* filename, Sexp* sexp) {
-
-//  system("mkdir -p output &> /dev/null");// or something
-//  chdir("output");
-
-  /* NOTE!!: don't uncomment below code as is. we have to strcat the filename with output/ or chdir
-   * into output
-   */
-//  remove(filename);
-//  FILE* result = fopen(filename, "a+");
-  gProgram(NULL, sexp);
+  redirect_output(filename);
+  gProgram(sexp);
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from subprocess import check_output, STDOUT, CalledProcessError
+from subprocess import call as _call
 import sys
 import os
 
@@ -25,15 +26,17 @@ def testall():
 
 def test(testname):
     print(" --- ", testname, end=" ...")
-    output = call('../cmake-build-debug/backbone generateLLVM ' + testname + '.bb')
+    # TODO: how do we capture the output of the call below? check_output doesn't seem to work
+    _call(('../cmake-build-debug/backbone generateLLVM ' + testname + '.bb').split())
     with open(testname + ".ok.ll", "r") as f:
         reference = f.read()
-    with open(testname + '.ll', 'w') as f:
-        f.write(output)
+    with open(testname + '.ll', 'r') as f:
+        output = f.read()
     reference = reference.strip()
     output = output.strip()
     if output != reference:
         print(" fail --- ")
+        print(" OUTPUT:")
         print(" EXPECTED:")
         print(reference)
         print(" FOUND:")

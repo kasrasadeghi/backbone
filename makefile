@@ -16,7 +16,7 @@ parse\:%: build
 	@cd ${DIR} && ./backbone parse ../parser-tests/$*
 
 gen\:%: build
-	@{DIR}/backbone generateLLVM parser-tests/$*
+	@${DIR}/backbone generateLLVM gen-llvm-tests/$*
 
 test:
 	@./test.py
