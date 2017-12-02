@@ -193,6 +193,10 @@ void gProgram(Sexp* s) {
   }
 }
 
+/**
+ * Assumes filename is of the form %.bb
+ * Creates an output filename in the form %.ll
+ */
 void redirect_output(char* filename) {
   size_t namelen = strlen(filename) + 1;
   char out[namelen];
