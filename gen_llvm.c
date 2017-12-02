@@ -107,12 +107,17 @@ void gStrGet(Sexp* s) {
          len, len, index);
 }
 
+void gValue(Sexp* s);
+
 void gExpr(Sexp* s) {
   if (strcmp(s->value, "call") == 0) {
     gCall(s);
   }
-  if (strcmp(s->value, "str-get") == 0) {
+  else if (strcmp(s->value, "str-get") == 0) {
     gStrGet(s);
+  }
+  else {
+    gValue(s);
   }
 }
 
@@ -121,8 +126,28 @@ void gLet(Sexp* l) {
   gExpr(l->list[1]);
 }
 
+/**
+ * Values are fully evaluated expressions, like a name that has been set or a literal.
+ * So far this function supports only names and integer literals.
+ *
+ * TODO: check for support for struct literals and other kinds of literals.
+ *
+ * Assumes that value names don't start with a digit.
+ */
+void gValue(Sexp* s) {
+  if (isdigit(s->value[0])) {
+    printf("%s", s->value);
+  }
+  else {
+    printf("%%%s", s->value);
+  }
+}
+
 void gReturn(Sexp* s) {
-  printf("  ret %s %s", s->list[1]->value, s->list[0]->value);
+  printf("  ret ");
+  gQualified(s->list[1]->value);
+  printf(" ");
+  gValue(s->list[0]);
 }
 
 void gStmt(Sexp* s) {
@@ -141,7 +166,15 @@ void gDef(Sexp* s) {
   printf(" @%s", s->list[0]->value);
 
   printf("(");
-  //TODO parameters
+  Sexp* params = s->list[1];
+  for (int i = 0; i < params->length; ++i) {
+    Sexp* param = params->list[i];
+    gQualified(param->list[0]->value);
+    printf(" %%%s", param->value);
+    if (i != params->length - 1) {
+      printf(", ");
+    }
+  }
   printf(") ");
 
   printf("{\n");

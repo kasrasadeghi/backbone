@@ -5,7 +5,7 @@ IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
 	clang -c $*.ll
 
 # to run %.ll, compile it and run it
-run\:%: %.ll
+from\:%: %.ll
 	@clang -c $*.ll
 	@gcc $*.o -o $*.exe
 	@-./$*.exe
@@ -18,7 +18,7 @@ build:
 	(cd ..; make) &> /dev/null
 
 test\:%: build
-	python3 test_llvm.py hello
+	python3 test_llvm.py $*
 
 parse\:%: %.bb build-v
 	../cmake-build-debug/backbone parse $*.bb
