@@ -86,6 +86,7 @@ void gDecl(FILE* file, Sexp* s) {
   printf("(");
   for (int i = 0; i < typelist->length; ++i) {
     printf("%s", typelist->list[i]->value);
+    if (i != typelist->length - 1) printf(", ");
   }
 
   printf(")");
