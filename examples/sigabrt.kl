@@ -1,3 +1,6 @@
+; a file that was originally causing sigabrt in the parser
+; the issue has been solved by using the new Reader abstraction
+
 (def (pAtom file)
   (do
    (puts "parse atom")

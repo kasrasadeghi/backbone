@@ -1,3 +1,5 @@
+; the string library put into an example Lisp
+
 (struct String
   (list Char*)
   (size_t length)

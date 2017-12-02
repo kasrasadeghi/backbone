@@ -1,3 +1,5 @@
+; Lisp without the parentheses
+
 typedef Sexp
   union String
     list Sexp

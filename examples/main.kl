@@ -1,3 +1,6 @@
+; an example of main using the basis of a tree,
+;   with non-keyword header atoms as function calls
+
 (struct Sexp
         (value Char*)
         (list Sexp**)

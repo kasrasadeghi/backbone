@@ -1,4 +1,4 @@
-
+; an example of the language with lambdas and concise functional syntax
 
 (def main
   (let program (pProgram (fopen "../examples/hello.kl" "r"))
@@ -7,4 +7,4 @@
 
 (def pProgram
   (let program (calloc 1 (sizeof Sexp)))
-  ()
+  ())

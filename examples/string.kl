@@ -1,1 +1,3 @@
+; an example that tests string parsing
+
 ("hello world!" "my name is kasra")

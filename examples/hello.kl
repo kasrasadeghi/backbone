@@ -1,1 +1,3 @@
+; a simple example using call syntax
+
 (call puts "hi")
