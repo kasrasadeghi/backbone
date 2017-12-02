@@ -1,6 +1,6 @@
 DIR=cmake-build-debug
 
-all: prep build parse\:string.bb
+all: prep build
 
 .PHONY: prep
 prep:
@@ -28,3 +28,10 @@ version:
 	gcc --version
 	clang --version
 	python3 --version
+
+help:
+	@echo "make COMMAND"
+	@echo "COMMANDS:"
+	@echo "  version      - check versions"
+	@echo "  parse:hi.bb  - parse    hi.bb    in parser-tests"
+	@echo "  gen:hello.bb - generate hello.bb in gen-llvm-tests"
