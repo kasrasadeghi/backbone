@@ -31,6 +31,23 @@ size_t atomStrLen(char* s) {
   return len;
 }
 
+/**
+ *  Returns the amount of memory taken for a given type
+ */
+int memoryTakenByType(char *s) {
+  if (isPointerType(s)) return 8;
+  // TODO: parse primitive sizes
+  return 8;
+}
+
+int isPointerType(char *s) {
+  while (*s) {
+    if (*s == '*') return 1;
+    s++;
+  }
+  return 0;
+}
+
 static size_t* _str_table;
 static size_t _str_table_len;
 
@@ -57,7 +74,7 @@ void gQualified(char* type) {
     char *prim = primitive_types[i];
     size_t prim_len = strlen(prim);
     if (strncmp(type, prim, prim_len) == 0) {
-      if (type + prim_len || *(type + prim_len) == '*') {
+      if (*(type + prim_len) == 0 || *(type + prim_len) == '*') {
         // primitive type
         printf("i%s", type + 1);
         return;
@@ -109,12 +126,17 @@ void gStrGet(Sexp* s) {
 
 void gValue(Sexp* s);
 
+void gAdd(Sexp* s);
+
 void gExpr(Sexp* s) {
   if (strcmp(s->value, "call") == 0) {
     gCall(s);
   }
   else if (strcmp(s->value, "str-get") == 0) {
     gStrGet(s);
+  }
+  else if (strcmp(s->value, "+") == 0) {
+    gAdd(s);
   }
   else {
     gValue(s);
@@ -200,6 +222,14 @@ void gDecl(Sexp* s) {
 
   printf(")");
 
+  printf("\n");
+}
+
+void gAdd(Sexp* s) {
+  printf("add %s ", s->list[0]->value);
+  gValue(s->list[1]);
+  printf(", ");
+  gValue(s->list[2]);
   printf("\n");
 }
 
