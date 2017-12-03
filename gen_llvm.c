@@ -213,11 +213,11 @@ void gDecl(Sexp* s) {
 
   printf(" @%s", s->list[0]->value);
 
-  Sexp* typelist = s->list[1];
+  Sexp* types = s->list[1];
   printf("(");
-  for (int i = 0; i < typelist->length; ++i) {
-    gQualified(typelist->list[i]->value);
-    if (i != typelist->length - 1) printf(", ");
+  for (int i = 0; i < types->length; ++i) {
+    gQualified(types->list[i]->value);
+    if (i != types->length - 1) printf(", ");
   }
 
   printf(")");
