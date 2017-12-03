@@ -62,6 +62,10 @@ char prev(Reader* r) {
   return r->file[r->offset - 1];
 }
 
+void reset(Reader* r) {
+  r->offset = 0;
+}
+
 //endregion Reader
 
 //region struct Sexp {...}
@@ -190,8 +194,36 @@ Sexp* pProgram(char* filename, Reader* r) {
   return program;
 }
 
+/* assume: r is fresh */
+void removeComments(Reader* r) {
+  int mode = 0;
+  while (hasNext(r)) {
+    char c = get(r);
+    if (!mode) {
+      if (c == '\"') {
+        mode = 1;
+        continue;
+      }
+      if (c == '\'') {
+        mode = 2;
+        continue;
+      }
+      //TODO parse out comments
+    } else if (mode == 1 && c == '\"') {
+      mode = 0;
+      continue;
+    } else if (mode == 2 && c == '\'') {
+      mode = 0;
+      continue;
+    }
+  }
+
+  reset(r);
+}
+
 Sexp* parse(char* filename) {
   Reader* r = reader(filename);
+  removeComments(r);
   if (r == NULL) {
     fprintf(stderr, "backbone: error reading file \"%s\": ", filename);
     perror("");
