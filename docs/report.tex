@@ -1,0 +1,89 @@
+\documentclass[journal=jacsat, manuscript=article]{achemso}
+
+\usepackage[version=3]{mhchem}
+
+\newcommand*{\mycommand}[1]{\texttt{\emph{#1}}}
+
+\author{Sabrina Jiang}
+\author{Will Sherwood}
+\author{Kasra Sadeghi}
+
+\title[\texttt{achemso} demonstration]{Backbone Compiler}
+
+\begin{document}
+
+\begin{abstract}
+
+The goal of this project is two-fold: firstly, design a programming language that has enough features
+to run system calls and do basic programming tasks. Secondly, the programming language should be designed with the intent of it being able to compile itself. 
+
+We completed the first task by creating Backbone, a lisp-like language that has recursive functions, let bindings, arithmetic and more basic features. 
+
+To complete the second task, we wrote a compiler for Backbone in C to translate it directly into LLVM bytecode. This was created in a way to make it easy to translate into Backbone later, once the language had been developed more. This would result in a self-bootstrapping compiler in Backbone.
+
+\end{abstract}
+
+\section{Introduction}
+
+\section{Language}
+
+The motivation behind the design of the Backbone language was to be
+simple enough to write a simple compiler for it, but also have enough
+features to be able to write a backbone compiler in the backbone language.
+Through many design choices, we came to the language syntax detailed below. 
+
+After some trial and error, we concluded that the best way to make syntax decisions was to first write the target feature in LLVM, examine the syntax, and then reverse-engineer the corresponding Backbone syntax. For example, while creating function definitions, the original syntax was as follows: 
+
+(def main (paramlist (param argc i32) (param argv i8**))
+
+However, after examining the LLVM and discussing 
+
+(def main (params (argc i32) (argv i8**))
+
+\subsection{Language terminals}
+
+A few language terminals will be described here and used in the rest of the
+language to construct most of the other features.
+
+\begin{align}
+    id &\rightarrow \textt{[a-zA-Z\_][a-zA-Z0-9\_]}\,\,\,\,\textt{(identifiers)}\\
+    type &\rightarrow (i8|i16|i32|i64|u8|u16|u32|u64)*^*\,\,\,\,\textt{types} \\
+\end{align}
+
+\subsection{Structs}
+
+Users can define their own struct data types as a statement. The general
+grammar can be defined as follows:
+
+\begin{align}
+Struct &\rightarrow (Struct\,id\,Fields) \\
+Fields &\rightarrow Field\,Fields\,|\,Field
+Field  &\rightarrow (id\,type)
+\end{align}
+
+\subsection{Calls}
+\subsection{Qualified Types}
+\subsection{Let}
+\subsection{Return}
+\subsection{Statements}
+\subsection{Declarations}
+\subsection{Function Definitions}
+\subsection{Binary Operations}
+
+\section{Parser}
+
+\section{Generating LLVM}
+\subsection{Structs}
+\subsection{Calls}
+\subsection{Qualified Types}
+\subsection{Let}
+\subsection{Return}
+\subsection{Statements}
+\subsection{Declarations}
+\subsection{Function Definitions}
+\subsection{Binary Operations}
+
+\section{Conclusion}
+
+\end{document}
+
