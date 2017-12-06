@@ -93,6 +93,24 @@ Sexp* extractLet(Sexp* s, int index) {
   return let;
 }
 
+/**
+ * Get the index of the current statement.
+ *
+ * @returns the index of the current statement _stmt in the current definition _def.
+ */
+int currStmtIndex() {
+  int csi = 0;
+  for (; csi < _def->length; ++csi) { // curr statement index = csi
+    if (_def->list[csi] == _stmt) break;
+  }
+  if (csi == _def->length) {
+    fprintf(stderr, "backbone: could not find current statement in definition");
+    exit(1);
+  }
+
+  return csi;
+}
+
 void fLet(Sexp* s);
 
 void fCall(Sexp* s) {
@@ -100,17 +118,7 @@ void fCall(Sexp* s) {
   for (int ai = 0; ai < args->length; ++ai) { // argument index = ai
     if (unflat(args->list[ai])) {
       Sexp* let = extractLet(args, ai);
-
-      /* now we have to insert the let statement before the current statement */
-      int csi = 0;
-      for (; csi < _def->length; ++csi) { // curr statement index = csi
-        if (_def->list[csi] == _stmt) break;
-      }
-      if (csi == _def->length) {
-        fprintf(stderr, "backbone: could not find current statement in definition");
-        exit(1);
-      }
-
+      int csi = currStmtIndex();
       insertStmt(let, csi);
 
       /* recurse on the let we just inserted */
@@ -136,7 +144,14 @@ void fLet(Sexp* s) {
 
 void fReturn(Sexp* s) {
   if (unflat(s->list[0])) {
-    //TODO
+    Sexp* let = extractLet(s, 0);
+    int csi = currStmtIndex();
+    insertStmt(let, csi);
+
+    Sexp* stmt_cache = _stmt;
+    _stmt = let;
+    fLet(let);
+    _stmt = stmt_cache;
   }
 }
 
