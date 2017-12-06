@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
   if (strcmp(argv[1], "generateLLVM") == 0) {
     char* filename = argv[2];
     Sexp* program = parse(filename);
+    flatten(program);
     generateLLVM(filename, program);
     destroySexp(program);
   }

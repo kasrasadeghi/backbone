@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 from subprocess import check_output, STDOUT, CalledProcessError
-from subprocess import call as _call
 import sys
 import os
 
@@ -16,7 +15,7 @@ def call(cmd):
 def testall():
     test_names = [x[:-3] for x in os.listdir('.')
                   if x.endswith('.bb')
-                  if os.path.isfile(x[:-3] + '.ok.ll')]
+                  if os.path.isfile(x[:-3] + '.ok')]
     if not test_names:
         print(' nothing to do...')
         return
@@ -25,14 +24,12 @@ def testall():
 
 
 def test(testname):
-    # generate output
-    _call(('../cmake-build-debug/backbone generateLLVM ' + testname + '.bb').split())
-    output = call('make -s from:' + testname).strip()
-
-    # generate reference
-    reference = call('make -s from:' + testname + '.ok').strip()
-
     print(" --- ", testname, end=" ...")
+    output = call('../cmake-build-debug/backbone flatten ' + testname + '.bb')
+    with open(testname + ".ok", "r") as f:
+        reference = f.read()
+    output = output.strip()
+    reference = reference.strip()
     if output != reference:
         print(" fail --- ")
         print(" EXPECTED:")
