@@ -4,6 +4,7 @@
 #include <string.h>
 #include "parser.h"
 #include "gen_llvm.h"
+#include "flatten.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
