@@ -76,6 +76,9 @@ void fCall(Sexp* s) {
         _def->list[si] = _def->list[si - 1];
       }
       _def->list[csi] = let;
+
+      //TODO now we need to save the current statement in a cache and recurse on the let we just
+      // placed to make sure that one is flattened.
     }
   }
 }
