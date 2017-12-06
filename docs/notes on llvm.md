@@ -11,6 +11,8 @@ LLVM doesn't even seem to need the attributes. We don't need to generate those.
 
 ## Notes
 
+Return types and argument types in LLVM must match exactly. There is no implicit type-conversion.
+
 LLVM doesn't store string literals as char*'s. They're constants somewhere in memory and then casted
  to char*'s when used.
 

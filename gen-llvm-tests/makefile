@@ -17,8 +17,11 @@ build-v:
 build:
 	(cd ..; make) &> /dev/null
 
-test\:%: build
+gen\:%: build
 	python3 test_llvm.py $*
+
+output\:%: build
+	python3 test_output.py $*
 
 parse\:%: %.bb build-v
 	../cmake-build-debug/backbone parse $*.bb

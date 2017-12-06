@@ -24,23 +24,16 @@ def testall():
 
 
 def test(testname):
-    print(" --- ", testname, end=" ...")
-    source = call('../cmake-build-debug/backbone generateLLVM ' + testname + '.bb')
-    delim = '; ModuleID = '
-    split = source.split(delim)
-    source = delim + split[1]
+    # generate output
+    call('../cmake-build-debug/backbone generateLLVM ' + testname + '.bb')
+    output = call('make -s from:' + testname).strip()
 
-    with open(testname + '.ll', 'w') as f:
-        f.write(source)
-    clang_stdout = call('clang -s ' + testname + '.ll')
-    call('gcc ' + testname + '.o -o ' + testname + '.exe')
-    output = call('./' + testname + '.exe')
-    reference = call('make run:')
-    output = output.strip()
+    # generate reference
+    reference = call('make -s from:' + testname + '.ok').strip()
+
+    print(" --- ", testname, end=" ...")
     if output != reference:
         print(" fail --- ")
-        sys.stderr.write(clang_stdout)
-
         print(" EXPECTED:")
         print(reference)
         print(" FOUND:")

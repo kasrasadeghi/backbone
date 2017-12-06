@@ -266,7 +266,10 @@ void redirect_output(char* filename) {
   strncpy(out, filename, namelen);
   out[namelen - 2] = 'l';
   out[namelen - 3] = 'l';
-  printf("default output: %s\n", out);
+  //TODO figure out how to make the line below work with the python scripts. for some reason it
+  // shows up in the file when calling backbone in python. we might need to use call, not
+  // check_output.
+//  printf("default output: %s\n", out);
   if (access(out, F_OK) != -1) {
     remove(out);
   }
