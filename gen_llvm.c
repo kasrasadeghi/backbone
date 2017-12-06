@@ -94,7 +94,7 @@ void gStruct(Sexp* s) {
   printf(" }\n");
 }
 
-void gExpr(Sexp*);
+void gValue(Sexp*);
 
 void gCall(Sexp* s) {
   printf("call ");
@@ -112,7 +112,10 @@ void gCall(Sexp* s) {
   for (int i = 0; i < types->length; ++i) {
     gQualified(types->list[i]->value);
     printf(" ");
-    gExpr(args->list[0]);
+    gValue(args->list[i]);
+    if (i != types->length - 1) {
+      printf(", ");
+    }
   }
   printf(")");
 }
