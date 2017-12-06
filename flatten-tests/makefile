@@ -23,6 +23,9 @@ parse\:%: %.bb build-v
 flatten\:%: %.bb build
 	../cmake-build-debug/backbone flatten $*.bb
 
+test: build
+	python3 test.py
+
 help:
 	@echo "make parse:hello   - parses hello.bb"
 	@echo "make flatten:hello - flattens hello.bb"
