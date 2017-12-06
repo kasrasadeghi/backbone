@@ -17,15 +17,17 @@ build-v:
 build:
 	(cd ..; make) &> /dev/null
 
+parse\:%: %.bb build-v
+	../cmake-build-debug/backbone parse $*.bb
+
 gen\:%: build
 	python3 test_llvm.py $*
 
 output\:%: build
 	python3 test_output.py $*
 
-parse\:%: %.bb build-v
-	../cmake-build-debug/backbone parse $*.bb
-
 help:
-	@echo "make test:hello  - generates hello.ll and checks it against hello.ok.ll"
-	@echo "make parse:hello - parses hello.bb"
+	@echo "make parse:hello  - parses hello.bb"
+	@echo "make gen:hello    - generates hello.ll and checks it against hello.ok.ll"
+	@echo "make output:hello - generates hello.ll, executes both hello.ll and hello.ok.ll and" \
+							   "sees if they have the same output"

@@ -16,4 +16,6 @@ message("found: " ${MAKE})
 add_executable(backbone main.c
     parser.c parser.h
     str.c str.h
-    gen_llvm.c gen_llvm.h)
+    gen_llvm.c gen_llvm.h
+    flatten.c flatten.h
+)
