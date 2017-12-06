@@ -25,6 +25,35 @@ static Sexp* _def = NULL;
 static Sexp* _stmt = NULL;
 static size_t _stack_counter = 0;
 
+/**
+ * Inserts a statement into the current definition, _def.
+ *
+ *  - Increases the length of _def by one.
+ *  - Globals: _defi, _def, _p
+ *
+ * @param stmt  - the statement to insert.
+ * @param index - the index to insert it at.
+ */
+static void insertStmt(Sexp* stmt, int index) {
+  /* make room for another statement in the current definition */
+  /* should increase the length by 1 */
+  if (_def->length == _def->cap) {
+    _def = realloc(_def, (_def->cap + 1) * sizeof(Sexp*));
+    _p->list[_defi] = _def;
+    _def->cap = _def->cap + 1;
+    _def->length = _def->cap;
+  } else {
+    assert(_def->length < _def->cap);
+    _def->length = _def->length + 1;
+  }
+
+  /* move everything from [csi, length) over, starting from the end */
+  for (size_t si = _def->length - 1; si >= index; --si) {
+    _def->list[si] = _def->list[si - 1];
+  }
+  _def->list[index] = stmt;
+}
+
 void fLet(Sexp* s);
 
 void fCall(Sexp* s) {
@@ -47,6 +76,7 @@ void fCall(Sexp* s) {
       Sexp* init = calloc(1, sizeof(Sexp));
       init->value = string_copy;
 
+      /* create a let to insert into the definition */
       Sexp* let = calloc(1, sizeof(Sexp));
       let->value = "let";
       let->list = calloc(2, sizeof(Sexp*));
@@ -64,22 +94,8 @@ void fCall(Sexp* s) {
         fprintf(stderr, "backbone: could not find current statement in definition");
         exit(1);
       }
-      /* make room: should increase length by one */
-      if (_def->length == _def->cap) {
-        _def = realloc(_def, (_def->cap + 1) * sizeof(Sexp*));
-        _p->list[_defi] = _def;
-        _def->cap = _def->cap + 1;
-        _def->length = _def->cap;
-      } else {
-        assert(_def->length < _def->cap);
-        _def->length = _def->length + 1;
-      }
 
-      /* move everything from [csi, length) over, starting from the end */
-      for (size_t si = _def->length - 1; si >= csi; --si) {
-        _def->list[si] = _def->list[si - 1];
-      }
-      _def->list[csi] = let;
+      insertStmt(let, csi);
 
       /* recurse on the let we just inserted */
       Sexp* stmt_cache = _stmt;
