@@ -31,3 +31,6 @@ help:
 	@echo "make gen:hello    - generates hello.ll and checks it against hello.ok.ll"
 	@echo "make output:hello - generates hello.ll, executes both hello.ll and hello.ok.ll and" \
 							   "sees if they have the same output"
+
+clean:
+	find -name '*.ll' -not -name '*.ok.ll' | xargs rm
