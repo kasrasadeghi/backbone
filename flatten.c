@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "flatten.h"
 
 int isCall(Sexp* s) {
@@ -23,6 +24,8 @@ static int   _defi = 0;
 static Sexp* _def = NULL;
 static Sexp* _stmt = NULL;
 static size_t _stack_counter = 0;
+
+void fLet(Sexp* s);
 
 void fCall(Sexp* s) {
   Sexp* args = s->list[3];
@@ -68,6 +71,7 @@ void fCall(Sexp* s) {
         _def->cap = _def->cap + 1;
         _def->length = _def->cap;
       } else {
+        assert(_def->length < _def->cap);
         _def->length = _def->length + 1;
       }
 
@@ -77,8 +81,11 @@ void fCall(Sexp* s) {
       }
       _def->list[csi] = let;
 
-      //TODO now we need to save the current statement in a cache and recurse on the let we just
-      // placed to make sure that one is flattened.
+      /* recurse on the let we just inserted */
+      Sexp* stmt_cache = _stmt;
+      _stmt = let;
+      fLet(let);
+      _stmt = stmt_cache;
     }
   }
 }
