@@ -31,6 +31,14 @@ size_t atomStrLen(char* s) {
   return len;
 }
 
+int isPointerType(char *s) {
+  while (*s) {
+    if (*s == '*') return 1;
+    s++;
+  }
+  return 0;
+}
+
 /**
  *  Returns the amount of memory taken for a given type
  */
@@ -38,14 +46,6 @@ int memoryTakenByType(char *s) {
   if (isPointerType(s)) return 8;
   // TODO: parse primitive sizes
   return 8;
-}
-
-int isPointerType(char *s) {
-  while (*s) {
-    if (*s == '*') return 1;
-    s++;
-  }
-  return 0;
 }
 
 static size_t* _str_table;
@@ -132,9 +132,6 @@ void gExpr(Sexp* s) {
   if (strcmp(s->value, "call") == 0) {
     gCall(s);
   }
-  else if (strcmp(s->value, "str-get") == 0) {
-    gStrGet(s);
-  }
   else if (strcmp(s->value, "+") == 0) {
     gAdd(s);
   }
@@ -157,7 +154,10 @@ void gLet(Sexp* l) {
  * Assumes that value names don't start with a digit.
  */
 void gValue(Sexp* s) {
-  if (isdigit(s->value[0])) {
+  if (strcmp(s->value, "str-get") == 0) {
+    gStrGet(s);
+  }
+  else if (isdigit(s->value[0])) {
     printf("%s", s->value);
   }
   else {
