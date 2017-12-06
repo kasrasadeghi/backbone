@@ -54,36 +54,52 @@ static void insertStmt(Sexp* stmt, int index) {
   _def->list[index] = stmt;
 }
 
+/**
+ * Extracts an expression from an Sexp s at index index.
+ *
+ *  - Replaces the expression with a reference to a new local.
+ *  - Creates a let expression that initializes the local, setting it to the extracted sexp.
+ *
+ * @param s
+ * @param index
+ * @return the let expression to be inserted into the current definition, before the current stmt.
+ */
+Sexp* extractLet(Sexp* s, int index) {
+  Sexp* arg = s->list[index];
+  size_t local = _stack_counter++;
+
+  /* replace with reference to local */
+  char* string = calloc(12, 1);
+  snprintf(string, 12, "$%lu", local);
+  Sexp* ref = calloc(1, sizeof(Sexp));
+  ref->value = string;
+  s->list[index] = ref;
+
+  /* make an initializer of the local */
+  char* string_copy = malloc(strlen(string) + 1);
+  strcpy(string_copy, string);
+  Sexp* init = calloc(1, sizeof(Sexp));
+  init->value = string_copy;
+
+  /* create a let to insert into the definition */
+  Sexp* let = calloc(1, sizeof(Sexp));
+  let->value = "let";
+  let->list = calloc(2, sizeof(Sexp*));
+  let->length = 2;
+  let->cap = 2;
+  let->list[0] = init;
+  let->list[1] = arg;
+
+  return let;
+}
+
 void fLet(Sexp* s);
 
 void fCall(Sexp* s) {
   Sexp* args = s->list[3];
   for (int ai = 0; ai < args->length; ++ai) { // argument index = ai
     if (unflat(args->list[ai])) {
-      Sexp* arg = args->list[ai];
-      size_t local = _stack_counter++;
-
-      /* replace with reference to local */
-      char* string = calloc(12, 1);
-      snprintf(string, 12, "$%lu", local);
-      Sexp* ref = calloc(1, sizeof(Sexp));
-      ref->value = string;
-      args->list[ai] = ref;
-
-      /* make an initializer of the local */
-      char* string_copy = malloc(strlen(string) + 1);
-      strcpy(string_copy, string);
-      Sexp* init = calloc(1, sizeof(Sexp));
-      init->value = string_copy;
-
-      /* create a let to insert into the definition */
-      Sexp* let = calloc(1, sizeof(Sexp));
-      let->value = "let";
-      let->list = calloc(2, sizeof(Sexp*));
-      let->length = 2;
-      let->cap = 2;
-      let->list[0] = init;
-      let->list[1] = arg;
+      Sexp* let = extractLet(args, ai);
 
       /* now we have to insert the let statement before the current statement */
       int csi = 0;
@@ -107,7 +123,7 @@ void fCall(Sexp* s) {
 }
 
 void fAdd(Sexp* s) {
-
+  //TODO
 }
 
 void fLet(Sexp* s) {
@@ -120,7 +136,7 @@ void fLet(Sexp* s) {
 
 void fReturn(Sexp* s) {
   if (unflat(s->list[0])) {
-
+    //TODO
   }
 }
 
