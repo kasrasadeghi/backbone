@@ -11,6 +11,12 @@ from\:%: %.ll
 	-./$*.exe
 	rm $*.exe $*.o
 
+exec\:%: %.ll
+	clang -c $*.ll
+	gcc $*.o -o $*.exe
+	-./$*.exe
+	rm $*.o
+
 build-v:
 	@(cd ..; make)
 
@@ -37,3 +43,4 @@ help:
 
 clean:
 	find -name '*.ll' -not -name '*.ok.ll' | xargs rm
+	rm *.exe
