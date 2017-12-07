@@ -7,8 +7,11 @@
 #include <stdarg.h>
 #include "gen_llvm.h"
 
+/**
+ * fails execution if the condition is not met.
+ */
 static void check(int cond, const char* msg, ...) {
-  if (cond) {
+  if (!cond) {
     va_list arg;
     va_start(arg, msg);
     vfprintf(stderr, msg, arg);
