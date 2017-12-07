@@ -320,7 +320,7 @@ void redirect_output(char* filename) {
   }
   close(STDOUT_FILENO);
   int fd = open(out, O_WRONLY|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
-  if (fd == STDOUT_FILENO) {
+  if (fd != STDOUT_FILENO) {
     fprintf(stderr, "backbone: not replacing stdout for some reason\n");
     exit(EXIT_FAILURE);
   }
