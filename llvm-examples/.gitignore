@@ -1,3 +1,4 @@
 *.ll
 *.exe
 !*.keep.ll
+!*.ok.ll
