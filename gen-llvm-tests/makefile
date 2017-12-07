@@ -20,6 +20,9 @@ build:
 parse\:%: %.bb build-v
 	../cmake-build-debug/backbone parse $*.bb
 
+flatten\:%: %.bb build
+	../cmake-build-debug/backbone flatten $*.bb
+
 gen\:%: build
 	python3 test_llvm.py $*
 

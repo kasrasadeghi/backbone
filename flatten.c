@@ -12,11 +12,15 @@ int isAdd(Sexp* s) {
   return strcmp(s->value, "+") == 0;
 }
 
+int isIcmp(Sexp* s) {
+  return strcmp(s->value, "<") == 0; //TODO other icmp's
+}
+
 /**
  * returns true for expressions that are not values.
  */
 int unflat(Sexp* s) {
-  return isCall(s) || isAdd(s);
+  return isCall(s) || isAdd(s) || isIcmp(s);
 }
 
 static Sexp* _p = NULL;
@@ -155,6 +159,19 @@ void fReturn(Sexp* s) {
   }
 }
 
+void fIf(Sexp* s) {
+  if (unflat(s->list[0])) {
+    Sexp* let = extractLet(s, 0);
+    int csi = currStmtIndex();
+    insertStmt(let, csi);
+
+    Sexp* stmt_cache = _stmt;
+    _stmt = let;
+    fLet(let);
+    _stmt = stmt_cache;
+  }
+}
+
 void fDef(Sexp* s) {
   _stack_counter = 0;
   _def = s;
@@ -168,6 +185,8 @@ void fDef(Sexp* s) {
       fLet(statement);
     } else if (strcmp(statement->value, "return") == 0) {
       fReturn(statement);
+    } else if (strcmp(statement->value, "if") == 0) {
+      fIf(statement);
     }
   }
 }
