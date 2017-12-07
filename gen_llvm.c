@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <stdarg.h>
 #include "gen_llvm.h"
 #include "flatten.h"
 
