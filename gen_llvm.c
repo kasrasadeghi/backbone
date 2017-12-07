@@ -157,7 +157,13 @@ void gLet(Sexp* l) {
  * Assumes that value names don't start with a digit.
  */
 void gValue(Sexp* s) {
-  if (strcmp(s->value, "str-get") == 0) {
+  if (strcmp(s->value, "true") == 0) {
+    printf("1");
+  }
+  else if (strcmp(s->value, "false") == 0) {
+    printf("0");
+  }
+  else if (strcmp(s->value, "str-get") == 0) {
     gStrGet(s);
   }
   else if (isdigit(s->value[0])) {
@@ -175,6 +181,30 @@ void gReturn(Sexp* s) {
   gValue(s->list[0]);
 }
 
+void gStmt(Sexp* s);
+
+/** maps to then0 else0 post0, ...*/
+static size_t _if_counter = 0;
+
+void gIf(Sexp* s) {
+  size_t label = _if_counter++;
+
+  printf("  br i1 ");
+  gValue(s->list[0]);
+  printf(", label %%then%lu, label %%post%lu\n",
+         label, label);
+
+  printf("then%lu:\n", label);
+  /* statements */
+  for (int i = 1; i < s->length; ++i) {
+    gStmt(s->list[i]);
+  }
+
+  printf("  br label %%post%lu\n", label);
+
+  printf("post%lu:", label);
+}
+
 void gStmt(Sexp* s) {
   if (strcmp(s->value, "let") == 0) {
     gLet(s);
@@ -182,10 +212,15 @@ void gStmt(Sexp* s) {
   if (strcmp(s->value, "return") == 0) {
     gReturn(s);
   }
+  if (strcmp(s->value, "if") == 0) {
+    gIf(s);
+  }
   printf("\n");
 }
 
 void gDef(Sexp* s) {
+  _if_counter = 0;
+
   printf("define ");
   gQualified(s->list[2]->value);
   printf(" @%s", s->list[0]->value);
