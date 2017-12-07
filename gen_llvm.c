@@ -31,23 +31,6 @@ size_t atomStrLen(char* s) {
   return len;
 }
 
-int isPointerType(char *s) {
-  while (*s) {
-    if (*s == '*') return 1;
-    s++;
-  }
-  return 0;
-}
-
-/**
- *  Returns the amount of memory taken for a given type
- */
-int memoryTakenByType(char *s) {
-  if (isPointerType(s)) return 8;
-  // TODO: parse primitive sizes
-  return 8;
-}
-
 static size_t* _str_table;
 static size_t _str_table_len;
 
