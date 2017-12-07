@@ -1,50 +1,3 @@
-##**abstract**
-
-
-
-### 
-
-
-##**intro**
-
-
-
-##**motivations and language**
-
-talk about design choices and llvm
-
-
-##**parser**
-
-##**generating llvm**
-
-### structs
-
-### call
-
-### qualified types
-
-### let
-
-### return
-
-### statements
-
-### declarations
-
-### function definitions
-
-### binops (arithmetic and comparisons)
-
-
-
-##**results?**
-
-
-
-
-
-
 **Problem solved**
 
 We are writing a lang with the intent of it being able to compile itself. 
@@ -69,11 +22,6 @@ cmake: very flexible, allows you to easily build source code. uses a cmake list 
 
 
 
-Lots of syntax decisions (made by writing llvm first and then reverse-engineering what is necessary) 
-
-(list significant ones) 
-
-
 
 
 Talk about how we did it (what is Sexp? etc)
@@ -86,17 +34,6 @@ Talk about new data strucutes - Sexp
 
 
 
-**Challenges encountered**
-
-Need to balance: how easy it is for us to compile code vs how easy it is to program in our language.
-For example, deciding whether we need specific keywords or types everywhere.
-(def main ((argc i32) (argv i8**)) i32 
-Vs:
-(def main (paramlist (param argc i32) (param argv i8**)) i32
-Talk about how we made such decisions / considerations taken.
-
-
-
 
 **Results**
 
@@ -105,7 +42,4 @@ What did we accomplish at the end?
 How far we got
 
 Include: sample program -> parse tree -> llvm. 
-
-
-
 
