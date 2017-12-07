@@ -6,4 +6,10 @@
 
 void flatten(Sexp* p);
 
+int isCall(Sexp* s);
+
+int isAdd(Sexp* s);
+
+int isIcmp(Sexp* s);
+
 #endif

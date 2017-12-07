@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <stdarg.h>
 #include "gen_llvm.h"
+#include "flatten.h"
 
 /**
  * Calculates the length of the given string, counting escaped characters only once.
@@ -128,13 +129,13 @@ void gIcmp(Sexp* s) {
     printf("lt");
   }
   else if (strcmp(s->value, "<=") == 0) {
-    printf("lte");
+    printf("le");
   }
   else if (strcmp(s->value, ">") == 0) {
     printf("gt");
   }
   else if (strcmp(s->value, ">=") == 0) {
-    printf("gte");
+    printf("ge");
   }
   else if (strcmp(s->value, "=") == 0) {
     printf("eq");
@@ -158,13 +159,13 @@ void gExpr(Sexp* s) {
   if (strcmp(s->value, "call") == 0) {
     gCall(s);
   }
-  else if (strcmp(s->value, "+") == 0) {
+  else if (isAdd(s)) {
     gAdd(s);
   }
   else if (strcmp(s->value, "-") == 0) {
     //TODO
   }
-  else if (strcmp(s->value, "<") == 0) {
+  else if (isIcmp(s)) {
     gIcmp(s);
   }
   else {
