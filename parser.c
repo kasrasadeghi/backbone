@@ -223,7 +223,7 @@ void removeComments(Reader* r) {
 
 Sexp* parse(char* filename) {
   Reader* r = reader(filename);
-  removeComments(r);
+//  removeComments(r);
   if (r == NULL) {
     fprintf(stderr, "backbone: error reading file \"%s\": ", filename);
     perror("");
