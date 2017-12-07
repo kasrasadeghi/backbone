@@ -8,20 +8,6 @@
 #include "gen_llvm.h"
 
 /**
- * fails execution if the condition is not met.
- */
-static void check(int cond, const char* msg, ...) {
-  if (!cond) {
-    va_list arg;
-    va_start(arg, msg);
-    vfprintf(stderr, msg, arg);
-    va_end(arg);
-
-    exit(EXIT_FAILURE);
-  }
-}
-
-/**
  * Calculates the length of the given string, counting escaped characters only once.
  * The string must be well formed:
  *  - Doesn't end in \
@@ -37,7 +23,10 @@ size_t atomStrLen(char* s) {
       int counter = 0;
       s++; counter += isxdigit(*s) != 0;
       s++; counter += isxdigit(*s) != 0;
-      check(counter == 2, "backbone: Backslash not followed by two hexadecimal digits.");
+      if (counter != 2) {
+        fprintf(stderr, "backbone: Backslash not followed by two hexadecimal digits.");
+        exit(EXIT_FAILURE);
+      }
     }
   }
   return len;
@@ -130,7 +119,8 @@ void gIcmp(Sexp* s) {
     } else if (s->list[0]->value[0] == 'u') {
       printf("ult %s ", s->list[0]->value);
     } else {
-      check(0, "type for comparison does not start with u or i\n");
+      fprintf(stderr, "type for comparison does not start with u or i\n");
+      exit(EXIT_FAILURE);
     }
   }
   gValue(s->list[1]);
@@ -330,7 +320,10 @@ void redirect_output(char* filename) {
   }
   close(STDOUT_FILENO);
   int fd = open(out, O_WRONLY|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
-  check(fd == STDOUT_FILENO, "backbone: not directory to %s for some reason", out);
+  if (fd == STDOUT_FILENO) {
+    fprintf(stderr, "backbone: not replacing stdout for some reason\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
 void generateLLVM(char* filename, Sexp* sexp) {
