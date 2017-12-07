@@ -113,16 +113,38 @@ void gStrGet(Sexp* s) {
 
 void gIcmp(Sexp* s) {
   printf("icmp ");
-  if (strcmp(s->value, "<") == 0 && s->list[0]->value[0] == 'i') {
+  if (! (strcmp(s->value, "=") == 0 || strcmp(s->value, "!=") == 0)) {
     if (s->list[0]->value[0] == 'i') {
-      printf("slt %s ", s->list[0]->value);
+      printf("s");
     } else if (s->list[0]->value[0] == 'u') {
-      printf("ult %s ", s->list[0]->value);
+      printf("u");
     } else {
       fprintf(stderr, "type for comparison does not start with u or i\n");
       exit(EXIT_FAILURE);
     }
   }
+
+  if (strcmp(s->value, "<") == 0) {
+    printf("lt");
+  }
+  else if (strcmp(s->value, "<=") == 0) {
+    printf("lte");
+  }
+  else if (strcmp(s->value, ">") == 0) {
+    printf("gt");
+  }
+  else if (strcmp(s->value, ">=") == 0) {
+    printf("gte");
+  }
+  else if (strcmp(s->value, "=") == 0) {
+    printf("eq");
+  }
+  else if (strcmp(s->value, "!=") == 0) {
+    printf("ne");
+  }
+
+  printf(" %s ", s->list[0]->value);
+
   gValue(s->list[1]);
   printf(", ");
   gValue(s->list[2]);

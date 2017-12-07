@@ -13,7 +13,12 @@ int isAdd(Sexp* s) {
 }
 
 int isIcmp(Sexp* s) {
-  return strcmp(s->value, "<") == 0; //TODO other icmp's
+  return strcmp(s->value, "<") == 0
+         || strcmp(s->value, "<=") == 0
+         || strcmp(s->value, ">") == 0
+         || strcmp(s->value, ">=") == 0
+         || strcmp(s->value, "=") == 0
+         || strcmp(s->value, "!=") == 0;
 }
 
 /**
