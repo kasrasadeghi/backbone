@@ -4,7 +4,19 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <stdarg.h>
 #include "gen_llvm.h"
+
+static void check(int cond, const char* msg, ...) {
+  if (cond) {
+    va_list arg;
+    va_start(arg, msg);
+    vfprintf(stderr, msg, arg);
+    va_end(arg);
+
+    exit(EXIT_FAILURE);
+  }
+}
 
 /**
  * Calculates the length of the given string, counting escaped characters only once.
@@ -22,10 +34,7 @@ size_t atomStrLen(char* s) {
       int counter = 0;
       s++; counter += isxdigit(*s) != 0;
       s++; counter += isxdigit(*s) != 0;
-      if (counter != 2) {
-        fprintf(stderr, "backbone: Backslash not followed by two hexadecimal digits.");
-        exit(EXIT_FAILURE);
-      }
+      check(counter == 2, "backbone: Backslash not followed by two hexadecimal digits.");
     }
   }
   return len;
@@ -110,6 +119,22 @@ void gStrGet(Sexp* s) {
          len, len, index);
 }
 
+void gIcmp(Sexp* s) {
+  printf("icmp ");
+  if (strcmp(s->value, "<") == 0 && s->list[0]->value[0] == 'i') {
+    if (s->list[0]->value[0] == 'i') {
+      printf("slt %s ", s->list[0]->value);
+    } else if (s->list[0]->value[0] == 'u') {
+
+    } else {
+
+    }
+  }
+  gValue(s->list[1]);
+  printf(", ");
+  gValue(s->list[2]);
+}
+
 void gValue(Sexp* s);
 
 void gAdd(Sexp* s);
@@ -120,6 +145,12 @@ void gExpr(Sexp* s) {
   }
   else if (strcmp(s->value, "+") == 0) {
     gAdd(s);
+  }
+  else if (strcmp(s->value, "-") == 0) {
+    //TODO
+  }
+  else if (strcmp(s->value, "<") == 0) {
+    gIcmp(s);
   }
   else {
     gValue(s);
@@ -296,9 +327,7 @@ void redirect_output(char* filename) {
   }
   close(STDOUT_FILENO);
   int fd = open(out, O_WRONLY|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
-  if (fd != STDOUT_FILENO) {
-    fprintf(stderr, "backbone: not directory to %s for some reason", out);
-  }
+  check(fd == STDOUT_FILENO, "backbone: not directory to %s for some reason", out);
 }
 
 void generateLLVM(char* filename, Sexp* sexp) {
