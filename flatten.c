@@ -140,7 +140,26 @@ void fCall(Sexp* s) {
 }
 
 void fAdd(Sexp* s) {
-  //TODO
+  if (unflat(s->list[1])) {
+    Sexp* let = extractLet(s, 1);
+    int csi = currStmtIndex();
+    insertStmt(let, csi);
+
+    Sexp* stmt_cache = _stmt;
+    _stmt = let;
+    fLet(let);
+    _stmt = stmt_cache;
+  }
+  if (unflat(s->list[2])) {
+    Sexp* let = extractLet(s, 1);
+    int csi = currStmtIndex();
+    insertStmt(let, csi);
+
+    Sexp* stmt_cache = _stmt;
+    _stmt = let;
+    fLet(let);
+    _stmt = stmt_cache;
+  }
 }
 
 void fLet(Sexp* s) {
