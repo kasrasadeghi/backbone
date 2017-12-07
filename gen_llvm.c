@@ -128,9 +128,9 @@ void gIcmp(Sexp* s) {
     if (s->list[0]->value[0] == 'i') {
       printf("slt %s ", s->list[0]->value);
     } else if (s->list[0]->value[0] == 'u') {
-
+      printf("ult %s ", s->list[0]->value);
     } else {
-
+      check(0, "type for comparison does not start with u or i\n");
     }
   }
   gValue(s->list[1]);
