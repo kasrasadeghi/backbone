@@ -7,6 +7,7 @@ translate: $(RESULTS)
 
 %.ll: %.c
 	clang $(IR_FLAGS) $*.c
+	python3 clarify.py $*.ll
 
 .PRECIOUS: %.ll
 %.o: %.ll
@@ -15,7 +16,7 @@ translate: $(RESULTS)
 print:
 	@echo $(RESULTS)
 
-run\:%:
+from\:%:
 	@clang -c $*.ll
 	@gcc $*.o -o $*.exe
 	@-./$*.exe
@@ -25,3 +26,6 @@ help:
 	@echo "translate - translate all files from .c to .ll"
 	@echo "hello.ll  - translate from hello.c to hello.ll"
 	@echo "run:hello - execute hello.ll"
+
+clean:
+	-find -name '*.ll' -not -name '*.ok.ll' -not -name '*.keep.ll' | xargs rm
