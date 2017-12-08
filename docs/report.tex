@@ -9,7 +9,7 @@
 \author{Will Sherwood}
 \author{Kasra Sadeghi}
 
-\title[\texttt{achemso} demonstration]{Backbone Compiler}
+\title{Backbone Compiler}
 
 \begin{document}
 
@@ -61,8 +61,8 @@ Users can define their own struct data types as a statement. The general
 grammar can be defined as follows:
 
 \begin{align}
-Struct &\rightarrow (Struct\,id\,Fields) \\
-Fields &\rightarrow Field\,Fields\,|\,Field
+Struct &\rightarrow (\texttt{struct}\,id\,Fields) \\
+Fields &\rightarrow Field\,Fields\,|\,Field \\
 Field  &\rightarrow (id\,type)
 \end{align}
 
@@ -80,20 +80,40 @@ $\texttt{  (cap u64))}$
 
 \subsection{Calls}
 
+Backbone supports statically typed functions that can be recursive and nested. Splitting code into
+subroutines or functions is incredibly important in software engineering, and are vital to effectively
+implementing system calls.
+
+The general grammar is as follows:
+
+$$\texttt{call}\,\,\,id\,\,\,(\texttt{types}\,type^*)\,\,\,(\texttt{args}\,\,\,Expression^*)\,\,\,type$$
+
+Call is one of the more interesting features since it is both a statement and an expression.
+The implications of this is that we can have nested calls. Since LLVM requires one expression evaluation
+per instruction, calls with nested expressions need to be evaluated one at a time. We do this by
+making a pass over the syntax tree and flattening expressions. This is further discussed in our section
+on flattening.
+
 An example of this syntax would be the following call statement:
 
 $\texttt{(call printSexp void ((program Sexp*) (0 i32)))}$
 
 \subsection{Qualified Types}
 
-$\texttt{i32***}$
+Converting between backbone and LLVM types is fairly simple. If the type is a user defined struct,
+the LLVM type replaced is simply $\%struct.$ concatenated with the user defined struct type. If it
+is a primitive type, or a pointer to a primitive type, they have the same representation. Here
+are two examples of qualified types:
 
-$\texttt{SymbolicExpression**}$
+\begin{align}
+\texttt{i32***}\quad &\rightarrow \quad \texttt{i32***} \\
+\texttt{SymbolicExpression**}\quad &\rightarrow\quad \texttt{\%struct.SymbolicExpression**}
+\end{align}
 
 \subsection{Let}
 
 
-
+\subsection{Conditionals}
 \subsection{Return}
 \subsection{Statements}
 \subsection{Declarations}
