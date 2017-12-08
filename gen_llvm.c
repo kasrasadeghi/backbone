@@ -52,6 +52,11 @@ void gStrTable(Sexp* s) {
  * Precondition: type satisfies [a-zA-Z0-9]+[\*]*
  */
 void gQualified(char* type) {
+  if (strcmp(type, "void") == 0) {
+    printf("void");
+    return;
+  }
+
   char *primitive_types[] = {"i1", "i8", "i32", "i64", "u1", "u8", "u32", "u64"};
 
   for (int i = 0; i < 8; i++) {
@@ -150,8 +155,6 @@ void gIcmp(Sexp* s) {
   gValue(s->list[2]);
 }
 
-void gValue(Sexp* s);
-
 void gAdd(Sexp* s);
 
 void gExpr(Sexp* s) {
@@ -204,6 +207,11 @@ void gValue(Sexp* s) {
 }
 
 void gReturn(Sexp* s) {
+  if (strcmp(s->list[0]->value, "void") == 0) {
+    printf("  ret void");
+    return;
+  }
+
   printf("  ret ");
   gQualified(s->list[1]->value);
   printf(" ");
@@ -243,6 +251,10 @@ void gStmt(Sexp* s) {
   }
   if (strcmp(s->value, "if") == 0) {
     gIf(s);
+  }
+  if (strcmp(s->value, "call") == 0 && strcmp(s->list[2]->value, "void") == 0) {
+    printf("  ");
+    gCall(s);
   }
   printf("\n");
 }

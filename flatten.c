@@ -191,6 +191,10 @@ void fReturn(Sexp* s) {
 }
 
 void callStmt(Sexp* s) {
+  if (strcmp(s->list[2]->value, "void") == 0) {
+    return;
+  }
+
   size_t ignored = _stack_counter++;
 
   /* create a initializer for the ignored stack variable */
