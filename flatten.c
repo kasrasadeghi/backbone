@@ -122,7 +122,12 @@ int currStmtIndex() {
   return csi;
 }
 
+//region Forward Declarations
+
 void fLet(Sexp* s);
+
+void fIf(Sexp* s);
+//endregion
 
 void fCall(Sexp* s) {
   Sexp* args = s->list[3];
@@ -185,44 +190,6 @@ void fReturn(Sexp* s) {
   }
 }
 
-void callStmt(Sexp* s);
-
-void fIf(Sexp* s) {
-  if (unflat(s->list[0])) {
-    Sexp* let = extractLet(s, 0);
-    int csi = currStmtIndex();
-    insertStmt(let, csi);
-
-    Sexp* stmt_cache = _stmt;
-    _stmt = let;
-    fLet(let);
-    _stmt = stmt_cache;
-  }
-
-  Sexp* def_cache = _def;
-  _def = s;
-  {
-    for (int i = 1; i < s->length; ++i) {
-      Sexp* statement = s->list[i];
-      _stmt = statement;
-
-      if (strcmp(statement->value, "let") == 0) {
-        fLet(statement);
-      }
-      else if (strcmp(statement->value, "return") == 0) {
-        fReturn(statement);
-      }
-      else if (strcmp(statement->value, "if") == 0) {
-        fIf(statement);
-      }
-      else if (strcmp(statement->value, "call") == 0) {
-        callStmt(statement);
-      }
-    }
-  }
-  _def = def_cache;
-}
-
 void callStmt(Sexp* s) {
   size_t ignored = _stack_counter++;
 
@@ -252,11 +219,11 @@ void callStmt(Sexp* s) {
   _stmt = stmt_cache;
 }
 
-void fDef(Sexp* s) {
-  _stack_counter = 0;
+void fBlock(Sexp* s, int startIndex) {
+  Sexp* def_cache = _def;
   _def = s;
 
-  for (int i = 3; i < s->length; ++i) {
+  for (int i = startIndex; i < s->length; ++i) {
     Sexp* statement = s->list[i];
     _stmt = statement;
 
@@ -273,6 +240,27 @@ void fDef(Sexp* s) {
       callStmt(statement);
     }
   }
+  _def = def_cache;
+}
+
+void fIf(Sexp* s) {
+  if (unflat(s->list[0])) {
+    Sexp* let = extractLet(s, 0);
+    int csi = currStmtIndex();
+    insertStmt(let, csi);
+
+    Sexp* stmt_cache = _stmt;
+    _stmt = let;
+    fLet(let);
+    _stmt = stmt_cache;
+  }
+
+  fBlock(s, 1);
+}
+
+void fDef(Sexp* s) {
+  _stack_counter = 0;
+  fBlock(s, 3);
 }
 
 void flatten(Sexp* p) {
