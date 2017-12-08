@@ -12,7 +12,6 @@
  * operations in Sexp's.
  */
 
-#include "parser.h"
 #include "sexp.h"
 
 void flatten(Sexp* p);

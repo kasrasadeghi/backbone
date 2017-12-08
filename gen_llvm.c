@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <assert.h>
 #include "gen_llvm.h"
-#include "sexp.h"
 
 //region static globals
 
@@ -399,10 +398,10 @@ void gProgram(Sexp* s) {
     if (strcmp(child->value, "struct") == 0) {
       gStruct(child);
     }
-    if (strcmp(child->value, "def") == 0) {
+    if (isDef(child)) {
       gDef(child);
     }
-    if (strcmp(child->value, "decl") == 0) {
+    if (isDecl(child)) {
       gDecl(child);
     }
   }
