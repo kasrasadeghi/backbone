@@ -40,6 +40,8 @@ static size_t _stack_counter = 0;
  *  - Increases the length of _def by one.
  *  - Globals: _defi, _def, _p
  *
+ * Note: relies on the lack of nested definitions.
+ *
  * @param stmt  - the statement to insert.
  * @param index - the index to insert it at.
  */
@@ -183,6 +185,8 @@ void fReturn(Sexp* s) {
   }
 }
 
+void callStmt(Sexp* s);
+
 void fIf(Sexp* s) {
   if (unflat(s->list[0])) {
     Sexp* let = extractLet(s, 0);
@@ -194,6 +198,58 @@ void fIf(Sexp* s) {
     fLet(let);
     _stmt = stmt_cache;
   }
+
+  Sexp* def_cache = _def;
+  _def = s;
+  {
+    for (int i = 1; i < s->length; ++i) {
+      Sexp* statement = s->list[i];
+      _stmt = statement;
+
+      if (strcmp(statement->value, "let") == 0) {
+        fLet(statement);
+      }
+      else if (strcmp(statement->value, "return") == 0) {
+        fReturn(statement);
+      }
+      else if (strcmp(statement->value, "if") == 0) {
+        fIf(statement);
+      }
+      else if (strcmp(statement->value, "call") == 0) {
+        callStmt(statement);
+      }
+    }
+  }
+  _def = def_cache;
+}
+
+void callStmt(Sexp* s) {
+  size_t ignored = _stack_counter++;
+
+  /* create a initializer for the ignored stack variable */
+  char* string = calloc(12, 1);
+  snprintf(string, 12, "$%lu", ignored);
+  Sexp* init = calloc(1, sizeof(Sexp));
+  init->value = string;
+
+  /* create let from call */
+  Sexp* let = calloc(1, sizeof(Sexp));
+  let->value = "let";
+  let->list = calloc(2, sizeof(Sexp*));
+  let->length = 2;
+  let->cap = 2;
+  let->list[0] = init;
+  let->list[1] = s;
+
+  /* replace call with let */
+  int csi = currStmtIndex();
+  _def->list[csi] = let;
+
+  /* flatten let */
+  Sexp* stmt_cache = _stmt;
+  _stmt = let;
+  fLet(let);
+  _stmt = stmt_cache;
 }
 
 void fDef(Sexp* s) {
@@ -204,13 +260,17 @@ void fDef(Sexp* s) {
     Sexp* statement = s->list[i];
     _stmt = statement;
 
-    //TODO call-as-a-statement
     if (strcmp(statement->value, "let") == 0) {
       fLet(statement);
-    } else if (strcmp(statement->value, "return") == 0) {
+    }
+    else if (strcmp(statement->value, "return") == 0) {
       fReturn(statement);
-    } else if (strcmp(statement->value, "if") == 0) {
+    }
+    else if (strcmp(statement->value, "if") == 0) {
       fIf(statement);
+    }
+    else if (strcmp(statement->value, "call") == 0) {
+      callStmt(statement);
     }
   }
 }
