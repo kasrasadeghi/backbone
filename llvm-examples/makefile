@@ -20,3 +20,8 @@ run\:%:
 	@gcc $*.o -o $*.exe
 	@-./$*.exe
 	@rm $*.exe $*.o
+
+help:
+	@echo "translate - translate all files from .c to .ll"
+	@echo "hello.ll  - translate from hello.c to hello.ll"
+	@echo "run:hello - execute hello.ll"
