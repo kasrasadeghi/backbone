@@ -4,23 +4,6 @@
 #include <assert.h>
 #include "flatten.h"
 
-int isCall(Sexp* s) {
-  return strcmp(s->value, "call") == 0;
-}
-
-int isAdd(Sexp* s) {
-  return strcmp(s->value, "+") == 0;
-}
-
-int isIcmp(Sexp* s) {
-  return strcmp(s->value, "<") == 0
-         || strcmp(s->value, "<=") == 0
-         || strcmp(s->value, ">") == 0
-         || strcmp(s->value, ">=") == 0
-         || strcmp(s->value, "=") == 0
-         || strcmp(s->value, "!=") == 0;
-}
-
 /**
  * returns true for expressions that are not values.
  */
@@ -240,7 +223,8 @@ void fBlock(Sexp* s, int startIndex) {
     else if (strcmp(statement->value, "if") == 0) {
       fIf(statement);
     }
-    else if (strcmp(statement->value, "call") == 0) {
+    else if (strcmp(statement->value, "call") == 0
+             || strcmp(statement->value, "call-vargs") == 0) {
       callStmt(statement);
     }
   }

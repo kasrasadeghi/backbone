@@ -18,4 +18,5 @@ add_executable(backbone main.c
     str.c str.h
     gen_llvm.c gen_llvm.h
     flatten.c flatten.h
+    sexp.c sexp.h
 )

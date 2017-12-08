@@ -4,8 +4,20 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <assert.h>
 #include "gen_llvm.h"
-#include "flatten.h"
+#include "sexp.h"
+
+//region static globals
+
+static size_t* _str_table;     // keeps track of how long each entry is
+static size_t _str_table_len;  // keeps track of the entry count
+
+static size_t _if_counter = 0; // keeps track of the labels for if
+
+static Sexp* _p = NULL;        // the program sexp
+
+//endregion
 
 /**
  * Calculates the length of the given string, counting escaped characters only once.
@@ -32,9 +44,11 @@ size_t atomStrLen(char* s) {
   return len;
 }
 
-static size_t* _str_table;
-static size_t _str_table_len;
-
+/**
+ * Globals:
+ *  - _str_table
+ *  - _str_table_len
+ */
 void gStrTable(Sexp* s) {
   _str_table_len = s->length;
   _str_table = calloc(_str_table_len, sizeof(long));
@@ -52,8 +66,8 @@ void gStrTable(Sexp* s) {
  * Precondition: type satisfies [a-zA-Z0-9]+[\*]*
  */
 void gQualified(char* type) {
-  if (strcmp(type, "void") == 0) {
-    printf("void");
+  if (strcmp(type, "void") == 0 || strcmp(type, "...") == 0) {
+    printf(type);
     return;
   }
 
@@ -84,6 +98,56 @@ void gStruct(Sexp* s) {
 }
 
 void gValue(Sexp*);
+
+/**
+ * Looks up the name of a declaration and returns a pointer to it.
+ * Globals:
+ *  - _p
+ *
+ * Assumes that all functions available for calling are children of _p.
+ * Notes:
+ *  - Won't work for multi-file projects
+ *
+ */
+Sexp* lookupDecl(Sexp* name) {
+  //TODO refactor this to lookupFunction that checks both decls and defs
+  for (int i = 0; i < _p->length; ++i) {
+    Sexp* child = _p->list[i];
+    if (isDecl(child)) {
+      if (strcmp(child->list[0]->value, name->value) == 0) {
+        return child;
+      }
+    }
+  }
+}
+
+void gCallVargs(Sexp* s) {
+  Sexp* original = lookupDecl(s->list[0]);
+  printf("call ");
+  gQualified(s->list[2]->value);
+  printf(" (");
+
+  Sexp* types = original->list[1];
+  for (int i = 0; i < types->length; ++i) {
+    gQualified(types->list[i]->value);
+    if (i != types->length - 1) printf(", ");
+  }
+  printf(") ");
+
+  printf("@%s(", s->list[0]->value);
+  Sexp* args = s->list[3];
+  Sexp* arg_types = s->list[1];
+  assert(args->length == arg_types->length);
+  for (int i = 0; i < arg_types->length; ++i) {
+    gQualified(arg_types->list[i]->value);
+    printf(" ");
+    gValue(args->list[i]);
+    if (i != arg_types->length - 1) {
+      printf(", ");
+    }
+  }
+  printf(")");
+}
 
 void gCall(Sexp* s) {
   printf("call ");
@@ -161,6 +225,9 @@ void gExpr(Sexp* s) {
   if (strcmp(s->value, "call") == 0) {
     gCall(s);
   }
+  else if (strcmp(s->value, "call-vargs") == 0) {
+    gCallVargs(s);
+  }
   else if (isAdd(s)) {
     gAdd(s);
   }
@@ -220,9 +287,10 @@ void gReturn(Sexp* s) {
 
 void gStmt(Sexp* s);
 
-/** maps to then0 else0 post0, ...*/
-static size_t _if_counter = 0;
-
+/**
+ * Globals:
+ *  - _if_counter
+ */
 void gIf(Sexp* s) {
   size_t label = _if_counter++;
 
@@ -255,6 +323,10 @@ void gStmt(Sexp* s) {
   if (strcmp(s->value, "call") == 0 && strcmp(s->list[2]->value, "void") == 0) {
     printf("  ");
     gCall(s);
+  }
+  if (strcmp(s->value, "call-vargs") == 0 && strcmp(s->list[2]->value, "void") == 0) {
+    printf("  ");
+    gCallVargs(s);
   }
   printf("\n");
 }
@@ -313,6 +385,7 @@ void gAdd(Sexp* s) {
 }
 
 void gProgram(Sexp* s) {
+  _p = s;
   printf("; ModuleID = '%s'\n", s->value);
   printf("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\""
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
