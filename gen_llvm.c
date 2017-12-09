@@ -309,6 +309,12 @@ void gIf(Sexp* s) {
   printf("post%lu:", label);
 }
 
+/* (var c i8) */
+void gVar(Sexp* s) {
+  printf("  %%%s = alloca ", s->list[0]->value);
+  gQualified(s->list[1]->value);
+}
+
 void gStmt(Sexp* s) {
   if (strcmp(s->value, "let") == 0) {
     gLet(s);
@@ -326,6 +332,9 @@ void gStmt(Sexp* s) {
   if (strcmp(s->value, "call-vargs") == 0 && strcmp(s->list[2]->value, "void") == 0) {
     printf("  ");
     gCallVargs(s);
+  }
+  if (strcmp(s->value, "var") == 0) {
+    gVar(s);
   }
   printf("\n");
 }
