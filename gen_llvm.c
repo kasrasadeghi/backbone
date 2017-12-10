@@ -220,14 +220,28 @@ void gIcmp(Sexp* s) {
 
 void gAdd(Sexp* s);
 
-/* (load Type VarName) */
+/* (load Type Value) */
 void gLoad(Sexp* s) {
   printf("load ");
   gQualified(s->list[0]->value);
   printf(", ");
   gQualified(s->list[0]->value);
+  //TODO check if below is valid. is below always flattened?
   printf("* ");
   printf("%%%s", s->list[1]->value);
+}
+
+/* (index PtrValue Type IntValue) */
+/* requires Value to be of-type i32 or literal */
+void gIndex(Sexp* s) {
+  printf("getelementptr inbounds ");
+  gQualified(s->list[1]->value);
+  printf(", ");
+  gQualified(s->list[1]->value);
+  printf("*");
+  //TODO check if below is valid. is below always flattened?
+  printf(" %%%s, i32 0, i32", s->list[0]->value);
+//  gValue(s->list[3]);
 }
 
 void gExpr(Sexp* s) {
@@ -248,6 +262,9 @@ void gExpr(Sexp* s) {
   }
   else if (strcmp(s->value, "load") == 0) {
     gLoad(s);
+  }
+  else if (strcmp(s->value, "index") == 0) {
+    gIndex(s);
   }
   else {
     gValue(s);
@@ -328,7 +345,7 @@ void gVar(Sexp* s) {
   gQualified(s->list[1]->value);
 }
 
-/* (store Value Type VarName) */
+/* (store Value Type PtrName) */
 void gStore(Sexp* s) {
   char* type = s->list[1]->value;
   printf("  store ");
