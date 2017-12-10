@@ -28,4 +28,5 @@ help:
 	@echo "run:hello - execute hello.ll"
 
 clean:
-	-find -name '*.ll' -not -name '*.ok.ll' -not -name '*.keep.ll' | xargs rm
+	-find -name '*.ll' -not -name '*.ok.ll' -not -name '*.keep.ll' | xargs rm -f
+	rm -f *.o
