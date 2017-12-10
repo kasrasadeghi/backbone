@@ -10,6 +10,7 @@ def clarify(file):
     lines = [re.sub(' #\\d', '', l) for l in lines]
     lines = [re.sub(', !tbaa !\\d+', '', l) for l in lines]
     lines = [re.sub(' local_unnamed_addr', '', l) for l in lines]
+    lines = [re.sub(', align \\d+', '', l) for l in lines]
 
     return lines
 
