@@ -26,7 +26,11 @@ To complete the second task, we wrote a compiler for Backbone in C to translate 
 
 \section{Introduction}
 
+Our language, Backbone, was designed to be able to eventually compile itself. We worked towards this goal by first writing a C compiler in a way that allowed us to easily translate into Backbone later. This meant that at times, we couldn't use convenient C shortcuts to write the compiler, since it was likely that Backbone wouldn't be able to support such complex features.
 
+Despite failing to complete the Backbone compiler written in Backbone for this project, we were able to flesh out a parser, LLVM generator, and more in the amount of time we had. Additionally, having these written in C was an advantage because we wanted Backbone to be inspired in part by C.
+
+We chose to compile Backbone into LLVM, a widely used low-level language that was created to be flexible and reliable. LLVM started as a research project and has now become a library of modular technologies intended for use in a compiler, perfect for our needs in this project. Also, we use Clang and CMake to compile our source code, both of which are respectable C compilers. Clang in particular was convenient because 
 
 \section{Language}
 
@@ -78,7 +82,7 @@ without having to use a let binding with an ignored variable name.
 \subsection{Structs}
 
 Users can define their own struct data types as a statement. The general
-grammar can be defined as follows:
+grammar is defined as follows:
 
 \begin{align}
 Struct &\rightarrow (\texttt{struct}\,id\,Fields) \\
@@ -97,6 +101,115 @@ $\texttt{  (list SymbolicExpression**)}$
 $\texttt{  (len u64)}$
 
 $\texttt{  (cap u64))}$
+
+Structs can be indexed using the $\texttt{(index} id type \texttt{Expression)}$ expression. Here, the
+id is the identifier for the struct, type is the definition of the struct, and Expression is an expression
+that evaluates to a $\texttt{i32}$ value. This expression returns the value that is stored inside the
+struct given the specific index. In the future, we would like to support named variables in structs which
+would allow for more code readability, but would not add to functionality.
+
+Since a pointer to an element in a struct can be retrieved using $\textt{index}$, values can easily be
+modified by using the $\texttt{store}$ keyword. Likewise, an element inside of a struct can be retrieved
+using the $\texttt{load}$ keyword after indexing. The following is an example of the use of structs, followed
+by the corresponding LLVM genereated by the compiler:
+
+\footnotesize{ 
+$\texttt{(struct Basic}$
+
+$\texttt{  (a i32))}$
+
+$\texttt{}$
+
+$\texttt{(str-table}$
+
+$\texttt{  (0 "Basic\{a = \%d\}\\0A\\00"))}$
+
+$\texttt{}$
+
+$\texttt{(decl calloc (types i64 i64) i8*)}$
+
+$\texttt{}$
+
+$\texttt{(def makeBasic (params (a i32)) Basic*}$
+
+$\texttt{  (let r (cast i8* Basic* (call calloc (types i64 i64) i8* (args 1 8))))}$
+
+$\texttt{  (store a i32 (index r Basic 0))}$
+
+$\texttt{  (return r Basic*))}$
+
+$\texttt{}$
+
+$\texttt{(decl printf (types i8* ...) i32)}$
+
+$\texttt{}$
+
+$\texttt{(def main (params (argc i32) (argv i8**)) i32}$
+
+$\texttt{  (let t (call makeBasic (types i32) Basic* (args 7)))}$
+
+$\texttt{  (call-vargs printf (types i8* i32) i32 (args}$
+
+$\texttt{    (str-get 0)}$
+
+$\texttt{    (load i32 (index t Basic 0))))}$
+
+$\texttt{  (return 0 i32))}$
+}
+
+\normalsize
+And the corresponding LLVM bytecode:
+
+\footnotesize{
+$\texttt{\%struct.Basic = type \{ i32 \}}$
+
+$\texttt{@str.0 = private unnamed\_addr constant [15 x i8] c"Basic\{a = \%d\}\\0A\\00", align 1}$
+
+$\texttt{}$
+
+$\texttt{declare i8* @calloc(i64, i64)}$
+
+$\texttt{declare i32 @printf(i8*, ...)}$
+
+$\texttt{define \%struct.Basic* @makeBasic(i32 \%a) \{}$
+
+$\texttt{entry:}$
+  
+$\texttt{  \%\$0 = call i8* (i64, i64) @calloc(i64 1, i64 8)}$
+  
+$\texttt{  \%r = bitcast i8* \%\$0 to \%struct.Basic*}$
+  
+$\texttt{  \%\$1 = getelementptr inbounds \%struct.Basic, \%struct.Basic* \%r, i32 0, i32 0}$
+  
+$\texttt{  store i32 \%a, i32* \%\$1}$
+  
+$\texttt{  ret \%struct.Basic* \%r}$
+
+$\texttt{\}}$
+
+$\texttt{}$
+
+$\texttt{define i32 @main(i32 \%argc, i8** \%argv) \{}$
+
+$\texttt{entry:}$
+  
+$\texttt{  \%t = call \%struct.Basic* (i32) @makeBasic(i32 7)}$
+  
+$\texttt{  \%\$2 = getelementptr inbounds \%struct.Basic, \%struct.Basic* \%t, i32 0, i32 0}$
+  
+$\texttt{  \%\$1 = load i32, i32* \%\$2}$
+  
+$\texttt{  \%\$0 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([15 x i8], [15 x i8]* @str.0, i64 0, i64 0),
+i32 \%\$1)}$
+
+$\texttt{  ret i32 0}$
+
+$\texttt{\}}$
+}
+
+\normalsize
+
+Which has the expected output of $\texttt{Basic\{a = 7\}}$.
 
 \subsection{Calls}
 
@@ -135,13 +248,15 @@ are two examples of qualified types:
 
 \subsection{Conditionals}
 
-general structure: (improve)
+One of the most basic functionalities of programming languages is the ability of the program to branch, typically completed with some sort of condition-checking. Backbone, like many other languages, uses the \texttt{if} keyword to indicate this. After the \texttt{if} keyword, the programmer should have a predicate, and then an expression that should be evaluated if the predicate evaluates to a non-zero number.
+
+The general grammar is as follows:
 
 $\texttt{if (predicate)}$
 
-$\texttt{    (doSomething)}$
+$\texttt{    (statement}^+\texttt{)}$
 
-example: (need to simplify/find more cases)
+The following syntax example has a predicates that compare two numbers, the syntax of which will described shortly: (IMPROVE)
 
 $\texttt{(if (< i32 2 1)}$
 
@@ -153,23 +268,28 @@ $\texttt{     (call puts (types i8*) i32 (args (str-get 1))))}$
 
 \subsection{Return}
 
-general structure:
+Of course, it is important to be able to return from a function call with useful information, so that the result of the function can be used elsewhere.
+Our return simply requires the programmer to use the \textt{return} keyword, followed by the value to return and then its return type. This return type should match the return type of the function that was declared.
+The general grammar is as follows:
 
-$\texttt{return}\,\,\,expression\,\,\,\,\,\,type\,\,\,$
+$\texttt{return expression}\quad type$
 
-example:
+An example of this syntax would be the following:
 
 $\texttt{(return i i32)}$
 
 \subsection{Declarations}
 \subsection{Function Definitions}
 
-general structure(change into CFG):
+As mentioned, Backbone supports function definitions, useful for separating code into reusable chunks and making programming similar tasks much simpler. Despite being a more challenging feature to support, we all agreed that functions were completely necessary for this project. 
 
-$\texttt{def }\,\,\,id\,\,\,\texttt{(params (}\,\,\,arg\,\,\,\,\,\,type\,\,\,\texttt{))}$
+Firstly, to define the name, return type, and arguments of the function, the programmer should use the \texttt{def} keyword, followed by the name of the function. Next, the parameters should be listed after a \texttt{params} keyword, each with the id and type of the argument. The return type is then added on after, and finally, the body of the function. This should end in a return statement, such that the return statement's type matches the return type of the function definitions.
+The general syntax is as follows:
+
+$\texttt{(def }\,\,\,id\,\,\,\texttt{(params (}\,\,\,id\,\,\,\,\,\,type\,\,\,\texttt{))}\,\,\,type\,\,\,\texttt{(statement}^+\texttt{))}$
 
 
-example:
+The following syntax creates a function called \texttt{func} with two arguments, \texttt{a} of type 32-bit int, and \texttt{b} also of type 32-bit int. \texttt{func} simply returns the value of its argument a:
 
 $\texttt{(def func (params (a i32) (b i32)) i32}$
 
