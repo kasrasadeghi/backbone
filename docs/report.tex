@@ -55,6 +55,26 @@ language to construct most of the other features.
     type &\rightarrow (i8|i16|i32|i64|u8|u16|u32|u64)*^*\,\,\,\,\textt{(types)} \\
 \end{align}
 
+\subsection{Expressions and Statements}
+
+There are two kinds of code execution in Backbone: Statements and expressions.
+Statements are a standalone piece of execution that executes only for its side effects.
+Specifically, input, output, and let bindings are the most useful applications of
+statements in Backbone. Expressions, on the other hand, are evaluated for their use in 
+statements. Expressions simply reduce to values at runtime, and live to give meaning
+to the side effects produced by statements.
+
+Specifically, an "Expression", which will be used in the grammar definitions of
+many structures throughout backbone, can be any of the following: A $\texttt{call}$, $\texttt{call-vargs}$, an arithmetic operator such as $+$ or $-$,
+a comparison, a $\texttt{load}$, or itself just a value.
+
+Statements, on the other hand, have a variety of meanings: Statements include let bindings,
+return statements, conditional evaluations, calls and call-vargs, automatically deleted
+declarations, and storing a value into a variable. Notice that both variadic and regular
+calls are statements and expressions. The reason for this is that sometimes the value is not
+needed for a function, and it was a nice language feature to be able to simply call a function
+without having to use a let binding with an ignored variable name.
+
 \subsection{Structs}
 
 Users can define their own struct data types as a statement. The general
@@ -114,24 +134,55 @@ are two examples of qualified types:
 
 
 \subsection{Conditionals}
+
+general structure: (improve)
+
+$\texttt{if (predicate)}$
+
+$\texttt{    (doSomething)}$
+
+example: (need to simplify/find more cases)
+
+$\texttt{(if (< i32 2 1)}$
+
+$\texttt{     (call puts (types i8*) i32 (args (str-get 0))))}$
+
+$\texttt{  (if (>= i32 argc 3)}$
+
+$\texttt{     (call puts (types i8*) i32 (args (str-get 1))))}$
+
 \subsection{Return}
-\subsection{Statements}
+
+general structure:
+
+$\texttt{return}\,\,\,expression\,\,\,\,\,\,type\,\,\,$
+
+example:
+
+$\texttt{(return i i32)}$
+
 \subsection{Declarations}
 \subsection{Function Definitions}
-\subsection{Binary Operations}
 
-\section{Parser}
+general structure(change into CFG):
 
-\section{Generating LLVM}
-\subsection{Structs}
-\subsection{Calls}
-\subsection{Qualified Types}
-\subsection{Let}
-\subsection{Return}
-\subsection{Statements}
-\subsection{Declarations}
-\subsection{Function Definitions}
-\subsection{Binary Operations}
+$\texttt{def }\,\,\,id\,\,\,\texttt{(params (}\,\,\,arg\,\,\,\,\,\,type\,\,\,\texttt{))}$
+
+
+example:
+
+$\texttt{(def func (params (a i32) (b i32)) i32}$
+
+$\texttt{  (return a i32))}$
+
+\subsection{Binary Operations} 
+\subsubsection{Comparators}
+structure:
+$$\,\,\,comparator\,\,\, \texttt{expression } \texttt{expression}$$
+
+examples: 
+$\texttt{(< i32 3 2)}$
+$\texttt{(< i32 x y)}$$
 
 \section{Conclusion}
 
