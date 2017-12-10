@@ -63,3 +63,7 @@ int isDecl(Sexp* s) {
 int isLoad(Sexp* s) {
   return strcmp(s->value, "load") == 0;
 }
+
+int isIndex(Sexp* s) {
+  return strcmp(s->value, "index") == 0;
+}
