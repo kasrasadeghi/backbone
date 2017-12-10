@@ -67,3 +67,7 @@ int isLoad(Sexp* s) {
 int isIndex(Sexp* s) {
   return strcmp(s->value, "index") == 0;
 }
+
+int isCast(Sexp* s) {
+  return strcmp(s->value, "cast") == 0;
+}

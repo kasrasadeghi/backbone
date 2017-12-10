@@ -22,5 +22,6 @@ int isDef(Sexp* s);
 int isDecl(Sexp* s);
 int isLoad(Sexp* s);
 int isIndex(Sexp* s);
+int isCast(Sexp* s);
 
 #endif

@@ -87,7 +87,7 @@ void gQualified(char* type) {
 }
 
 void gStruct(Sexp* s) {
-  printf("%%struct.%s = type { ", s->value);
+  printf("%%struct.%s = type { ", s->list[0]->value);
   for (int i = 1; i < s->length; ++i) {
     char* type = s->list[i]->list[0]->value;
     gQualified(type);
@@ -240,8 +240,16 @@ void gIndex(Sexp* s) {
   gQualified(s->list[1]->value);
   printf("*");
   //TODO check if below is valid. is below always flattened?
-  printf(" %%%s, i32 0, i32", s->list[0]->value);
-//  gValue(s->list[3]);
+  printf(" %%%s, i32 0, i32 ", s->list[0]->value);
+  gValue(s->list[2]);
+}
+
+/* (cast TypeTo TypeFrom PtrName) */
+void gCast(Sexp* s) {
+  printf("bitcast ");
+  gQualified(s->list[0]->value);
+  printf(" %%%s to ", s->list[2]->value);
+  gQualified(s->list[1]->value);
 }
 
 void gExpr(Sexp* s) {
@@ -265,6 +273,9 @@ void gExpr(Sexp* s) {
   }
   else if (strcmp(s->value, "index") == 0) {
     gIndex(s);
+  }
+  else if (isCast(s)) {
+    gCast(s);
   }
   else {
     gValue(s);

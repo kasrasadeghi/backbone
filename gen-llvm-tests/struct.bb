@@ -14,7 +14,7 @@
 (decl printf (types i8* ...) i32)
 
 (def main (params (argc i32) (argv i8**)) i32
-  (let t (call makeBasic (types i32 i64 i8) Basic* (args 1 2 99)))
+  (let t (call makeBasic (types i32) Basic* (args 7)))
   (call-vargs printf (types i8* i32) i32 (args
     (str-get 0)
     (load i32 (index t Basic 0))))

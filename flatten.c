@@ -8,7 +8,7 @@
  * returns true for expressions that are not values.
  */
 int unflat(Sexp* s) {
-  return isCall(s) || isAdd(s) || isIcmp(s) || isLoad(s) || isIndex(s);
+  return isCall(s) || isAdd(s) || isIcmp(s) || isLoad(s) || isIndex(s) || isCast(s);
 }
 
 static Sexp* _p = NULL;
@@ -147,6 +147,10 @@ void fIndex(Sexp* s) {
   fExpr(s, 2);
 }
 
+void fCast(Sexp* s) {
+  fExpr(s, 2);
+}
+
 /* this should flatten every expression that contains another expression */
 void fLet(Sexp* s) {
   if (isCall(s->list[1]) || isCallVargs(s->list[1])) {
@@ -165,7 +169,11 @@ void fLet(Sexp* s) {
     fIndex(s->list[1]);
     return;
   }
-  assert(!unflat(s->list[1]));
+  else if (isCast(s->list[1])) {
+    fCast(s->list[1]);
+    return;
+  }
+  assert(0);
 }
 
 void fReturn(Sexp* s) {
