@@ -309,10 +309,25 @@ void gIf(Sexp* s) {
   printf("post%lu:", label);
 }
 
-/* (var c i8) */
+/* (var VarName Type) */
 void gVar(Sexp* s) {
   printf("  %%%s = alloca ", s->list[0]->value);
   gQualified(s->list[1]->value);
+}
+
+/* (store Value Type VarName) */
+void gStore(Sexp* s) {
+  char* type = s->list[1]->value;
+  printf("  store ");
+
+  gQualified(type);
+  printf(" ");
+  gValue(s->list[0]);
+
+  printf(", ");
+  gQualified(type);
+  printf("*");
+  printf(" %%%s", s->list[2]->value);
 }
 
 void gStmt(Sexp* s) {
@@ -335,6 +350,9 @@ void gStmt(Sexp* s) {
   }
   if (strcmp(s->value, "var") == 0) {
     gVar(s);
+  }
+  if (strcmp(s->value, "store") == 0) {
+    gStore(s);
   }
   printf("\n");
 }
@@ -399,7 +417,7 @@ void gProgram(Sexp* s) {
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
 
   for (int i = 0; i < s->length; ++i) {
-    puts("");
+    printf("\n");
     Sexp* child = s->list[i];
     if (strcmp(child->value, "str-table") == 0) {
       gStrTable(child);
