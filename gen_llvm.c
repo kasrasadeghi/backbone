@@ -220,6 +220,16 @@ void gIcmp(Sexp* s) {
 
 void gAdd(Sexp* s);
 
+/* (load Type VarName) */
+void gLoad(Sexp* s) {
+  printf("load ");
+  gQualified(s->list[0]->value);
+  printf(", ");
+  gQualified(s->list[0]->value);
+  printf("* ");
+  printf("%%%s", s->list[1]->value);
+}
+
 void gExpr(Sexp* s) {
   if (strcmp(s->value, "call") == 0) {
     gCall(s);
@@ -235,6 +245,9 @@ void gExpr(Sexp* s) {
   }
   else if (isIcmp(s)) {
     gIcmp(s);
+  }
+  else if (strcmp(s->value, "load") == 0) {
+    gLoad(s);
   }
   else {
     gValue(s);

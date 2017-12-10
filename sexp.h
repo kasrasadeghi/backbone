@@ -15,9 +15,11 @@ void destroySexp(Sexp*);
 void pushSexp(Sexp* s, Sexp* child);
 
 int isCall(Sexp* s);
+int isCallVargs(Sexp* s);
 int isAdd(Sexp* s);
 int isIcmp(Sexp* s);
 int isDef(Sexp* s);
 int isDecl(Sexp* s);
+int isLoad(Sexp* s);
 
 #endif

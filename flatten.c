@@ -8,7 +8,7 @@
  * returns true for expressions that are not values.
  */
 int unflat(Sexp* s) {
-  return isCall(s) || isAdd(s) || isIcmp(s);
+  return isCall(s) || isAdd(s) || isIcmp(s) || isLoad(s);
 }
 
 static Sexp* _p = NULL;
@@ -153,7 +153,7 @@ void fAdd(Sexp* s) {
 }
 
 void fLet(Sexp* s) {
-  if (isCall(s->list[1])) {
+  if (isCall(s->list[1]) || isCallVargs(s->list[1])) {
     fCall(s->list[1]);
   } else if (isAdd(s->list[1])) {
     fAdd(s->list[1]);

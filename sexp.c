@@ -35,6 +35,10 @@ int isCall(Sexp* s) {
   return strcmp(s->value, "call") == 0;
 }
 
+int isCallVargs(Sexp* s) {
+  return strcmp(s->value, "call-vargs") == 0;
+}
+
 int isAdd(Sexp* s) {
   return strcmp(s->value, "+") == 0;
 }
@@ -54,4 +58,8 @@ int isDef(Sexp* s) {
 
 int isDecl(Sexp* s) {
   return strcmp(s->value, "decl") == 0;
+}
+
+int isLoad(Sexp* s) {
+  return strcmp(s->value, "load") == 0;
 }
