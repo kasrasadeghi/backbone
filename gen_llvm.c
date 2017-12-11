@@ -443,6 +443,7 @@ void gDecl(Sexp* s) {
   printf("\n");
 }
 
+/* (+ Type Value Value) */
 void gAdd(Sexp* s) {
   printf("add %s ", s->list[0]->value);
   gValue(s->list[1]);

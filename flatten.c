@@ -111,7 +111,7 @@ void fLet(Sexp* s);
 
 void fIf(Sexp* s);
 
-void fExpr(Sexp* s, int i) {
+void fTall(Sexp* s, int i) {
   if (unflat(s->list[i])) {
     Sexp* let = extractLet(s, i);
     int csi = currStmtIndex();
@@ -129,26 +129,26 @@ void fExpr(Sexp* s, int i) {
 void fCall(Sexp* s) {
   Sexp* args = s->list[3];
   for (int ai = 0; ai < args->length; ++ai) { // argument index = ai
-    fExpr(args, ai);
+    fTall(args, ai);
   }
 }
 
 void fAdd(Sexp* s) {
-  fExpr(s, 1);
-  fExpr(s, 2);
+  fTall(s, 1);
+  fTall(s, 2);
 }
 
 void fLoad(Sexp* s) {
-  fExpr(s, 1);
+  fTall(s, 1);
 }
 
 void fIndex(Sexp* s) {
-  fExpr(s, 0);
-  fExpr(s, 2);
+  fTall(s, 0);
+  fTall(s, 2);
 }
 
 void fCast(Sexp* s) {
-  fExpr(s, 2);
+  fTall(s, 2);
 }
 
 /* this should flatten every expression that contains another expression */
@@ -177,13 +177,13 @@ void fLet(Sexp* s) {
 }
 
 void fReturn(Sexp* s) {
-  fExpr(s, 0);
+  fTall(s, 0);
 }
 
 /* (store Value Type PtrName) */
 void fStore(Sexp* s) {
-  fExpr(s, 0);
-  fExpr(s, 2);
+  fTall(s, 0);
+  fTall(s, 2);
 }
 
 void callStmt(Sexp* s) {
@@ -247,7 +247,7 @@ void fBlock(Sexp* s, int startIndex) {
 }
 
 void fIf(Sexp* s) {
-  fExpr(s, 0);
+  fTall(s, 0);
 
   fBlock(s, 1);
 }
