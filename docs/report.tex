@@ -120,6 +120,7 @@ it to ease the work.
 
 \section{Parser}
 
+<<<<<<< HEAD
 \subsection{Overview}
 
 The parser of most languages is fairly tedious to write and a great deal of research has
@@ -179,6 +180,8 @@ were prioritized during the first phase.
 
 \section{Backbone}
 
+=======
+>>>>>>> 6b5702c7f0265cd6fbefb21fe84514ed4f4cd3d4
 \subsection{Language terminals}
 
 A few language terminals will be described here and used in the rest of the
@@ -477,6 +480,7 @@ $\texttt{target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"}$
 
 $\texttt{target triple = "x86\_64-unknown-linux-gnu"}$
 
+<<<<<<< HEAD
 $\texttt{@str.0 = private unnamed\_addr constant [12 x i8] c"Hello World\textbackslash00",}$
 
 $\texttt{align 1}$
@@ -488,6 +492,20 @@ $\texttt{define void @voidcall() \{}$
 $\texttt{entry:}$
 
 $\texttt{  \%\$0 = call i32 (i8*) @puts(i8* getelementptr inbounds ([12 x i8], }$
+=======
+$\texttt{\@str.0 = private unnamed\_addr constant [12 x i8] c"Hello World\textbackslash00",}$
+
+
+$\texttt{align 1}$
+
+$\texttt{declare i32 \@puts(i8*)}$
+
+$\texttt{define void \@voidcall() \{}$
+
+$\texttt{entry:}$
+
+$\texttt{  \%\$0 = call i32 (i8*) \@puts(i8* getelementptr inbounds ([12 x i8], }$
+>>>>>>> 6b5702c7f0265cd6fbefb21fe84514ed4f4cd3d4
 
 $\texttt{  [12 x i8]* \@str.0, i64 0, i64 0)) }$
 
@@ -495,11 +513,19 @@ $\texttt{  ret void}$
 
 $\texttt{\}}$
 
+<<<<<<< HEAD
 $\texttt{define i32 @main() \{}$
 
 $\texttt{entry:}$
 
 $\texttt{  call void () @voidcall()}$
+=======
+$\texttt{define i32 \@main() \{}$
+
+$\texttt{entry:}$
+
+$\texttt{  call void () \@voidcall()}$
+>>>>>>> 6b5702c7f0265cd6fbefb21fe84514ed4f4cd3d4
 
 $\texttt{  ret i32 0}$
 
