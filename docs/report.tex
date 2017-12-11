@@ -2,12 +2,16 @@
 
 \usepackage[version=3]{mhchem}
 \usepackage{courier}
+\usepackage{comment}
+\usepackage{hyperref}
 
 \newcommand*{\mycommand}[1]{\texttt{\emph{#1}}}
 
 \author{Sabrina Jiang}
 \author{Will Sherwood}
 \author{Kasra Sadeghi}
+
+\email{}
 
 \title{Backbone Compiler}
 
@@ -16,10 +20,8 @@
 \begin{abstract}
 
 The goal of this project is two-fold: firstly, design a programming language that has enough features
-to run system calls and do basic programming tasks. Secondly, the programming language should be designed with the intent of it being able to compile itself. 
-
+to run system calls and do basic programming tasks. Secondly, the programming language should be designed with the intent of it being able to compile itself.
 We completed the first task by creating Backbone, a lisp-like language that has recursive functions, let bindings, arithmetic and more basic features. 
-
 To complete the second task, we wrote a compiler for Backbone in C to translate it directly into LLVM bytecode. This was created in a way to make it easy to translate into Backbone later, once the language had been developed more. This would result in a self-bootstrapping compiler in Backbone.
 
 \end{abstract}
@@ -30,7 +32,9 @@ Our language, Backbone, was designed to be able to eventually compile itself. We
 
 Despite failing to complete the Backbone compiler written in Backbone for this project, we were able to flesh out a parser, LLVM generator, and more in the amount of time we had. Additionally, having these written in C was an advantage because we wanted Backbone to be inspired in part by C.
 
-We chose to compile Backbone into LLVM, a widely used low-level language that was created to be flexible and reliable. LLVM started as a research project and has now become a library of modular technologies intended for use in a compiler, perfect for our needs in this project. Also, we use Clang and CMake to compile our source code, both of which are respectable C compilers. Clang in particular was convenient because 
+We chose to compile Backbone into LLVM, a widely used low-level language that was created to be flexible and reliable. LLVM started as a research project and has now become a library of modular technologies intended for use in a compiler, perfect for our needs in this project. Also, we use Clang and CMake to compile our source code, both of which are respectable C compilers. Clang in particular was convenient because it is an LLVM - native compiler.
+
+The rest of this paper will spend its time detailing the design decisions made for Backbone. It will cover its features, syntax, and compiler semantics. There are code examples sprinkled throughout to help show how Backbone looks and feels.
 
 \section{Language}
 
@@ -48,6 +52,73 @@ $$\texttt{(def main (params (argc i32) (argv i8**)) i32}$$
 This new format was much better. Firstly, it provides everything needed to generate the LLVM. We realized the return type was required knowledge, and added that to the definition. Secondly, it eliminates some of the unnecessary keywords.
 
 The rest of our syntax was decided in a similar manner. The biggest consideration was balancing between inferring information, such as types of identifiers and arguments, and requiring the programmer to explicitly state the types. In the end, we generally decided that asking the programmer for more information was a better choice, as it made our jobs a bit easier. This helped eliminate the need for multiple passes through the program.
+
+\section{Flattening Compiler Pass}
+
+\subsection{Overview}
+
+Flatten is unique in that it is the only transformation from a symbolic expression to another symbolic expression. It is unlike the
+other phases, Parser and Gen, in that it is an
+\href{https://en.wikipedia.org/wiki/Operator_(mathematics)}{operator}. This makes it a pure
+transformation of trees, and it is how we implement compiler passes.
+
+The structure of our language, compared to the LLVM Intermediate Representation language
+(LLVM IR), gives more flexibility to the expression-value relationship. In LLVM IR,
+there is one expression evaluation per instruction, as instruction evaluation is
+thought of as an opcode. In our language, we generalize the strictness of the LLVM IR
+in order to allow for a more natural expression of ideas and a way to elide the needless
+use of extra variable names and register management.
+
+In our language, we separate Expressions that are immediate Values or Expressions that
+can have Expressions inside of them, which we call Tall Expressions (also Unflat Expressions).
+
+$$\texttt{Expression = Value | Tall}$$
+
+In LLVM IR, there are
+\href{https://llvm.org/docs/LangRef.html#first-class-types}{first-class types}.
+These correspond to our language's Value Expressions. It often requires that the arguments
+to an opcode be first-class types. For example, every argument in the argument list in a
+function call instruction must be a first-class type. Our language defines call's arguments
+as expressions, and then it flattens each argument (see \hyperref[sec:Flattening a Tall Expression]{Flattening a Tall Expression})
+if it is not an immediate value.
+
+\subsection{Flattening the Program}
+
+Flattening a program basically boils down to flattening each of it's blocks, which
+correspond to LLVM control blocks. Each of Backbone's blocks must end in a return, while
+in LLVM there are other kinds of terminal instructions.
+
+\subsection{Flattening a Tall Expression}
+
+Flattening a Tall Expression extracts the expression and places it in a let. To create a
+value for the let, we have a global counter for the whole flatten call. Local variable
+names only have to be unique in each function definition, so we reset the counter each
+time we flatten a function definition. Once we extract the let, we insert the let before
+the statement we extracted it from with the name received from the local counter (e.g. $\$5$).
+
+To keep invariants consistent, the size of the encompassing block must be increased by one,
+and with the introduction of if-statements we have recursive search through blocks, so we
+have to keep track of the current block and cache it every time we recurse inwards
+(fBlock).
+
+Once we've inserted the let statement, we also need to recurse into it to make sure that
+the expression we just flattened does not need further flattening 
+(see \hyperref[sec:Flattening Let Statements]{Flattening Let Statements}).
+
+\subsection{Flattening Let Statements}
+
+Flattening let statements is where we do the bulk of the initial investigation into flattening
+expressions. We check to see if the child of each let is one of the expressions that can have
+expression children, i.e. they are Tall. This is also where we do \hyperref[sec:Call-as-a-Statement]{Call-as-a-Statement}.
+
+\subsection{Call-as-a-Statement}
+
+Flatten also has a Call-as-a-Statement call as it traverses through statements as a
+convenience. Sometimes we call a function and we want to ignore the result. So we just
+place the call into a let, replace it, and use the local counter that flatten has available to
+it to ease the work.
+
+\section{Parser}
 
 \subsection{Language terminals}
 
@@ -269,7 +340,7 @@ $\texttt{     (call puts (types i8*) i32 (args (str-get 1))))}$
 \subsection{Return}
 
 Of course, it is important to be able to return from a function call with useful information, so that the result of the function can be used elsewhere.
-Our return simply requires the programmer to use the \textt{return} keyword, followed by the value to return and then its return type. This return type should match the return type of the function that was declared.
+Our return simply requires the programmer to use the \texttt{return} keyword, followed by the value to return and then its return type. This return type should match the return type of the function that was declared.
 The general grammar is as follows:
 
 $\texttt{return expression}\quad type$
@@ -301,8 +372,80 @@ structure:
 $$\,\,\,comparator\,\,\, \texttt{expression } \texttt{expression}$$
 
 examples: 
+
 $\texttt{(< i32 3 2)}$
-$\texttt{(< i32 x y)}$$
+
+$\texttt{(< i32 x y)}$
+
+\section{Samples} 
+
+This section contains some simple examples that we used for unit testing, and are great for showcasing the full process.
+
+Here is an example Backbone program. It simple calls a function to print "Hello World", but we are more interested in the LLVM it generates.
+
+$\texttt{(str-table}$
+
+$\texttt{  (0 "Hello World\textbackslash00"))}$
+
+
+$\texttt{(decl puts (types i8*) i32)}$
+
+
+$\texttt{(def voidcall (params) voi}$
+
+$\texttt{  (call puts (types i8*) i32 (args (str-get 0)))}$
+
+$\texttt{  (return void))}$
+
+
+$\texttt{(def main (params) i32}$
+
+$\texttt{  (call voidcall (types) void (args))}$
+
+$\texttt{  (return 0 i32))}$
+
+$\texttt{}$
+
+
+The LLVM that would be generated:
+
+$\texttt{}$
+
+
+$\texttt{; ModuleID = 'voidcall.bb'}$
+
+$\texttt{target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"}$
+
+$\texttt{target triple = "x86\_64-unknown-linux-gnu"}$
+
+$\texttt{\@str.0 = private unnamed\_addr constant [12 x i8] c"Hello World\textbackslash00",}$
+
+
+$\texttt{align 1}$
+
+$\texttt{declare i32 \@puts(i8*)}$
+
+$\texttt{define void \@voidcall() \{}$
+
+$\texttt{entry:}$
+
+$\texttt{  \%\$0 = call i32 (i8*) \@puts(i8* getelementptr inbounds ([12 x i8], }$
+
+$\texttt{  [12 x i8]* \@str.0, i64 0, i64 0)) }$
+
+$\texttt{  ret void}$
+
+$\texttt{\}}$
+
+$\texttt{define i32 \@main() \{}$
+
+$\texttt{entry:}$
+
+$\texttt{  call void () \@voidcall()}$
+
+$\texttt{  ret i32 0}$
+
+$\texttt{\}}$
 
 \section{Conclusion}
 
