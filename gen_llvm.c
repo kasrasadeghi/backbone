@@ -350,8 +350,8 @@ void gIf(Sexp* s) {
   printf("post%lu:", label);
 }
 
-/* (var VarName Type) */
-void gVar(Sexp* s) {
+/* (auto FreshName Type) */
+void gAuto(Sexp* s) {
   printf("  %%%s = alloca ", s->list[0]->value);
   gQualified(s->list[1]->value);
 }
@@ -389,8 +389,8 @@ void gStmt(Sexp* s) {
     printf("  ");
     gCallVargs(s);
   }
-  if (strcmp(s->value, "var") == 0) {
-    gVar(s);
+  if (strcmp(s->value, "auto") == 0) {
+    gAuto(s);
   }
   if (strcmp(s->value, "store") == 0) {
     gStore(s);
