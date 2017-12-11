@@ -7,7 +7,7 @@
 /**
  * returns true for expressions that are not values.
  */
-int unflat(Sexp* s) {
+int isTall(Sexp* s) {
   return isCall(s) || isAdd(s) || isIcmp(s) || isLoad(s) || isIndex(s) || isCast(s);
 }
 
@@ -112,7 +112,7 @@ void fLet(Sexp* s);
 void fIf(Sexp* s);
 
 void fTall(Sexp* s, int i) {
-  if (unflat(s->list[i])) {
+  if (isTall(s->list[i])) {
     Sexp* let = extractLet(s, i);
     int csi = currStmtIndex();
     insertStmt(let, csi);

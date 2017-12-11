@@ -9,7 +9,7 @@ Values are literals and registers.
 
 ### Adding Expressions
 When adding an expression that is not a value, make sure to 
- - add it to unflat() in flatten.c
+ - add it to isTall() in flatten.c
  - add it to sexp.c and sexp.h as an isWhateverName(Sexp* s)
  - add it to gExpr in gen_llvm.c
  - add it to fLet() if it is Tall. see [Names are sometimes Values](#namevalue).
