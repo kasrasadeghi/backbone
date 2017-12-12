@@ -1,25 +1,24 @@
-DIR=cmake-build-debug
+B-DIR=src/cmake-build-debug
 
 all: prep build
 
-.PHONY: prep
-prep:
-	@mkdir -p ${DIR}
-	(cd ${DIR}; cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" ..)
-
 .PHONY: build
-build: ${DIR}/Makefile
-	@cd ${DIR} && make
+build:
+	@(cd src; make)
 
-.PHONY: parse
 parse\:%: build
-	@cd ${DIR} && ./backbone parse ../parser-tests/$*
+	@./backbone parse parser-tests/$*.bb
 
 gen\:%: build
-	@${DIR}/backbone generateLLVM gen-llvm-tests/$*
+	@./backbone generateLLVM gen-llvm-tests/$*.bb
 
 test:
 	@./test.py
+
+help:
+	@echo "  version   - check versions"
+	@echo "  parse:hi  - parse    hi    in parser-tests"
+	@echo "  gen:hello - generate hello in gen-llvm-tests"
 
 version:
 	cmake --version
@@ -28,10 +27,3 @@ version:
 	gcc --version
 	clang --version
 	python3 --version
-
-help:
-	@echo "make COMMAND"
-	@echo "COMMANDS:"
-	@echo "  version      - check versions"
-	@echo "  parse:hi.bb  - parse    hi.bb    in parser-tests"
-	@echo "  gen:hello.bb - generate hello.bb in gen-llvm-tests"
