@@ -120,6 +120,65 @@ it to ease the work.
 
 \section{Parser}
 
+\subsection{Overview}
+
+The parser of most languages is fairly tedious to write and a great deal of research has
+gone into writing efficient parsers. There's a great number of parsing algorithms to choose
+from, but most big projects roll their own parser or use a parser-lexer framework like
+flex/bison (or lex/yacc). We don't have a back-end for any of the frameworks because our
+language doesn't exist yet, so it's a better idea to write a very simple parser for a language
+with very simple structure.
+
+It would be a tremendous time investment to write a parser for our language in C and then write
+it again in our language if we were to choose a complex structure for the parser. There are two
+language structures that are fairly simple to parse. Concatenative languages like Forth or Factor
+have a very simple structure. Each token is separated by a space, and the evaluation of the
+language is token by token, in-order (most of the time). The other choice is a LISP-like language.
+We chose to use a LISP-like language structure because it is more natural to express ideas in that
+are already structured like a tree, and our bootstrapping language is C which has a tree-based
+structure. It also doesn't allow for ambiguous parses, because there is no order of operations
+in a LISP (there are more than enough parentheses to clarify).
+
+\subsection{Overlying Decisions}
+
+If you look in our examples/ directory, you can see the code samples we thought about to make
+decisions about the structure of the language. We grounded on the following rules:
+\begin{enumerate}
+\item our generator is not going to be very interesting
+\item we're not going to do any optimization in the first phase.
+\item the syntax for the language must align closely with the information available in LLVM IR
+\item there should usually be a one to one correspondence, or a very simple lookup in the tree.
+\item names are more important than types, so types should follow the names.
+\end{enumerate}
+
+\subsection{Divergence from Lisp}
+
+Our language looks like a LISP, but only for the easy parsing. We don't have any Lisp features
+like homoiconicity, hygienic macros, garbage collection, etc. We also don't obey the traditional
+LISP definition of a list. In LISP:
+
+$\texttt{S-expression = List | Atom}$
+
+$\texttt{List = ( Sexp* )}$
+
+However, in Backbone, we have:
+
+$\texttt{S-expression = List | Atom}$
+
+$\texttt{List = ( Word Sexp* )}$
+
+$\texttt{Atom = Word | String | Char}$
+
+\subsection{Future Plans}
+
+Verify the characters allowed in different expressions and allow for better error reporting for
+incorrect syntax. Validate the resulting tree and make sure it is a some minimal amount of
+a valid Backbone program instead of crashing or generating invalid LLVM. These were not
+prioritized because making the language Turing complete and capable of bootstrapping itself
+were prioritized during the first phase.
+
+\section{Backbone}
+
 \subsection{Language terminals}
 
 A few language terminals will be described here and used in the rest of the
@@ -327,15 +386,13 @@ $\texttt{if (predicate)}$
 
 $\texttt{    (statement}^+\texttt{)}$
 
-The following syntax example has a predicates that compare two numbers, the syntax of which will described shortly: (IMPROVE)
+The following syntax example has a predicates that compare two numbers, the syntax of which will described shortly:
 
 $\texttt{(if (< i32 2 1)}$
 
 $\texttt{     (call puts (types i8*) i32 (args (str-get 0))))}$
 
-$\texttt{  (if (>= i32 argc 3)}$
-
-$\texttt{     (call puts (types i8*) i32 (args (str-get 1))))}$
+$\texttt{(return 0 i32)}$
 
 \subsection{Return}
 
@@ -350,6 +407,15 @@ An example of this syntax would be the following:
 $\texttt{(return i i32)}$
 
 \subsection{Declarations}
+
+We support declaration statements similar to C with the following syntax:
+
+$\texttt{(decl id (types type}^* \texttt{) type)}$
+
+An example of a declaration would be the "puts" system call:
+
+$\texttt{(decl puts (types i8*) i32)}$
+
 \subsection{Function Definitions}
 
 As mentioned, Backbone supports function definitions, useful for separating code into reusable chunks and making programming similar tasks much simpler. Despite being a more challenging feature to support, we all agreed that functions were completely necessary for this project. 
@@ -367,21 +433,38 @@ $\texttt{(def func (params (a i32) (b i32)) i32}$
 $\texttt{  (return a i32))}$
 
 \subsection{Binary Operations} 
-\subsubsection{Comparators}
-structure:
-$$\,\,\,comparator\,\,\, \texttt{expression } \texttt{expression}$$
 
-examples: 
+Backbone supports a number of binary operations, including arithmetic and comparisons.
+
+\subsubsection{Comparators}
+
+As mentioned above, the ability to compare two different values is essential for conditionals and other basic calculations. Our comparator syntax has four parts.
+
+The first part is the desired operation, <, <=, >, or >=. Additionally, the type must be specified, such as a 32-bit integer. Finally, the two expressions whose values are to be compared.
+
+The general grammar is as follows:
+
+$$\,\,\,comparator\,\,\,\,\,\,type\,\,\, \texttt{expression } \texttt{expression}$$
+
+Some simple examples are below: 
 
 $\texttt{(< i32 3 2)}$
 
 $\texttt{(< i32 x y)}$
 
-\section{Samples} 
+\subsubsection{Arithmetic}
+
+
+
+$\texttt{}$
+
+$\texttt{(+ i32 2 3)}$
+
+\section{Samples}
 
 This section contains some simple examples that we used for unit testing, and are great for showcasing the full process.
 
-Here is an example Backbone program. It simple calls a function to print "Hello World", but we are more interested in the LLVM it generates.
+Here is an example Backbone program. It simply calls a function to print "Hello World", but we are more interested in the LLVM it generates.
 
 $\texttt{(str-table}$
 
@@ -407,7 +490,7 @@ $\texttt{  (return 0 i32))}$
 $\texttt{}$
 
 
-The LLVM that would be generated:
+The corresponding LLVM that would be generated is below. Notice how named functions and constants are directly passed down into the LLVM:
 
 $\texttt{}$
 
@@ -418,18 +501,17 @@ $\texttt{target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"}$
 
 $\texttt{target triple = "x86\_64-unknown-linux-gnu"}$
 
-$\texttt{\@str.0 = private unnamed\_addr constant [12 x i8] c"Hello World\textbackslash00",}$
-
+$\texttt{@str.0 = private unnamed\_addr constant [12 x i8] c"Hello World\textbackslash00",}$
 
 $\texttt{align 1}$
 
-$\texttt{declare i32 \@puts(i8*)}$
+$\texttt{declare i32 @puts(i8*)}$
 
-$\texttt{define void \@voidcall() \{}$
+$\texttt{define void @voidcall() \{}$
 
 $\texttt{entry:}$
 
-$\texttt{  \%\$0 = call i32 (i8*) \@puts(i8* getelementptr inbounds ([12 x i8], }$
+$\texttt{  \%\$0 = call i32 (i8*) @puts(i8* getelementptr inbounds ([12 x i8], }$
 
 $\texttt{  [12 x i8]* \@str.0, i64 0, i64 0)) }$
 
@@ -437,16 +519,26 @@ $\texttt{  ret void}$
 
 $\texttt{\}}$
 
-$\texttt{define i32 \@main() \{}$
+$\texttt{define i32 @main() \{}$
 
 $\texttt{entry:}$
 
-$\texttt{  call void () \@voidcall()}$
+$\texttt{  call void () @voidcall()}$
 
 $\texttt{  ret i32 0}$
 
 $\texttt{\}}$
 
 \section{Conclusion}
+
+In conclusion, overall the language design was a success. Sadly we were not able to fully construct
+another version of the compiler written itself in backbone, but the C compiler is fully functional
+and should be a relatively simple transpose as a future work. Some of the harder problems that were overcome
+were tree flattening which wrote nested calls and returns as single evaluations, automatic variable
+deletion from stack, as well as defining useful data types such as structs that are interoperable
+with C and Linux system calls. In the future, it would be good to have some formal verification of the
+language (writing and checking semantics in a proof checker), and type inference. All in all, however,
+the language is usable and works to create full interoperability between calling C and Backbone functions
+as well as have it compile to a low level intermediate representation language (LLVM).
 
 \end{document}
