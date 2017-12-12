@@ -10,7 +10,7 @@ parse\:%: build
 	@./backbone parse parser-tests/$*.bb
 
 gen\:%: build
-	@./backbone generateLLVM gen-llvm-tests/$*.bb
+	@./backbone generateLLVM gen-tests/$*.bb
 
 test:
 	@./test.py

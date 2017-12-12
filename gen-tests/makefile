@@ -24,13 +24,13 @@ build:
 	(cd ..; make) &> /dev/null
 
 parse\:%: %.bb build-v
-	../cmake-build-debug/backbone parse $*.bb
+	../backbone parse $*.bb
 
 flatten\:%: %.bb build
-	../cmake-build-debug/backbone flatten $*.bb
+	../backbone flatten $*.bb
 
 gen\:%: build
-	python3 test_llvm.py $*
+	python3 test_gen.py $*
 
 output\:%: build
 	python3 test_output.py $*

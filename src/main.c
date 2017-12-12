@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "parser.h"
-#include "gen_llvm.h"
+#include "gen.h"
 #include "flatten.h"
 
 int main(int argc, char *argv[]) {
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     printSexp(program, 0);
     destroySexp(program);
   }
-  if (strcmp(argv[1], "generateLLVM") == 0) {
+  if (strcmp(argv[1], "gen") == 0) {
     char* filename = argv[2];
     Sexp* program = parse(filename);
     flatten(program);
