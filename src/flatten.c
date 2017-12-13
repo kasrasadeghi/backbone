@@ -107,7 +107,7 @@ int currStmtIndex() {
 
 //region Forward Declarations
 
-void fLet(Sexp* s);
+void fLet(Sexp* let);
 
 void fTall(Sexp* s, int i) {
   if (isTall(s->list[i])) {
@@ -150,25 +150,31 @@ void fCast(Sexp* s) {
 }
 
 /* this should flatten every expression that contains another expression */
-void fLet(Sexp* s) {
-  if (isCall(s->list[1]) || isCallVargs(s->list[1])) {
-    fCall(s->list[1]);
+void fLet(Sexp* let) {
+  Sexp* s = let->list[1];
+  if (isCall(s) || isCallVargs(let->list[1])) {
+    fCall(let->list[1]);
     return;
   }
-  else if (isAdd(s->list[1])) {
-    fAdd(s->list[1]);
+  else if (isAdd(let->list[1])) {
+    fAdd(let->list[1]);
     return;
   }
-  else if (isLoad(s->list[1])) {
-    fLoad(s->list[1]);
+  else if (isLoad(let->list[1])) {
+    fLoad(let->list[1]);
     return;
   }
-  else if (isIndex(s->list[1])) {
-    fIndex(s->list[1]);
+  else if (isIndex(let->list[1])) {
+    fIndex(let->list[1]);
     return;
   }
-  else if (isCast(s->list[1])) {
-    fCast(s->list[1]);
+  else if (isCast(let->list[1])) {
+    fCast(let->list[1]);
+    return;
+  }
+  else if (isIcmp(s)) {
+    fTall(s, 1);
+    fTall(s, 2);
     return;
   }
   assert(0);
