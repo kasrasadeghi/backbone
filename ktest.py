@@ -8,10 +8,10 @@ import sys
 
 def call(cmd):
     try:
-        result = check_output(cmd.split(), stderr=STDOUT, timeout=5).decode('utf-8')
+        result = check_output(cmd.split(), stderr=STDOUT, timeout=5).decode('utf-8'), 0
     except CalledProcessError as e:
-        result = e.output.decode('utf-8') + 'exit code: ' + str(e.returncode)
-    print(result)
+        result = e.output.decode('utf-8'), e.returncode
+    return result
 
 
 class cd:
@@ -39,11 +39,16 @@ _output    = ''
 _reference = ''
 
 
-def test_output(test_name, output_ending, reference_ending):
+def test_output(test_name, stdout):
     with cd(_test_dir):
-        with open(test_name + output_ending, 'r') as f:
-            output = f.read()
-        with open(test_name + reference_ending, 'r') as f:
+        output_name = _output.replace('%', test_name)
+        ref_name    = _reference.replace('%', test_name)
+        if not isfile(output_name):
+            output = stdout[0]
+        else:
+            with open(output_name, 'r') as f:
+                output = f.read()
+        with open(ref_name, 'r') as f:
             reference = f.read()
     print(' --- ', test_name, end=' ...')
     reference = reference.strip()
@@ -65,25 +70,25 @@ def check_files(*files):
 
 
 def valid_test(name):
-    with cd(_test_dir):
-        return isfile(_input.replace('%', name))
+    return check_files(_input.replace('%', name), _reference.replace('%', name))
 
 
 def valid_tests():
-    return [x for x in map(basename, ls('gen-tests')) if valid_test(x)]
+    return sorted(list({x for x in map(basename, ls('gen-tests')) if valid_test(x)}))
 
 
-def test(file_name):
-    print('testing', file_name)
-
+def test(test_name):
+    stdout = call(_run.replace('%', test_name))
+    test_output(test_name, stdout)
 
 
 def testall():
-    if not valid_tests():
+    tests = valid_tests()
+    if not tests:
         print(' nothing to do...')
         return
     else:
-        for file_name in valid_tests():
+        for file_name in tests:
             test(file_name)
 
 
@@ -96,7 +101,6 @@ def main(*argn):
         if line.startswith(name):
             value = line.split(name + ':')[1].strip()
             code = 'global _' + name + '\n_' + name + ' = "' + value + '"'
-            print(code)
             exec(code)
 
     with open(test_suite + '.ktest', 'r') as f:
