@@ -131,45 +131,29 @@ void fCall(Sexp* s) {
   }
 }
 
-void fAdd(Sexp* s) {
-  fTall(s, 1);
-  fTall(s, 2);
-}
-
-void fLoad(Sexp* s) {
-  fTall(s, 1);
-}
-
-void fIndex(Sexp* s) {
-  fTall(s, 0);
-  fTall(s, 2);
-}
-
-void fCast(Sexp* s) {
-  fTall(s, 2);
-}
-
 /* this should flatten every expression that contains another expression */
 void fLet(Sexp* let) {
   Sexp* s = let->list[1];
-  if (isCall(s) || isCallVargs(let->list[1])) {
-    fCall(let->list[1]);
+  if (isCall(s) || isCallVargs(s)) {
+    fCall(s);
     return;
   }
-  else if (isAdd(let->list[1])) {
-    fAdd(let->list[1]);
+  else if (isAdd(s)) {
+    fTall(s, 1);
+    fTall(s, 2);
     return;
   }
-  else if (isLoad(let->list[1])) {
-    fLoad(let->list[1]);
+  else if (isLoad(s)) {
+    fTall(s, 1);
     return;
   }
-  else if (isIndex(let->list[1])) {
-    fIndex(let->list[1]);
+  else if (isIndex(s)) {
+    fTall(s, 0);
+    fTall(s, 2);
     return;
   }
-  else if (isCast(let->list[1])) {
-    fCast(let->list[1]);
+  else if (isCast(s)) {
+    fTall(s, 2);
     return;
   }
   else if (isIcmp(s)) {
