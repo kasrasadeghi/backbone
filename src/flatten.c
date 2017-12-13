@@ -208,36 +208,36 @@ void callStmt(Sexp* s) {
   _stmt = stmt_cache;
 }
 
-void fBlock(Sexp* s, int startIndex) {
+void fBlock(Sexp* block, int startIndex) {
   Sexp* block_cache = _block;
-  _block = s;
+  _block = block;
 
-  for (int i = startIndex; i < s->length; ++i) {
-    Sexp* statement = s->list[i];
-    _stmt = statement;
+  for (int i = startIndex; i < block->length; ++i) {
+    Sexp* s = block->list[i];
+    _stmt = s;
 
-    if (strcmp(statement->value, "let") == 0) {
-      fLet(statement);
+    if (strcmp(s->value, "let") == 0) {
+      fLet(s);
     }
-    else if (strcmp(statement->value, "return") == 0) {
+    else if (strcmp(s->value, "return") == 0) {
       fTall(s, 0);
     }
-    else if (strcmp(statement->value, "if") == 0) {
-      fTall(statement, 0);
-      fBlock(statement, 1);
+    else if (strcmp(s->value, "if") == 0) {
+      fTall(s, 0);
+      fBlock(s, 1);
     }
-    else if (isCall(statement) || isCallVargs(statement)) {
-      callStmt(statement);
+    else if (isCall(s) || isCallVargs(s)) {
+      callStmt(s);
     }
-    else if (strcmp(statement->value, "store") == 0) {
+    else if (strcmp(s->value, "store") == 0) {
       /* (store Value Type Ptr) */
       fTall(s, 0);
       fTall(s, 2);
     } else {
       /* statements without possibly tall expressions in them */
-      int isOtherStatement = isAuto(statement);
+      int isOtherStatement = isAuto(s);
       if (!isOtherStatement) {
-        printSexp(statement, 0);
+        printSexp(s, 0);
       }
       assert(isOtherStatement);
     }
