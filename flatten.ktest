@@ -1,0 +1,5 @@
+test_dir: flatten-tests
+input: %.bb
+
+run: ./backbone flatten flatten-tests/%.bb
+reference: %.ok

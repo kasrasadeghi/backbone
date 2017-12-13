@@ -2,11 +2,10 @@ DIR=cmake-build-debug
 
 all: build
 
-.PHONY: prep
-prep:
+${DIR}/Makefile:
 	@mkdir -p ${DIR}
 	(cd ${DIR}; cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" ..)
 
 .PHONY: build
-build: prep
+build: ${DIR}/Makefile
 	@cd ${DIR} && make

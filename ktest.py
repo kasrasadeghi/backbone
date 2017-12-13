@@ -44,6 +44,7 @@ def test_output(test_name, stdout):
         output_name = _output.replace('%', test_name)
         ref_name    = _reference.replace('%', test_name)
         if not isfile(output_name):
+            assert _output == ''
             output = stdout[0]
         else:
             with open(output_name, 'r') as f:
@@ -74,7 +75,7 @@ def valid_test(name):
 
 
 def valid_tests():
-    return sorted(list({x for x in map(basename, ls('gen-tests')) if valid_test(x)}))
+    return sorted(list({x for x in map(basename, ls(_test_dir)) if valid_test(x)}))
 
 
 def test(test_name):

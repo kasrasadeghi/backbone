@@ -166,7 +166,7 @@ void fLet(Sexp* let) {
 
 void callStmt(Sexp* s) {
   if (strcmp(s->list[2]->value, "void") == 0) {
-    //TODO voidcall arguments might not be flattened.
+    fCall(s);
     return;
   }
 

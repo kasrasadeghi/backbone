@@ -10,6 +10,9 @@ build:
 gen: build
 	python3 ktest.py gen
 
+flatten: build
+	python3 ktest.py flatten
+
 gen\:%: build
 	./backbone gen gen-tests/$*.bb
 
