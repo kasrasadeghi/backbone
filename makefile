@@ -1,16 +1,17 @@
 B-DIR=src/cmake-build-debug
 
-all: prep build
+all: build
 
 .PHONY: build
 build:
 	@(cd src; make)
+	ln -sf ${B-DIR}/backbone backbone
 
-parse\:%: build
-	@./backbone parse parser-tests/$*.bb
+gen: build
+	python3 test_gen.py
 
-gen\:%: build
-	@./backbone generateLLVM gen-tests/$*.bb
+output: build
+	python3 test_output.py
 
 test:
 	@./test.py

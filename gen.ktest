@@ -1,0 +1,6 @@
+test_dir: gen-tests
+input: %.bb
+
+run: ./backbone gen gen-tests/%.bb
+output: %.ll
+reference: %.ok.ll
