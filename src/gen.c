@@ -375,25 +375,30 @@ void gStmt(Sexp* s) {
   if (strcmp(s->value, "let") == 0) {
     gLet(s);
   }
-  if (strcmp(s->value, "return") == 0) {
+  else if (strcmp(s->value, "return") == 0) {
     gReturn(s);
   }
-  if (strcmp(s->value, "if") == 0) {
+  else if (strcmp(s->value, "if") == 0) {
     gIf(s);
   }
-  if (isCall(s) && strcmp(s->list[2]->value, "void") == 0) {
+  else if (isCall(s) && strcmp(s->list[2]->value, "void") == 0) {
     printf("  ");
     gCall(s);
   }
-  if (isCallVargs(s) && strcmp(s->list[2]->value, "void") == 0) {
+  else if (isCallVargs(s) && strcmp(s->list[2]->value, "void") == 0) {
     printf("  ");
     gCallVargs(s);
   }
-  if (isAuto(s)) {
+  else if (isAuto(s)) {
     gAuto(s);
   }
-  if (strcmp(s->value, "store") == 0) {
+  else if (strcmp(s->value, "store") == 0) {
     gStore(s);
+  }
+  else {
+    fprintf(stderr, "Error: unmatched statement!\n");
+    printf("  UNMATCHED STATEMENT:\n");
+    printSexp(s, 0);
   }
   printf("\n");
 }

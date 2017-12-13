@@ -15,7 +15,10 @@ When adding an expression that is not a value, make sure to
  - add it to fLet() if it is Tall. see [Names are sometimes Values](#namevalue).
 
 ### Adding Statements
-When adding a statement
+When adding a statement:
+ - if it has an expression that can be tall, add it to fBlock
+ - if not, add it to the assert at the end of fBlock
+ - add it to fStmt
 
 ### Place an assert every time you hunt down a bug.
 

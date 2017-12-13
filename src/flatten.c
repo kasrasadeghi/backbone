@@ -109,8 +109,6 @@ int currStmtIndex() {
 
 void fLet(Sexp* s);
 
-void fIf(Sexp* s);
-
 void fTall(Sexp* s, int i) {
   if (isTall(s->list[i])) {
     Sexp* let = extractLet(s, i);
@@ -176,18 +174,9 @@ void fLet(Sexp* s) {
   assert(0);
 }
 
-void fReturn(Sexp* s) {
-  fTall(s, 0);
-}
-
-/* (store Value Type PtrName) */
-void fStore(Sexp* s) {
-  fTall(s, 0);
-  fTall(s, 2);
-}
-
 void callStmt(Sexp* s) {
   if (strcmp(s->list[2]->value, "void") == 0) {
+    //TODO voidcall arguments might not be flattened.
     return;
   }
 
@@ -231,29 +220,29 @@ void fBlock(Sexp* s, int startIndex) {
       fLet(statement);
     }
     else if (strcmp(statement->value, "return") == 0) {
-      fReturn(statement);
+      fTall(s, 0);
     }
     else if (strcmp(statement->value, "if") == 0) {
-      fIf(statement);
+      fTall(statement, 0);
+      fBlock(statement, 1);
     }
-    else if (isCall(statement) || strcmp(statement->value, "call-vargs") == 0) {
+    else if (isCall(statement) || isCallVargs(statement)) {
       callStmt(statement);
     }
     else if (strcmp(statement->value, "store") == 0) {
-      fStore(statement);
+      /* (store Value Type Ptr) */
+      fTall(s, 0);
+      fTall(s, 2);
     } else {
-      //TODO figure out all other statements and make assertion below
-      assert(isAuto(statement));
-      printSexp(statement, 0);
+      /* statements without possibly tall expressions in them */
+      int isOtherStatement = isAuto(statement);
+      if (!isOtherStatement) {
+        printSexp(statement, 0);
+      }
+      assert(isOtherStatement);
     }
   }
   _block = block_cache;
-}
-
-void fIf(Sexp* s) {
-  fTall(s, 0);
-
-  fBlock(s, 1);
 }
 
 void fDef(Sexp* s) {
