@@ -92,10 +92,8 @@ def testall():
             test(file_name)
 
 
-def main(*argn):
-
-    # TODO do for all elements
-    test_suite = argn[0]
+def main(*args):
+    test_suite = args[0]
 
     def config(name):
         if line.startswith(name):
@@ -111,7 +109,11 @@ def main(*argn):
             config('output')
             config('reference')
 
-    testall()
+    if len(args) == 1:
+        testall()
+    else:
+        for t in args[1:]:
+            test(t)
 
 
 if __name__ == '__main__':

@@ -23,5 +23,6 @@ int isDecl(Sexp* s);
 int isLoad(Sexp* s);
 int isIndex(Sexp* s);
 int isCast(Sexp* s);
+int isAuto(Sexp* s);
 
 #endif

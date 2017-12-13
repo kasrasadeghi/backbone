@@ -381,15 +381,15 @@ void gStmt(Sexp* s) {
   if (strcmp(s->value, "if") == 0) {
     gIf(s);
   }
-  if (strcmp(s->value, "call") == 0 && strcmp(s->list[2]->value, "void") == 0) {
+  if (isCall(s) && strcmp(s->list[2]->value, "void") == 0) {
     printf("  ");
     gCall(s);
   }
-  if (strcmp(s->value, "call-vargs") == 0 && strcmp(s->list[2]->value, "void") == 0) {
+  if (isCallVargs(s) && strcmp(s->list[2]->value, "void") == 0) {
     printf("  ");
     gCallVargs(s);
   }
-  if (strcmp(s->value, "auto") == 0) {
+  if (isAuto(s)) {
     gAuto(s);
   }
   if (strcmp(s->value, "store") == 0) {

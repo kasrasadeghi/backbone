@@ -8,13 +8,16 @@ build:
 	ln -sf ${B-DIR}/backbone backbone
 
 gen: build
-	python3 test_gen.py
+	python3 ktest.py gen
+
+gen\:%: build
+	./backbone gen gen-tests/$*.bb
+
+flatten\:%: build
+	./backbone flatten gen-tests/$*.bb
 
 output: build
-	python3 test_output.py
-
-test:
-	@./test.py
+	python3 ktest.py parse
 
 help:
 	@echo "  version   - check versions"

@@ -236,11 +236,15 @@ void fBlock(Sexp* s, int startIndex) {
     else if (strcmp(statement->value, "if") == 0) {
       fIf(statement);
     }
-    else if (isCall(s) || strcmp(statement->value, "call-vargs") == 0) {
+    else if (isCall(statement) || strcmp(statement->value, "call-vargs") == 0) {
       callStmt(statement);
     }
     else if (strcmp(statement->value, "store") == 0) {
       fStore(statement);
+    } else {
+      //TODO figure out all other statements and make assertion below
+      assert(isAuto(statement));
+      printSexp(statement, 0);
     }
   }
   _block = block_cache;

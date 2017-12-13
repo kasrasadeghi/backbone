@@ -71,3 +71,11 @@ int isIndex(Sexp* s) {
 int isCast(Sexp* s) {
   return strcmp(s->value, "cast") == 0;
 }
+
+int isAuto(Sexp* s) {
+  return strcmp(s->value, "auto") == 0;
+}
+
+int isStore(Sexp* s) {
+  return strcmp(s->value, "store") == 0;
+}
