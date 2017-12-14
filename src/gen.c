@@ -389,11 +389,11 @@ void gStmt(Sexp* s) {
     printf("  ");
     gCallVargs(s);
   }
-  else if (isAuto(s)) {
-    gAuto(s);
-  }
   else if (strcmp(s->value, "store") == 0) {
     gStore(s);
+  }
+  else if (isAuto(s)) {
+    gAuto(s);
   }
   else {
     fprintf(stderr, "Error: unmatched statement!\n");
