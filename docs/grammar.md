@@ -15,11 +15,12 @@ Stmt      -> Let | Return | If | CallVargs | Call | Store | Auto
 Let       -> (let ValN Expr)
 Return    -> (ret Expr Type)
 If        -> (if Expr Stmt*)
-CallVargs -> (call-vargs FuncN (types Type*) Type (args Expr*))
 Call      -> (call       FuncN (types Type*) Type (args Expr*))
+CallVargs -> (call-vargs FuncN (types Type*) Type (args Expr*))
 Store     -> (store Expr Type Expr)
+Auto      -> (auto VarN Type)
 
-Expr      -> Call | CallVargs | MathBinop | IComp | Load | Index | Cast | Value
+Expr      -> Call | CallVargs | MathBinop | Icmp | Load | Index | Cast | Value
 Load      -> (load Type Expr)
 Index     -> (index Expr Type Expr)
 Cast      -> (cast Type Type Expr)
@@ -31,7 +32,7 @@ Literal   -> int
 MathBinop -> Add
 Add       -> Binop[+]
 
-Icomp     -> LT | LE | GT | GE | EQ | NE
+Icmp      -> LT | LE | GT | GE | EQ | NE
 LT        -> Binop[<]
 LE        -> Binop[<=] 
 GT        -> Binop[>]
