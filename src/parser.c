@@ -41,7 +41,7 @@ Reader* reader(char* filename) {
   Reader* r = calloc(1, sizeof(Reader));
   r->offset = 0;
   r->size = fileSize(filename);
-  r->file = (char*) mmap(NULL, r->size, PROT_READ, MAP_FILE|MAP_PRIVATE, fd, r->offset);
+  r->file = (char*) mmap(NULL, r->size, PROT_READ|PROT_WRITE, MAP_FILE|MAP_PRIVATE, fd, r->offset);
   return r;
 }
 
@@ -168,7 +168,18 @@ void removeComments(Reader* r) {
   int mode = 0;
   while (hasNext(r)) {
     char c = get(r);
-    if (!mode) {
+    if (mode == -1) {
+      if (c == '\n') {
+        //TODO end a comment
+        mode = 0;
+        continue;
+      } else {
+        // continue to comment out stuff
+        r->file[r->offset - 1] = ' ';
+        continue;
+      }
+    }
+    if (mode == 0) {
       if (c == '\"') {
         mode = 1;
         continue;
@@ -177,7 +188,12 @@ void removeComments(Reader* r) {
         mode = 2;
         continue;
       }
-      //TODO parse out comments
+      if (c == ';') {
+        mode = -1;
+        //TODO start a comment
+        r->file[r->offset - 1] = ' ';
+        continue;
+      }
     } else if (mode == 1 && c == '\"') {
       mode = 0;
       continue;
@@ -192,12 +208,14 @@ void removeComments(Reader* r) {
 
 Sexp* parse(char* filename) {
   Reader* r = reader(filename);
-//  removeComments(r);
   if (r == NULL) {
     fprintf(stderr, "backbone: error reading file \"%s\": ", filename);
     perror("");
     exit(EXIT_FAILURE);
   }
+  printf("%s", r->file);
+  removeComments(r);
+  printf("%s", r->file);
   return pProgram(filename, r);
 }
 
