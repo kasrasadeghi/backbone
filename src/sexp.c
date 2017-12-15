@@ -66,7 +66,8 @@ int isExpr(Sexp* s) {
          || isLoad(s)
          || isIndex(s)
          || isCast(s)
-         || isValue(s);
+//         || isValue(s) // TODO fix
+          ;
 }
 int isLoad(Sexp* s)      { return strcmp(s->value, "load") == 0; }
 int isIndex(Sexp* s)     { return strcmp(s->value, "index") == 0; }

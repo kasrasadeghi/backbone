@@ -7,17 +7,18 @@ build:
 	@(cd src; make)
 	ln -sf ${B-DIR}/backbone backbone
 
-gen: build
-	python3 ktest.py gen
+parse\:%: build
+	./backbone parse parser-tests/$*.bb
 
 flatten: build
 	python3 ktest.py flatten
-
-gen\:%: build
-	./backbone gen gen-tests/$*.bb
-
 flatten\:%: build
 	./backbone flatten gen-tests/$*.bb
+
+gen: build
+	python3 ktest.py gen
+gen\:%: build
+	./backbone gen gen-tests/$*.bb
 
 output: build
 	python3 ktest.py parse
