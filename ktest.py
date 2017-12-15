@@ -8,9 +8,9 @@ import sys
 
 def call(cmd):
     try:
-        result = check_output(cmd.split(), stderr=STDOUT, timeout=5).decode('utf-8'), 0
+        result = check_output(cmd.split(), stderr=STDOUT, timeout=5).decode('latin-1'), 0
     except CalledProcessError as e:
-        result = e.output.decode('utf-8'), e.returncode
+        result = e.output.decode('latin-1'), e.returncode
     return result
 
 
