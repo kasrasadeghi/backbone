@@ -213,9 +213,7 @@ Sexp* parse(char* filename) {
     perror("");
     exit(EXIT_FAILURE);
   }
-  printf("%s", r->file);
   removeComments(r);
-  printf("%s", r->file);
   return pProgram(filename, r);
 }
 
