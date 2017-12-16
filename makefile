@@ -30,7 +30,7 @@ output: build
 help:
 	@echo "  version   - check versions"
 	@echo "  parse:hi  - parse    hi    in parser-tests"
-	@echo "  gen:hello - generate hello in gen-llvm-tests"
+	@echo "  gen:hello - generate hello in gen-tests"
 
 version:
 	cmake --version
