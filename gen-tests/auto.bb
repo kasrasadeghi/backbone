@@ -1,4 +1,4 @@
-(decl printf (i8* ...) i32)
+(decl printf (types i8* ...) i32)
 
 (str-table
   (0 "c = %c\0A\00"))
