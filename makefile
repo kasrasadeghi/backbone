@@ -2,6 +2,10 @@ B-DIR=src/cmake-build-debug
 
 all: build
 
+.PHONY: clean
+clean: ${B-DIR}
+	rm -rf ${B-DIR}
+
 .PHONY: build
 build:
 	@(cd src; make)
@@ -36,9 +40,10 @@ version:
 	clang --version
 	python3 --version
 
-docker-run:
+docker-run: clean
 	docker build -t bb .
-	docker run -it bb
+	(cd src; rm -rf cmake-build-debug)
+	docker run -it -v $(shell pwd):/project bb
 
 docker-clean:
 	-docker ps -a -q | xargs docker rm
