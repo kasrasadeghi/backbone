@@ -1,6 +1,6 @@
 FILES=$(wildcard *.c)
 RESULTS=$(patsubst %.c,%.ll,$(FILES))
-IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
+IR_FLAGS=-emit-llvm -S -O0 -mllvm -inline-threshold=0
 
 .DEFAULT: translate
 translate: $(RESULTS)
