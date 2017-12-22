@@ -66,7 +66,7 @@ void gStrTable(Sexp* s) {
  */
 void gQualified(char* type) {
   if (strcmp(type, "void") == 0 || strcmp(type, "...") == 0) {
-    printf(type);
+    printf("%s", type);
     return;
   }
 
