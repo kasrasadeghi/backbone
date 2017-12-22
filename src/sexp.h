@@ -11,8 +11,10 @@ typedef struct Sexp {
 Sexp* sexp(char* value);
 
 void printSexp(Sexp*, int l);
-void destroySexp(Sexp*);
 void pushSexp(Sexp* s, Sexp* child);
+void destroySexp(Sexp* s);
+
+//region grammar
 
 int isTopLevel (Sexp* s);
 int isStrTable (Sexp* s);
@@ -42,5 +44,7 @@ int isMathBinop(Sexp* s);
 int isAdd      (Sexp* s);
 
 int isIcmp     (Sexp* s);
+
+//endregion
 
 #endif

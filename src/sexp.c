@@ -31,6 +31,11 @@ void pushSexp(Sexp* s, Sexp* child) {
   }
 }
 
+void destroySexp(Sexp* s) {
+  //TODO actually finish
+  free(s);
+}
+
 //region grammar implementation
 
 int isTopLevel(Sexp* s) {

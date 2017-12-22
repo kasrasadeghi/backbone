@@ -19,4 +19,5 @@ add_executable(backbone main.c
     gen.c gen.h
     flatten.c flatten.h
     sexp.c sexp.h
+    reader.c reader.h
 )
