@@ -88,15 +88,16 @@ Sexp* pString(Reader* r) {
 }
 
 Sexp* pAtom(Reader* r) {
-  return peek(r) == '\'' ? pChar(r) :
-         peek(r) == '"' ? pString(r) :
-         sexp(pWord(r));
+  if (peek(r) == '\'') return pChar(r);
+  if (peek(r) == '"' ) return pString(r);
+  return sexp(pWord(r));
 }
 
 Sexp* pSexp(Reader* r) {
   pWhitespace(r);
   //printf("%c: \n",peek(r)); // <- useful for debugging
-  return peek(r) == '('? pList(r) : pAtom(r);
+  if (peek(r) == '(') return pList(r);
+  return pAtom(r);
 }
 
 Sexp* pProgram(char* filename, Reader* r) {
