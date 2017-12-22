@@ -9,24 +9,18 @@ int main(int argc, char *argv[]) {
     puts("Usage: backbone <parse|generateLLVM> <file>");
     return 1;
   }
+  char* filename = argv[2];
+  Sexp* program = parse(filename);
   if (strcmp(argv[1], "parse") == 0) {
-    char* filename = argv[2];
-    Sexp* program = parse(filename);
     printSexp(program, 0);
-    destroySexp(program);
   }
   if (strcmp(argv[1], "flatten") == 0) {
-    char* filename = argv[2];
-    Sexp* program = parse(filename);
     flatten(program);
     printSexp(program, 0);
-    destroySexp(program);
   }
   if (strcmp(argv[1], "gen") == 0) {
-    char* filename = argv[2];
-    Sexp* program = parse(filename);
     flatten(program);
     generateLLVM(filename, program);
-    destroySexp(program);
   }
+  destroySexp(program);
 }
