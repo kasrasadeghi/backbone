@@ -46,6 +46,8 @@ def test_output(test_name, stdout):
         if not isfile(output_name):
             assert _output == ''
             output = stdout[0]
+            if stdout[1] != 0:
+                output += "exit code: " + str(stdout[1])
         else:
             with open(output_name, 'r') as f:
                 output = f.read()

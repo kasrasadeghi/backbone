@@ -11,6 +11,16 @@ build:
 	@(cd src; make)
 	ln -sf ${B-DIR}/backbone backbone
 
+test:
+	@echo testing parse
+	@python3 ktest.py parse
+	@echo testing flatten
+	@python3 ktest.py flatten
+	@echo testing gen
+	@python3 ktest.py gen
+
+parse: build
+	python3 ktest.py parse
 parse\:%: build
 	./backbone parse parser-tests/$*.bb
 

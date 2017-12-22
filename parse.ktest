@@ -1,0 +1,5 @@
+test_dir: parser-tests
+input: %.bb
+
+run: ./backbone parse parser-tests/%.bb
+reference: %.ok
