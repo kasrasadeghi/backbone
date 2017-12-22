@@ -11,9 +11,9 @@
 #include "sexp.h"
 #include "parser.h"
 
-//#include <assert.h>
+#include <assert.h>
 
-#define assert(exp) (exp)
+//#define assert(exp) (exp)
 
 //region struct Reader {...}
 
@@ -102,6 +102,7 @@ Sexp* pList(Reader* r) {
       exit(EXIT_FAILURE);
     }
     pushSexp(curr, pSexp(r));
+    pWhitespace(r);
   }
 
   assert (get(r) == ')');
