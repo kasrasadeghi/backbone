@@ -118,6 +118,7 @@ Sexp* lookupDecl(Sexp* name) {
       }
     }
   }
+  assert(0); // lookups should always be found
 }
 
 void gCallVargs(Sexp* s) {
