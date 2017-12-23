@@ -1,6 +1,8 @@
 #ifndef __SEXP_H__
 #define __SEXP_H__
 
+#include <stdlib.h>
+
 typedef struct Sexp {
   char* value;
   struct Sexp** list;
