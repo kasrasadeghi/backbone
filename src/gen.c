@@ -219,8 +219,6 @@ void gIcmp(Sexp* s) {
   gValue(s->list[2]);
 }
 
-void gAdd(Sexp* s);
-
 /* (load Type Value) */
 void gLoad(Sexp* s) {
   printf("load ");
@@ -253,18 +251,32 @@ void gCast(Sexp* s) {
   gQualified(s->list[1]->value);
 }
 
+/* (+ Type Value Value) */
+void gAdd(Sexp* s) {
+  printf("add %s ", s->list[0]->value);
+  gValue(s->list[1]);
+  printf(", ");
+  gValue(s->list[2]);
+  printf("\n");
+}
+
+void gMathBinop(Sexp* s) {
+  if (isAdd(s)) {
+    gAdd(s);
+    return;
+  }
+  assert(0); // the only math binop is add
+}
+
 void gExpr(Sexp* s) {
-  if (strcmp(s->value, "call") == 0) {
+  if (isCall(s)) {
     gCall(s);
   }
-  else if (strcmp(s->value, "call-vargs") == 0) {
+  else if (isCallVargs(s)) {
     gCallVargs(s);
   }
-  else if (isAdd(s)) {
-    gAdd(s);
-  }
-  else if (strcmp(s->value, "-") == 0) {
-    //TODO
+  else if (isMathBinop(s)) {
+    gMathBinop(s);
   }
   else if (isIcmp(s)) {
     gIcmp(s);
@@ -449,14 +461,6 @@ void gDecl(Sexp* s) {
   printf("\n");
 }
 
-/* (+ Type Value Value) */
-void gAdd(Sexp* s) {
-  printf("add %s ", s->list[0]->value);
-  gValue(s->list[1]);
-  printf(", ");
-  gValue(s->list[2]);
-  printf("\n");
-}
 
 void gProgram(Sexp* s) {
   _p = s;
