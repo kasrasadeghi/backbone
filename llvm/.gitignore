@@ -1,3 +1,5 @@
-backbone
 *.o
+*.c
+*.h
+backbone
 *.ll
