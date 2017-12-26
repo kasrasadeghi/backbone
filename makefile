@@ -46,7 +46,6 @@ version:
 	cmake --version
 	make --version
 	bash --version
-	gcc --version
 	clang --version
 	python3 --version
 

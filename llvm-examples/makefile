@@ -16,11 +16,17 @@ translate: $(RESULTS)
 print:
 	@echo $(RESULTS)
 
-from\:%:
-	@clang -c $*.ll
-	@gcc $*.o -o $*.exe
-	@-./$*.exe
-	@rm $*.exe $*.o
+from\:%: %.ll
+	clang -c $*.ll
+	clang $*.o -o $*.exe
+	-./$*.exe
+	rm $*.exe $*.o
+
+exec\:%: %.ll
+	clang -c $*.ll
+	clang $*.o -o $*.exe
+	-./$*.exe
+	rm $*.o
 
 help:
 	@echo "translate - translate all files from .c to .ll"

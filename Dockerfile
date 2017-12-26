@@ -4,7 +4,6 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     git \
     cmake \
-    gcc \
     clang \
     valgrind \
     python3

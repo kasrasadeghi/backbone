@@ -1,16 +1,3 @@
-the workflow
-
-%.ll:
-    clang -emit-llvm -S %.cw
-
-%.o: %.ll
-    clang -c %.ll
-
-backbone: main.o str.o
-    gcc main.o str.o
-
---------------------------------------------------------------------
-
 https://clang.llvm.org/docs/Toolchain.html
 
 There are a lot fo steps for the clang C compiler.

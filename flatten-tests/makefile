@@ -7,7 +7,7 @@ IR_FLAGS=-emit-llvm -S -O3 -mllvm -inline-threshold=0
 # to run %.ll, compile it and run it
 from\:%: %.ll
 	clang -c $*.ll
-	gcc $*.o -o $*.exe
+	clang $*.o -o $*.exe
 	-./$*.exe
 	rm $*.exe $*.o
 
