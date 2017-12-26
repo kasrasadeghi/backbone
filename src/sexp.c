@@ -32,7 +32,13 @@ void pushSexp(Sexp* s, Sexp* child) {
 }
 
 void destroySexp(Sexp* s) {
-  //TODO actually finish
+//  printf("free(%lu): %s\n", (size_t)s->value, s->value); // useful for debugging
+
+  free(s->value);
+  for (size_t i = 0; i < s->length; ++i) {
+    destroySexp(s->list[i]);
+  }
+  free(s->list);
   free(s);
 }
 

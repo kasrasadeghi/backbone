@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <libgen.h>
+#include <string.h>
 #include "sexp.h"
 #include "parser.h"
 #include "reader.h"
@@ -101,7 +102,11 @@ Sexp* pSexp(Reader* r) {
 }
 
 Sexp* pProgram(char* filename, Reader* r) {
-  Sexp* program = sexp(basename(filename));
+  char* name_view = basename(filename);
+  size_t name_len = strlen(name_view) + 1;
+  char* program_name = malloc(name_len);
+  strncpy(program_name, name_view, name_len);
+  Sexp* program = sexp(program_name);
   while (hasNext(r)) {
     pushSexp(program, pSexp(r));
     pWhitespace(r);

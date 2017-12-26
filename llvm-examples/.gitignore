@@ -2,3 +2,4 @@
 *.exe
 !*.keep.ll
 !*.ok.ll
+*.o

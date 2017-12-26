@@ -48,6 +48,13 @@ static void insertStmt(Sexp* stmt, int index) {
   _block->list[index] = stmt;
 }
 
+static char* unique_let() {
+  static char* let_value = "let";
+  char* new_let = malloc(4);
+  strncpy(new_let, let_value, 4);
+  return new_let;
+}
+
 /**
  * Extracts an expression from an Sexp s at index index.
  *
@@ -77,7 +84,7 @@ Sexp* extractLet(Sexp* s, int index) {
 
   /* create a let to insert into the definition */
   Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = "let";
+  let->value = unique_let();
   let->list = calloc(2, sizeof(Sexp*));
   let->length = 2;
   let->cap = 2;
@@ -180,7 +187,7 @@ void callStmt(Sexp* s) {
 
   /* create let from call */
   Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = "let";
+  let->value = unique_let();
   let->list = calloc(2, sizeof(Sexp*));
   let->length = 2;
   let->cap = 2;
