@@ -27,7 +27,7 @@ parse\:%: build
 flatten: build
 	python3 ktest.py flatten
 flatten\:%: build
-	./backbone flatten gen-tests/$*.bb
+	./backbone flatten flatten-tests/$*.bb
 
 gen: build
 	python3 ktest.py gen
