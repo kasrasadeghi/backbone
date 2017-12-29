@@ -11,11 +11,13 @@ Struct    -> (struct StructN (FieldN Type)* )
 Decl      -> (decl FuncN (types Type*) Type)
 Def       -> (def FuncN (params (ParamN Type)*) Type Stmt* )
 
-Stmt      -> Let | Return | If | CallVargs | Call | Store | Auto
+Stmt      -> Let | Return | If | CallVargs | Call | Store | Auto | Become
 Let       -> (let ValN Expr)
-Return    -> (ret Expr Type)
 If        -> (if Expr Stmt*)
+Return    -> (ret Expr Type)
+Become    -> (become     FuncN (types Type*) Type (args Expr*))     
 Call      -> (call       FuncN (types Type*) Type (args Expr*))
+CallTail  -> (call-tail  FuncN (types Type*) Type (args Expr*))
 CallVargs -> (call-vargs FuncN (types Type*) Type (args Expr*))
 Store     -> (store Expr Type Expr)
 Auto      -> (auto VarN Type)
@@ -40,10 +42,6 @@ GE        -> Binop[>=]
 EQ        -> Binop[=]
 NE        -> Binop[!=]
 ```
-
-### Flatten(Backbone) Grammar
-
-//TODO
 
 ### Grammar Notes
 

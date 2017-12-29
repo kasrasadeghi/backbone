@@ -173,6 +173,12 @@ void gCall(Sexp* s) {
   printf(")");
 }
 
+/* (become FuncN (types Type*) Type (args Expr*)) */
+void gCallTail(Sexp* s) {
+  printf("musttail ");
+  gCall(s);
+}
+
 void gStrGet(Sexp* s) {
   size_t index = strtoul(s->list[0]->value, NULL, 10);
   size_t len = _str_table[index];
@@ -274,6 +280,9 @@ void gExpr(Sexp* s) {
   }
   else if (isCallVargs(s)) {
     gCallVargs(s);
+  }
+  else if (isCallTail(s)) {
+    gCallTail(s);
   }
   else if (isMathBinop(s)) {
     gMathBinop(s);
@@ -402,6 +411,10 @@ void gStmt(Sexp* s) {
     printf("  ");
     gCallVargs(s);
   }
+  else if (isCallTail(s) && strcmp(s->list[2]->value, "void") == 0) {
+    printf("  ");
+    gCallTail(s);
+  }
   else if (strcmp(s->value, "store") == 0) {
     gStore(s);
   }
@@ -462,26 +475,26 @@ void gDecl(Sexp* s) {
 }
 
 
-void gProgram(Sexp* s) {
-  _p = s;
-  printf("; ModuleID = '%s'\n", s->value);
+void gProgram(Sexp* program) {
+  _p = program;
+  printf("; ModuleID = '%s'\n", program->value);
   printf("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\""
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
 
-  for (int i = 0; i < s->length; ++i) {
+  for (int i = 0; i < program->length; ++i) {
     printf("\n");
-    Sexp* child = s->list[i];
-    if (strcmp(child->value, "str-table") == 0) {
-      gStrTable(child);
+    Sexp* s = program->list[i];
+    if (isStrTable(s)) {
+      gStrTable(s);
     }
-    if (strcmp(child->value, "struct") == 0) {
-      gStruct(child);
+    else if (isStruct(s)) {
+      gStruct(s);
     }
-    if (isDef(child)) {
-      gDef(child);
+    else if (isDef(s)) {
+      gDef(s);
     }
-    if (isDecl(child)) {
-      gDecl(child);
+    else if (isDecl(s)) {
+      gDecl(s);
     }
   }
 }

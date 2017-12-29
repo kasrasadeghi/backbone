@@ -8,7 +8,15 @@
  * returns true for expressions that are not values.
  */
 int isTall(Sexp* s) {
-  return isCall(s) || isAdd(s) || isIcmp(s) || isLoad(s) || isIndex(s) || isCast(s);
+  return isCall(s)
+         || isCallVargs(s)
+         || isCallTail(s)
+         || isAdd(s)
+         || isIcmp(s)
+         || isLoad(s)
+         || isIndex(s)
+         || isCast(s)
+      ;
 }
 
 static Sexp* _p = NULL;
@@ -45,14 +53,19 @@ static void insertStmt(Sexp* stmt, int index) {
   for (size_t si = _block->length - 1; si >= index; --si) {
     _block->list[si] = _block->list[si - 1];
   }
+
+  /* place statment in block */
   _block->list[index] = stmt;
 }
 
-static char* unique_let() {
-  static char* let_value = "let";
-  char* new_let = malloc(4);
-  strncpy(new_let, let_value, 4);
-  return new_let;
+/**
+ * create a unique char* copy for another char* in order to simplify destruction
+ */
+static char* unique(char* value) {
+  const size_t len = strlen(value) + 1;
+  char* unique_str = malloc(len);
+  strncpy(unique_str, value, len);
+  return unique_str;
 }
 
 /**
@@ -84,7 +97,7 @@ Sexp* extractLet(Sexp* s, int index) {
 
   /* create a let to insert into the definition */
   Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = unique_let();
+  let->value = unique("let");
   let->list = calloc(2, sizeof(Sexp*));
   let->length = 2;
   let->cap = 2;
@@ -141,7 +154,7 @@ void fCall(Sexp* s) {
 /* this should flatten every expression that contains another expression */
 void fLet(Sexp* let) {
   Sexp* s = let->list[1];
-  if (isCall(s) || isCallVargs(s)) {
+  if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
     fCall(s);
     return;
   }
@@ -187,7 +200,7 @@ void callStmt(Sexp* s) {
 
   /* create let from call */
   Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = unique_let();
+  let->value = unique("let");
   let->list = calloc(2, sizeof(Sexp*));
   let->length = 2;
   let->cap = 2;
@@ -205,6 +218,55 @@ void callStmt(Sexp* s) {
   _stmt = stmt_cache;
 }
 
+/**
+ * (become 'name 'types 'return-type 'args)
+ *
+ * if 'return-type == void
+ *  => (call-tail 'name 'types 'return-type 'args)
+ *     (return void)
+ *
+ * otherwise
+ *     (return (call-tail 'name 'types 'return-type 'args) 'return-type)
+ *
+ */
+void fBecome(Sexp* s) {
+  /* make call-tail sexp */
+  Sexp* return_type = s->list[2];
+  free(s->value);
+  s->value = unique("call-tail");
+
+  if (strcmp(return_type->value, "void") == 0) {
+    /* make return void */
+    Sexp* return_sexp = calloc(1, sizeof(Sexp));
+    return_sexp->value = unique("return");
+    return_sexp->length = 1;
+    return_sexp->cap = 1;
+    return_sexp->list = calloc(1, sizeof(Sexp*));
+    return_sexp->list[0] = sexp(unique("void"));
+
+    const int csi = currStmtIndex();
+    insertStmt(return_sexp, csi + 1);
+
+    /* flatten the call, the return is void */
+    fCall(s);
+  } else {
+    Sexp* return_sexp = calloc(1, sizeof(Sexp));
+    return_sexp->value = unique("return");
+    return_sexp->length = 2;
+    return_sexp->cap = 2;
+    return_sexp->list = calloc(2, sizeof(Sexp*));
+    return_sexp->list[0] = s;
+    return_sexp->list[1] = sexp(unique(return_type->value));
+
+    int csi = currStmtIndex();
+    _block->list[csi] = return_sexp;
+    _stmt = return_sexp;
+
+    /* flatten the return, it has the call in it */
+    fTall(return_sexp, 0);
+  }
+}
+
 void fBlock(Sexp* block, int startIndex) {
   Sexp* block_cache = _block;
   _block = block;
@@ -213,24 +275,28 @@ void fBlock(Sexp* block, int startIndex) {
     Sexp* s = block->list[i];
     _stmt = s;
 
-    if (strcmp(s->value, "let") == 0) {
+    if (isLet(s)) {
       fLet(s);
     }
-    else if (strcmp(s->value, "return") == 0) {
+    else if (isReturn(s)) {
       fTall(s, 0);
     }
-    else if (strcmp(s->value, "if") == 0) {
+    else if (isIf(s)) {
       fTall(s, 0);
       fBlock(s, 1);
     }
     else if (isCall(s) || isCallVargs(s)) {
       callStmt(s);
     }
-    else if (strcmp(s->value, "store") == 0) {
+    else if (isStore(s)) {
       /* (store Value Type Ptr) */
       fTall(s, 0);
       fTall(s, 2);
-    } else {
+    }
+    else if (isBecome(s)) {
+      fBecome(s);
+    }
+    else {
       /* statements without possibly tall expressions in them */
       int isOtherStatement = isAuto(s);
       if (!isOtherStatement) {
