@@ -1,9 +1,21 @@
 #include <stdio.h>
 
-void make0(int*);
+void make0(unsigned int* i) {
+  while (*i != 0) {
+    (*i)++;
+  }
+  return;
+}
+
+void alsoMake0(unsigned int* i) {
+  if (*i == 0) return;
+  (*i)++;
+  printf("*i:%u", *i);
+  alsoMake0(i);
+}
 
 int main() {
-  int a = 10000;
+  unsigned int a = 10000;
   make0(&a);
   printf("value: %d\n", a);
 }
