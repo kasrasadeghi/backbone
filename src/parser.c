@@ -103,14 +103,12 @@ Sexp* pSexp(Reader* r) {
 
 Sexp* pProgram(char* filename, Reader* r) {
   char* name_view = basename(filename);
-  size_t name_len = strlen(name_view) + 1;
-  char* program_name = malloc(name_len);
-  strncpy(program_name, name_view, name_len);
-  Sexp* program = sexp(program_name);
+  Sexp* program = sexp(unique(name_view));
   while (hasNext(r)) {
     pushSexp(program, pSexp(r));
     pWhitespace(r);
   }
+  free(r);
   return program;
 }
 

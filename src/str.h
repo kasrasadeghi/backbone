@@ -31,4 +31,9 @@ void str_push(String* s, char c);
  */
 char* str_flush(String* s);
 
+/**
+ * create a unique char* copy for another char* in order to simplify destruction
+ */
+char* unique(char* value);
+
 #endif

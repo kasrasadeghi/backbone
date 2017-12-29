@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "flatten.h"
+#include "str.h"
 
 /**
  * returns true for expressions that are not values.
@@ -56,16 +57,6 @@ static void insertStmt(Sexp* stmt, int index) {
 
   /* place statment in block */
   _block->list[index] = stmt;
-}
-
-/**
- * create a unique char* copy for another char* in order to simplify destruction
- */
-static char* unique(char* value) {
-  const size_t len = strlen(value) + 1;
-  char* unique_str = malloc(len);
-  strncpy(unique_str, value, len);
-  return unique_str;
 }
 
 /**

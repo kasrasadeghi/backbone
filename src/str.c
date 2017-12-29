@@ -1,4 +1,5 @@
 #include <stdlib.h> // calloc, malloc, realloc, size_t
+#include <string.h>
 #include "str.h"
 
 String str_init(void) {
@@ -19,4 +20,14 @@ void str_push(String* s, char c) {
     s->list = (char*)realloc(s->list, s->cap);
   }
   s->list[s->length] = '\0';
+}
+
+/**
+ * create a unique char* copy for another char* in order to simplify destruction
+ */
+char* unique(char* value) {
+  const size_t len = strlen(value) + 1;
+  char* unique_str = malloc(len);
+  strncpy(unique_str, value, len);
+  return unique_str;
 }
