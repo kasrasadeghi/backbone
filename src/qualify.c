@@ -8,8 +8,6 @@ void qType(Sexp* s) {
   const char* type = s->value;
 
   if (strcmp(type, "void") == 0 || strcmp(type, "...") == 0) {
-    printf("%s", type);
-    printf("\n");
     return;
   }
 
@@ -19,16 +17,21 @@ void qType(Sexp* s) {
     char *prim = primitive_types[i];
     size_t prim_len = strlen(prim);
     if (strncmp(type, prim, prim_len) == 0) {
-      if (*(type + prim_len) == 0 || *(type + prim_len) == '*') {
+      if (*(type + prim_len) == 0         // if it is exactly equal
+          || *(type + prim_len) == '*') { // or if it is a pointer  //TODO handle i8** and arbitrary pointer redirection
         // primitive type
-        printf("i%s", type + 1);
-        printf("\n");
+        s->value[0] = 'i';
         return;
       }
     }
   }
-  printf("%%struct.%s", type);
-  printf("\n");
+
+  char cache[256];
+  snprintf(cache, 256, "%%struct.%s", type);
+  size_t cache_len = strlen(cache) + 1;
+  char* str = malloc(cache_len);
+  strncpy(str, cache, cache_len);
+  s->value = str;
 }
 
 void qTypes(Sexp* s) {

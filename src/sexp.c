@@ -16,7 +16,7 @@ void _printSexp(Sexp* s, size_t l) {
   for (int i = 0; i < l; ++i) {
     printf("  ");
   }
-  printf("%s\n", s->value);
+  printf("%s %lu/%lu\n", s->value, s->length, s->cap);
   for (int i = 0; i < s->length; ++i) {
     _printSexp(s->list[i], l + 1);
   }
@@ -33,6 +33,11 @@ void pushSexp(Sexp* s, Sexp* child) {
     s->cap *= 2;
     s->list = realloc(s->list, s->cap * sizeof(Sexp*));
   }
+}
+
+void replaceValue(Sexp* s, char* newValue) {
+  free(s->value);
+  s->value = newValue;
 }
 
 void destroySexp(Sexp* s) {
