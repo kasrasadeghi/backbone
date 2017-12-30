@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "parser.h"
+#include "blockify.h"
 #include "flatten.h"
 #include "qualify.h"
 #include "gen.h"
@@ -21,6 +22,10 @@ int main(int argc, char *argv[]) {
   }
   if (strcmp(argv[1], "qualify") == 0) {
     qualify(program);
+    printSexp(program);
+  }
+  if (strcmp(argv[1], "blockify") == 0) {
+    blockify(program);
     printSexp(program);
   }
   if (strcmp(argv[1], "gen") == 0) {

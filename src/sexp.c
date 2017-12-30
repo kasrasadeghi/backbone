@@ -27,6 +27,14 @@ void printSexp(Sexp* s) {
   _printSexp(s, 0);
 }
 
+Sexp* makeSexp(char* value, size_t length) {
+  Sexp* r = malloc(sizeof(Sexp));
+  r->value = value;
+  r->list = calloc(length, sizeof(Sexp*));
+  r->length = length;
+  r->cap = length;
+}
+
 void pushSexp(Sexp* s, Sexp* child) {
   s->list[s->length] = child;
   ++s->length;
@@ -34,11 +42,6 @@ void pushSexp(Sexp* s, Sexp* child) {
     s->cap *= 2;
     s->list = realloc(s->list, s->cap * sizeof(Sexp*));
   }
-}
-
-void replaceValue(Sexp* s, char* newValue) {
-  free(s->value);
-  s->value = newValue;
 }
 
 void destroySexp(Sexp* s) {
@@ -73,6 +76,7 @@ int isStmt(Sexp* s) {
          || isBecome(s)
       ;
 }
+int isDo(Sexp* s)        { return strcmp(s->value, "let") == 0; }
 int isLet(Sexp* s)       { return strcmp(s->value, "let") == 0; }
 int isReturn(Sexp* s)    { return strcmp(s->value, "return") == 0; }
 int isIf(Sexp* s)        { return strcmp(s->value, "if") == 0; }

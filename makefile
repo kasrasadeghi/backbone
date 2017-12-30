@@ -23,6 +23,11 @@ parse: build
 	python3 ktest.py parse
 parse\:%: build
 	./backbone parse parser-tests/$*.bb
+	
+blockify: build
+	python3 ktest.py blockify
+blockify\:%: build
+	./backbone blockify blockify-tests/$*.bb
 
 flatten: build
 	python3 ktest.py flatten

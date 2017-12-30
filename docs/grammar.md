@@ -11,7 +11,8 @@ Struct    -> (struct StructN (FieldN Type)* )
 Decl      -> (decl FuncN (types Type*) Type)
 Def       -> (def FuncN (params (ParamN Type)*) Type Stmt* )
 
-Stmt      -> Let | Return | If | CallVargs | Call | Store | Auto | Become
+Stmt      -> Let | Return | If | CallVargs | Call | Store | Auto | Become | Do
+Do        -> (do Stmt*)
 Let       -> (let ValN Expr)
 If        -> (if Expr Stmt*)
 Return    -> (return Expr Type) | (return void) 

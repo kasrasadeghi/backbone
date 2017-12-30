@@ -13,6 +13,7 @@ typedef struct Sexp {
 Sexp* sexp(char* value);
 
 void printSexp(Sexp*);
+Sexp* makeSexp(char* value, size_t length);
 void pushSexp(Sexp* s, Sexp* child);
 void destroySexp(Sexp* s);
 
@@ -25,6 +26,7 @@ int isDecl     (Sexp* s);
 int isDef      (Sexp* s);
 
 int isStmt     (Sexp* s);
+int isDo       (Sexp* s);
 int isLet      (Sexp* s);
 int isReturn   (Sexp* s);
 int isIf       (Sexp* s);
