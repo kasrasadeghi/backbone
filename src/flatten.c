@@ -263,6 +263,7 @@ void fBlock(Sexp* block, int startIndex);
 
 void fStmt(Sexp* s) {
   _stmt = s;
+//  printSexp(s);
 
   if (isLet(s)) {
     fLet(s);
@@ -281,6 +282,7 @@ void fStmt(Sexp* s) {
     fBlock(s, 1);
   }
   else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
+//    printf("call as a statement\n");
     callStmt(s);
   }
   else if (isStore(s)) {
@@ -302,9 +304,6 @@ void fStmt(Sexp* s) {
 }
 
 void fBlock(Sexp* block, int startIndex) {
-  int cond = isDef(block) && block->list[0]->value[0] == 'm';
-  if (!cond) return;
-
   Sexp* block_cache = _block;
   _block = block;
 

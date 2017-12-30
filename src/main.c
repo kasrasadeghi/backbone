@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   }
   if (strcmp(argv[1], "flatten") == 0) {
     flatten(program);
-//    printSexp(program);
+    printSexp(program);
   }
   if (strcmp(argv[1], "qualify") == 0) {
     qualify(program);
