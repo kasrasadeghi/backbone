@@ -30,7 +30,7 @@ static size_t _stack_counter = 0;
  * Inserts a statement into the current definition, _def.
  *
  *  - Increases the length of _def by one.
- *  - Globals: _defi, _def, _p
+ *  - Globals: _defi, _def, _p, _block
  *
  * Note: relies on the lack of nested definitions.
  *
@@ -259,49 +259,57 @@ void fBecome(Sexp* s) {
   }
 }
 
+void fBlock(Sexp* block, int startIndex);
+
+void fStmt(Sexp* s) {
+  _stmt = s;
+
+  if (isLet(s)) {
+    fLet(s);
+  }
+  else if (isReturn(s)) {
+    if (strcmp(s->list[0]->value, "void") == 0) {
+      /* (return void) */
+      // do nothing
+    } else {
+      /* (return Expr Type) */
+      fTall(s, 0);
+    }
+  }
+  else if (isIf(s)) {
+    fTall(s, 0);
+    fBlock(s, 1);
+  }
+  else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
+    callStmt(s);
+  }
+  else if (isStore(s)) {
+    /* (store Value Type Ptr) */
+    fTall(s, 0);
+    fTall(s, 2);
+  }
+  else if (isBecome(s)) {
+    fBecome(s);
+  }
+  else {
+    /* statements without possibly tall expressions in them */
+    int isOtherStatement = isAuto(s);
+    if (!isOtherStatement) {
+      printSexp(s);
+    }
+    assert(isOtherStatement);
+  }
+}
+
 void fBlock(Sexp* block, int startIndex) {
+  int cond = isDef(block) && block->list[0]->value[0] == 'm';
+  if (!cond) return;
+
   Sexp* block_cache = _block;
   _block = block;
 
-  for (int i = startIndex; i < block->length; ++i) {
-    Sexp* s = block->list[i];
-    _stmt = s;
-
-    if (isLet(s)) {
-      fLet(s);
-    }
-    else if (isReturn(s)) {
-      if (strcmp(s->list[0]->value, "void") == 0) {
-        /* (return void) */
-        // do nothing
-      } else {
-        /* (return Expr Type) */
-        fTall(s, 0);
-      }
-    }
-    else if (isIf(s)) {
-      fTall(s, 0);
-      fBlock(s, 1);
-    }
-    else if (isCall(s) || isCallVargs(s)) {
-      callStmt(s);
-    }
-    else if (isStore(s)) {
-      /* (store Value Type Ptr) */
-      fTall(s, 0);
-      fTall(s, 2);
-    }
-    else if (isBecome(s)) {
-      fBecome(s);
-    }
-    else {
-      /* statements without possibly tall expressions in them */
-      int isOtherStatement = isAuto(s);
-      if (!isOtherStatement) {
-        printSexp(s);
-      }
-      assert(isOtherStatement);
-    }
+  for (int i = startIndex; i < _block->length; ++i) {
+    fStmt(_block->list[i]);
   }
   _block = block_cache;
 }
