@@ -120,6 +120,8 @@ int currStmtIndex() {
 
 void fLet(Sexp* let);
 
+//endregion
+
 void fTall(Sexp* s, int i) {
   if (isTall(s->list[i])) {
     Sexp* let = extractLet(s, i);
@@ -133,7 +135,6 @@ void fTall(Sexp* s, int i) {
     _stmt = stmt_cache;
   }
 }
-//endregion
 
 void fCall(Sexp* s) {
   Sexp* args = s->list[3];
