@@ -21,10 +21,9 @@ int main(int argc, char *argv[]) {
   }
   if (strcmp(argv[1], "qualify") == 0) {
     qualify(program);
-    printSexp(program, 0);
+    printSexp(program);
   }
   if (strcmp(argv[1], "gen") == 0) {
-    qualify(program);
     flatten(program);
     generateLLVM(filename, program);
   }

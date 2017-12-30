@@ -29,6 +29,11 @@ flatten: build
 flatten\:%: build
 	./backbone flatten flatten-tests/$*.bb
 
+qualify: build
+	python3 ktest.py qualify
+qualify\:%: build
+	./backbone qualify qualify-tests/$*.bb
+
 gen: build
 	python3 ktest.py gen
 gen\:%: build

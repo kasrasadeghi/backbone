@@ -1,0 +1,4 @@
+test_dir: qualify-tests
+input: %.bb
+run: ./backbone qualify qualify-tests/%.bb
+reference: %.ok
