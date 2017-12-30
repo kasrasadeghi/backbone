@@ -270,7 +270,13 @@ void fBlock(Sexp* block, int startIndex) {
       fLet(s);
     }
     else if (isReturn(s)) {
-      fTall(s, 0);
+      if (strcmp(s->list[0]->value, "void") == 0) {
+        /* (return void) */
+        // do nothing
+      } else {
+        /* (return Expr Type) */
+        fTall(s, 0);
+      }
     }
     else if (isIf(s)) {
       fTall(s, 0);

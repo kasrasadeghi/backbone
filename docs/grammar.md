@@ -14,7 +14,7 @@ Def       -> (def FuncN (params (ParamN Type)*) Type Stmt* )
 Stmt      -> Let | Return | If | CallVargs | Call | Store | Auto | Become
 Let       -> (let ValN Expr)
 If        -> (if Expr Stmt*)
-Return    -> (ret Expr Type)
+Return    -> (return Expr Type) | (return void) 
 Become    -> (become     FuncN (types Type*) Type (args Expr*))     
 Call      -> (call       FuncN (types Type*) Type (args Expr*))
 CallTail  -> (call-tail  FuncN (types Type*) Type (args Expr*))
@@ -22,7 +22,7 @@ CallVargs -> (call-vargs FuncN (types Type*) Type (args Expr*))
 Store     -> (store Expr Type Expr)
 Auto      -> (auto VarN Type)
 
-Expr      -> Call | CallVargs | MathBinop | Icmp | Load | Index | Cast | Value
+Expr      -> Call | CallVargs | CallTail | MathBinop | Icmp | Load | Index | Cast | Value
 Load      -> (load Type Expr)
 Index     -> (index Expr Type Expr)
 Cast      -> (cast Type Type Expr)
