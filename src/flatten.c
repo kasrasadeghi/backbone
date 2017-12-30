@@ -291,7 +291,7 @@ void fBlock(Sexp* block, int startIndex) {
       /* statements without possibly tall expressions in them */
       int isOtherStatement = isAuto(s);
       if (!isOtherStatement) {
-        printSexp(s, 0);
+        printSexp(s);
       }
       assert(isOtherStatement);
     }

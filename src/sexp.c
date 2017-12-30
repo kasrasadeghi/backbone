@@ -12,14 +12,18 @@ Sexp* sexp(char* value) {
   return result;
 };
 
-void printSexp(Sexp* s, int l) {
+void _printSexp(Sexp* s, size_t l) {
   for (int i = 0; i < l; ++i) {
     printf("  ");
   }
   printf("%s\n", s->value);
   for (int i = 0; i < s->length; ++i) {
-    printSexp(s->list[i], l + 1);
+    _printSexp(s->list[i], l + 1);
   }
+}
+
+void printSexp(Sexp* s) {
+  _printSexp(s, 0);
 }
 
 void pushSexp(Sexp* s, Sexp* child) {

@@ -12,7 +12,7 @@ typedef struct Sexp {
 
 Sexp* sexp(char* value);
 
-void printSexp(Sexp*, int l);
+void printSexp(Sexp*);
 void pushSexp(Sexp* s, Sexp* child);
 void destroySexp(Sexp* s);
 

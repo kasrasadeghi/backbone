@@ -424,7 +424,7 @@ void gStmt(Sexp* s) {
   else {
     fprintf(stderr, "Error: unmatched statement!\n");
     printf("  UNMATCHED STATEMENT:\n");
-    printSexp(s, 0);
+    printSexp(s);
   }
   printf("\n");
 }

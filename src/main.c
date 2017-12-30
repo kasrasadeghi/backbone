@@ -12,11 +12,11 @@ int main(int argc, char *argv[]) {
   char* filename = argv[2];
   Sexp* program = parse(filename);
   if (strcmp(argv[1], "parse") == 0) {
-    printSexp(program, 0);
+    printSexp(program);
   }
   if (strcmp(argv[1], "flatten") == 0) {
     flatten(program);
-    printSexp(program, 0);
+    printSexp(program);
   }
   if (strcmp(argv[1], "gen") == 0) {
     flatten(program);

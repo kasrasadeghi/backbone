@@ -1,6 +1,6 @@
 B-DIR=src/cmake-build-debug
 
-all: build
+all: build test
 
 .PHONY: clean
 clean: ${B-DIR}
