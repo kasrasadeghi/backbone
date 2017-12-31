@@ -12,12 +12,7 @@ build:
 	ln -sf ${B-DIR}/backbone backbone
 
 test:
-	@echo testing parse
-	@python3 ktest.py parse
-	@echo testing flatten
-	@python3 ktest.py flatten
-	@echo testing gen
-	@python3 ktest.py gen
+	@python3 ktest.py
 
 parse: build
 	python3 ktest.py parse
@@ -40,7 +35,7 @@ gen\:%: build
 	./backbone gen gen-tests/$*.bb
 
 output: build
-	python3 ktest.py parse
+	python3 ktest.py output
 
 help:
 	@echo "  version   - check versions"

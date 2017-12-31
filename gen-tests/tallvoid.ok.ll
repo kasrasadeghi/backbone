@@ -13,7 +13,7 @@ declare i32 @printf(i8*, ...)
 
 define void @v(i32 %a) {
 entry:
-  %$0 = call i32 (i8*, i32) @printf(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @str.0, i64 0, i64 0), i32 %a)
+  %$0 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @str.0, i64 0, i64 0), i32 %a)
   ret void
 }
 

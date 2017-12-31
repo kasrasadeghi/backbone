@@ -35,8 +35,11 @@ def basename(path):
 _test_dir  = ''
 _input     = ''
 _run       = ''
+_dir_run   = ''
 _output    = ''
 _reference = ''
+_cleanup   = ''
+_require   = ''
 
 
 def test_output(test_name, stdout):
@@ -73,7 +76,12 @@ def check_files(*files):
 
 
 def valid_test(name):
-    return check_files(_input.replace('%', name), _reference.replace('%', name))
+    def p(s):
+        return s.replace('%', name)
+    if _require == '':
+        return check_files(p(_input), p(_reference))
+    else:
+        return check_files(*list(map(p, _require.strip().split())))
 
 
 def valid_tests():
@@ -81,8 +89,17 @@ def valid_tests():
 
 
 def test(test_name):
-    stdout = call(_run.replace('%', test_name))
+    assert _run != '' or _dir_run != ''
+
+    if _run != '':
+        stdout = call(_run.replace('%', test_name))
+    else:
+        with cd(_test_dir):
+            stdout = call(_dir_run.replace('%', test_name))
     test_output(test_name, stdout)
+    if _cleanup != '':
+        with cd(_test_dir):
+            call(_cleanup.replace('%', test_name))
 
 
 def testall():
@@ -96,6 +113,22 @@ def testall():
 
 
 def main(*args):
+    global _test_dir
+    global _input
+    global _run
+    global _dir_run
+    global _output
+    global _reference
+    global _cleanup
+    global _require
+    _test_dir  = ''
+    _input     = ''
+    _run       = ''
+    _dir_run   = ''
+    _output    = ''
+    _reference = ''
+    _cleanup   = ''
+    _require   = ''
     test_suite = args[0]
 
     def config(name):
@@ -109,8 +142,11 @@ def main(*args):
             config('test_dir')
             config('input')
             config('run')
+            config('dir_run')
             config('output')
             config('reference')
+            config('cleanup')
+            config('require')
 
     if len(args) == 1:
         testall()
@@ -120,4 +156,9 @@ def main(*args):
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:])
+    if len(sys.argv) != 1:
+        main(*sys.argv[1:])
+    else:
+        for test_file_name in [x[:-6] for x in ls('.') if x.endswith('.ktest')]:
+            print("testing", test_file_name)
+            main(test_file_name)

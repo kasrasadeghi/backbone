@@ -29,11 +29,10 @@ parse\:%: %.bb build-v
 flatten\:%: %.bb build
 	../backbone flatten $*.bb
 
-gen\:%: build
-	python3 test_gen.py $*
-
-output\:%: build
-	python3 test_output.py $*
+output\:%: %.bb
+	../backbone gen $*.bb
+	(make -s from:$* > $*.output)
+	(make -s from:$*.ok > $*.reference)
 
 help:
 	@echo "make parse:hello  - parses hello.bb"
@@ -42,5 +41,6 @@ help:
 							   "sees if they have the same output"
 
 clean:
-	find -name '*.ll' -not -name '*.ok.ll' | xargs rm
-	rm *.exe
+	find -name '*.ll' -not -name '*.ok.ll' | xargs rm -f
+	rm -f *.output *.reference
+	rm -f *.exe
