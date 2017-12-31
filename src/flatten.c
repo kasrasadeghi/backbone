@@ -88,7 +88,7 @@ Sexp* extractLet(Sexp* s, int index) {
 
   /* create a let to insert into the definition */
   Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = unique("let");
+  let->value = copyStr("let");
   let->list = calloc(2, sizeof(Sexp*));
   let->length = 2;
   let->cap = 2;
@@ -192,7 +192,7 @@ void callStmt(Sexp* s) {
 
   /* create let from call */
   Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = unique("let");
+  let->value = copyStr("let");
   let->list = calloc(2, sizeof(Sexp*));
   let->length = 2;
   let->cap = 2;
@@ -225,16 +225,16 @@ void fBecome(Sexp* s) {
   /* make call-tail sexp */
   Sexp* return_type = s->list[2];
   free(s->value);
-  s->value = unique("call-tail");
+  s->value = copyStr("call-tail");
 
   if (strcmp(return_type->value, "void") == 0) {
     /* make return void */
     Sexp* return_sexp = calloc(1, sizeof(Sexp));
-    return_sexp->value = unique("return");
+    return_sexp->value = copyStr("return");
     return_sexp->length = 1;
     return_sexp->cap = 1;
     return_sexp->list = calloc(1, sizeof(Sexp*));
-    return_sexp->list[0] = sexp(unique("void"));
+    return_sexp->list[0] = sexp(copyStr("void"));
 
     const int csi = currStmtIndex();
     insertStmt(return_sexp, csi + 1);
@@ -243,12 +243,12 @@ void fBecome(Sexp* s) {
     fCall(s);
   } else {
     Sexp* return_sexp = calloc(1, sizeof(Sexp));
-    return_sexp->value = unique("return");
+    return_sexp->value = copyStr("return");
     return_sexp->length = 2;
     return_sexp->cap = 2;
     return_sexp->list = calloc(2, sizeof(Sexp*));
     return_sexp->list[0] = s;
-    return_sexp->list[1] = sexp(unique(return_type->value));
+    return_sexp->list[1] = sexp(copyStr(return_type->value));
 
     int csi = currStmtIndex();
     _block->list[csi] = return_sexp;

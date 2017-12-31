@@ -23,14 +23,14 @@ void pWhitespace(Reader* r) {
 }
 
 char* pWord(Reader* r) {
-  String str = str_init();
+  String str = initStr();
   pWhitespace(r);
   if (!hasNext(r)) {
     fprintf(stderr, "backbone: list does not start with word.\n");
     exit(EXIT_FAILURE);
   }
   while (hasNext(r) && peek(r) != '(' && peek(r) != ')' && !isspace(peek(r))) {
-    str_push(&str, get(r));
+    pushStr(&str, get(r));
   }
   return str.list;
 }
@@ -55,36 +55,36 @@ Sexp* pList(Reader* r) {
 }
 
 Sexp* pChar(Reader* r) {
-  String str = str_init();
+  String str = initStr();
   assert (peek(r) == '\'');
-  str_push(&str, get(r));
+  pushStr(&str, get(r));
   // while we've not (ended the char with an unescaped apostrophe)
   while (!(peek(r) == '\'' && prev(r) != '\\')) {
     if (!hasNext(r)) {
       fprintf(stderr, "backbone: unmatched apostrophe for char\n"); //TODO ...on line \d
       exit(EXIT_FAILURE);
     }
-    str_push(&str, get(r));
+    pushStr(&str, get(r));
   }
   assert (peek(r) == '\'');
-  str_push(&str, get(r));
+  pushStr(&str, get(r));
   return sexp(str.list);
 }
 
 Sexp* pString(Reader* r) {
-  String str = str_init();
+  String str = initStr();
   assert (peek(r) == '\"');
-  str_push(&str, get(r));
+  pushStr(&str, get(r));
   // while we've not (ended the string with an unescaped quote)
   while (!(peek(r) == '\"' && prev(r) != '\\')) {
     if (!hasNext(r)) {
       fprintf(stderr, "backbone: unmatched quote for string\n"); //TODO ...on line \d
       exit(EXIT_FAILURE);
     }
-    str_push(&str, get(r));
+    pushStr(&str, get(r));
   }
   assert (peek(r) == '\"');
-  str_push(&str, get(r));
+  pushStr(&str, get(r));
   return sexp(str.list);
 }
 
@@ -103,7 +103,7 @@ Sexp* pSexp(Reader* r) {
 
 Sexp* pProgram(char* filename, Reader* r) {
   char* name_view = basename(filename);
-  Sexp* program = sexp(unique(name_view));
+  Sexp* program = sexp(copyStr(name_view));
   while (hasNext(r)) {
     pushSexp(program, pSexp(r));
     pWhitespace(r);

@@ -17,12 +17,12 @@ String* str_make(void);
 /**
  * Uses return-value optimization to default-ctor a stack-local String.
  */
-String str_init(void);
+String initStr(void);
 
 /**
  * Adds a character to the String, doubling size if the capacity doesn't fit it.
  */
-void str_push(String* s, char c);
+void pushStr(String* s, char c);
 
 /**
  * Flushes the String, return the char* it used to point to.
@@ -34,6 +34,6 @@ char* str_flush(String* s);
 /**
  * create a unique char* copy for another char* in order to simplify destruction
  */
-char* unique(char* value);
+char* copyStr(char* value);
 
 #endif

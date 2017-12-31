@@ -2,7 +2,7 @@
 #include <string.h>
 #include "str.h"
 
-String str_init(void) {
+String initStr(void) {
   String str = {NULL, 0, 10};
   str.list = malloc(10 * sizeof(char));
   str.list[0] = 0;
@@ -12,7 +12,7 @@ String str_init(void) {
 /**
  * Adds a character to the String, doubling size if the capacity doesn't fit it.
  */
-void str_push(String* s, char c) {
+void pushStr(String* s, char c) {
   s->list[s->length] = c;
   ++s->length;
   if (s->length == s->cap) {
@@ -25,7 +25,7 @@ void str_push(String* s, char c) {
 /**
  * create a unique char* copy for another char* in order to simplify destruction
  */
-char* unique(char* value) {
+char* copyStr(char* value) {
   const size_t len = strlen(value) + 1;
   char* unique_str = malloc(len);
   strncpy(unique_str, value, len);

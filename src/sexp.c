@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "sexp.h"
+#include "str.h"
 
 Sexp* sexp(char* value) {
   Sexp* result = calloc(1, sizeof(Sexp));
@@ -11,6 +12,30 @@ Sexp* sexp(char* value) {
   result->cap = 2;
   return result;
 };
+
+Sexp* makeSexp(char* value, size_t length) {
+  Sexp* r = malloc(sizeof(Sexp));
+  r->value = value;
+  r->list = length == 0 ? NULL : calloc(length, sizeof(Sexp*));
+  r->length = length;
+  r->cap = length;
+  return r;
+}
+
+Sexp* copySexp(Sexp* s) {
+  Sexp* result = makeSexp(str_copy(s->value), s->length);
+  for (size_t i = 0; i < s->length; ++i) {
+    result->list[i] = copySexp(s->list[i]);
+  }
+  return result;
+}
+
+void incrementLength(Sexp* const s) {
+  Sexp* decoy = makeSexp(str_copy("decoy"), 0);
+  pushSexp(s, decoy);
+  s->list[s->length - 1] = NULL;
+  destroySexp(decoy);
+}
 
 void _printSexp(Sexp* s, size_t l) {
   for (int i = 0; i < l; ++i) {
