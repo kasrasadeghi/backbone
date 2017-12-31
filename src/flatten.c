@@ -35,9 +35,9 @@ static size_t _stack_counter = 0;
  * Note: relies on the lack of nested definitions.
  *
  * @param stmt  - the statement to insert.
- * @param index - the index to insert it at.
+ * @param csi - the index to insert it at.
  */
-static void insertStmt(Sexp* stmt, int index) {
+static void insertStmt(Sexp* stmt, int csi) {
   /* make room for another statement in the current definition */
   /* should increase the length by 1 */
   if (_block->length == _block->cap) {
@@ -51,12 +51,12 @@ static void insertStmt(Sexp* stmt, int index) {
   }
 
   /* move everything from [csi, length) over, starting from the end */
-  for (size_t si = _block->length - 1; si >= index; --si) {
+  for (size_t si = _block->length - 1; si >= csi; --si) {
     _block->list[si] = _block->list[si - 1];
   }
 
   /* place statment in block */
-  _block->list[index] = stmt;
+  _block->list[csi] = stmt;
 }
 
 /**
