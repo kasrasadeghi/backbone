@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "sexp.h"
+#include "str.h"
 
 Sexp* sexp(char* value) {
   Sexp* result = calloc(1, sizeof(Sexp));
@@ -12,11 +13,40 @@ Sexp* sexp(char* value) {
   return result;
 };
 
+Sexp* makeSexp(char* value, size_t length) {
+  Sexp* r = malloc(sizeof(Sexp));
+  r->value = value;
+  r->list = length == 0 ? NULL : calloc(length, sizeof(Sexp*));
+  r->length = length;
+  r->cap = length;
+  return r;
+}
+
+Sexp* copySexp(Sexp* s) {
+  Sexp* result = makeSexp(str_copy(s->value), s->length);
+  for (size_t i = 0; i < s->length; ++i) {
+    result->list[i] = copySexp(s->list[i]);
+  }
+  return result;
+}
+
+void incrementLength(Sexp* const s) {
+  Sexp* decoy = makeSexp(str_copy("decoy"), 0);
+  pushSexp(s, decoy);
+  s->list[s->length - 1] = NULL;
+  destroySexp(decoy);
+}
+
 void _printSexp(Sexp* s, size_t l) {
   for (int i = 0; i < l; ++i) {
     printf("  ");
   }
 //  printf("%s %lu/%lu\n", s->value, s->length, s->cap);
+  if (s == NULL) {
+    printf("NULL");
+    return;
+  }
+  if (s->value == NULL) printf("NULL-VALUE");
   printf("%s\n", s->value);
   for (int i = 0; i < s->length; ++i) {
     _printSexp(s->list[i], l + 1);
@@ -27,15 +57,7 @@ void printSexp(Sexp* s) {
   _printSexp(s, 0);
 }
 
-Sexp* makeSexp(char* value, size_t length) {
-  Sexp* r = malloc(sizeof(Sexp));
-  r->value = value;
-  r->list = calloc(length, sizeof(Sexp*));
-  r->length = length;
-  r->cap = length;
-}
-
-void pushSexp(Sexp* s, Sexp* child) {
+void pushSexp(Sexp* const s, Sexp* child) {
   s->list[s->length] = child;
   ++s->length;
   if (s->length == s->cap) {
@@ -87,7 +109,7 @@ int isStore(Sexp* s)     { return strcmp(s->value, "store") == 0; }
 int isAuto(Sexp* s)      { return strcmp(s->value, "auto") == 0; }
 int isBecome(Sexp* s)    { return strcmp(s->value, "become") == 0; }
 
-int isExpr(Sexp* s) {
+int isTall(Sexp* s) {
   return isCall(s)
          || isCallVargs(s)
          || isMathBinop(s)
@@ -95,6 +117,10 @@ int isExpr(Sexp* s) {
          || isLoad(s)
          || isIndex(s)
          || isCast(s)
+          ;
+}
+int isExpr(Sexp* s) {
+  return isTall(s)
 //         || isValue(s) // TODO fix
           ;
 }

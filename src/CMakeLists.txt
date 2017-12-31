@@ -22,4 +22,5 @@ add_executable(backbone main.c
     reader.c reader.h
     qualify.c qualify.h
     blockify.c blockify.h
+    normalize.c normalize.h
 )

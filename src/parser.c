@@ -103,7 +103,7 @@ Sexp* pSexp(Reader* r) {
 
 Sexp* pProgram(char* filename, Reader* r) {
   char* name_view = basename(filename);
-  Sexp* program = sexp(unique(name_view));
+  Sexp* program = sexp(str_copy(name_view));
   while (hasNext(r)) {
     pushSexp(program, pSexp(r));
     pWhitespace(r);

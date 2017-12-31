@@ -11,9 +11,11 @@ typedef struct Sexp {
 } Sexp;
 
 Sexp* sexp(char* value);
+Sexp* makeSexp(char* value, size_t length);
+Sexp* copySexp(Sexp*); /* deep copy. */
+void incrementLength(Sexp*);
 
 void printSexp(Sexp*);
-Sexp* makeSexp(char* value, size_t length);
 void pushSexp(Sexp* s, Sexp* child);
 void destroySexp(Sexp* s);
 
@@ -37,7 +39,8 @@ int isStore    (Sexp* s);
 int isAuto     (Sexp* s);
 int isBecome   (Sexp* s);
 
-int isExpr     (Sexp* s);
+//int isExpr     (Sexp* s);
+int isTall     (Sexp* s);
 int isLoad     (Sexp* s);
 int isIndex    (Sexp* s);
 int isCast     (Sexp* s);

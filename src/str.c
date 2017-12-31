@@ -25,7 +25,7 @@ void str_push(String* s, char c) {
 /**
  * create a unique char* copy for another char* in order to simplify destruction
  */
-char* unique(char* value) {
+char* str_copy(char *value) {
   const size_t len = strlen(value) + 1;
   char* unique_str = malloc(len);
   strncpy(unique_str, value, len);

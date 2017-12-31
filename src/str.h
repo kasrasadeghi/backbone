@@ -34,6 +34,6 @@ char* str_flush(String* s);
 /**
  * create a unique char* copy for another char* in order to simplify destruction
  */
-char* unique(char* value);
+char* str_copy(char *value);
 
 #endif

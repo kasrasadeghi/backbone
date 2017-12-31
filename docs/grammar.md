@@ -1,7 +1,7 @@
 ### Backbone Grammar
 
 ```
-Binop[x]  -> (x Type Expr Expr)
+BinopF[x]  -> (x Type Expr Expr)
 
 Program   -> TopLevel*
 
@@ -23,25 +23,26 @@ CallVargs -> (call-vargs FuncN (types Type*) Type (args Expr*))
 Store     -> (store Expr Type Expr)
 Auto      -> (auto VarN Type)
 
-Expr      -> Call | CallVargs | CallTail | MathBinop | Icmp | Load | Index | Cast | Value
+Expr      -> Call | CallVargs | CallTail | Load | Index  | Binop | Value
+Binop     -> MathBinop | Icmp
 Load      -> (load Type Expr)
 Index     -> (index Expr Type Expr)
-Cast      -> (cast Type Type Expr)
 
-Value     -> Literal | VarN | StrGet
+Value     -> Literal | VarN | StrGet | Cast
 StrGet    -> (str-get int)
+Cast      -> (cast Type Type Expr)
 Literal   -> int 
 
 MathBinop -> Add
-Add       -> Binop[+]
+Add       -> BinopF[+]
 
 Icmp      -> LT | LE | GT | GE | EQ | NE
-LT        -> Binop[<]
-LE        -> Binop[<=] 
-GT        -> Binop[>]
-GE        -> Binop[>=]
-EQ        -> Binop[=]
-NE        -> Binop[!=]
+LT        -> BinopF[<]
+LE        -> BinopF[<=] 
+GT        -> BinopF[>]
+GE        -> BinopF[>=]
+EQ        -> BinopF[=]
+NE        -> BinopF[!=]
 ```
 
 ### Grammar Notes

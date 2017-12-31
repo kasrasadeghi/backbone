@@ -36,7 +36,7 @@ Sexp* bIf(Sexp* s) {
  */
 Sexp* bContainer(Sexp* s, size_t si) { // si = starting index
   size_t stmt_count = s->length - si;
-  Sexp* block = makeSexp(unique("do"), stmt_count);
+  Sexp* block = makeSexp(str_copy("do"), stmt_count);
   for (size_t i = 0; i < stmt_count; ++i) {
     block->list[i] = s->list[si + i];
     s->list[si + i] = NULL;
