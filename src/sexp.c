@@ -52,7 +52,7 @@ void printSexp(Sexp* s) {
   _printSexp(s, 0);
 }
 
-void pushSexp(Sexp* s, Sexp* child) {
+void pushSexp(Sexp* const s, Sexp* child) {
   s->list[s->length] = child;
   ++s->length;
   if (s->length == s->cap) {

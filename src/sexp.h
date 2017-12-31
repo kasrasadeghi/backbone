@@ -11,6 +11,9 @@ typedef struct Sexp {
 } Sexp;
 
 Sexp* sexp(char* value);
+Sexp* makeSexp(char* value, size_t length);
+Sexp* copySexp(Sexp* s);
+void incrementLength(Sexp* s);
 
 void printSexp(Sexp*);
 void pushSexp(Sexp* s, Sexp* child);

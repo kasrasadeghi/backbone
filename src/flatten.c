@@ -229,11 +229,7 @@ void fBecome(Sexp* s) {
 
   if (strcmp(return_type->value, "void") == 0) {
     /* make return void */
-    Sexp* return_sexp = calloc(1, sizeof(Sexp));
-    return_sexp->value = copyStr("return");
-    return_sexp->length = 1;
-    return_sexp->cap = 1;
-    return_sexp->list = calloc(1, sizeof(Sexp*));
+    Sexp* return_sexp = makeSexp(copyStr("return"), 1);
     return_sexp->list[0] = sexp(copyStr("void"));
 
     const int csi = currStmtIndex();
@@ -263,17 +259,12 @@ void fBlock(Sexp* block, int startIndex);
 
 void fStmt(Sexp* s) {
   _stmt = s;
-//  printSexp(s);
 
   if (isLet(s)) {
     fLet(s);
   }
   else if (isReturn(s)) {
-    if (strcmp(s->list[0]->value, "void") == 0) {
-      /* (return void) */
-      // do nothing
-    } else {
-      /* (return Expr Type) */
+    if (strcmp(s->list[0]->value, "void") != 0) {
       fTall(s, 0);
     }
   }
@@ -282,7 +273,6 @@ void fStmt(Sexp* s) {
     fBlock(s, 1);
   }
   else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
-//    printf("call as a statement\n");
     callStmt(s);
   }
   else if (isStore(s)) {
