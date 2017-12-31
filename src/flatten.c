@@ -76,8 +76,7 @@ Sexp* extractLet(Sexp* s, int index) {
   /* replace with reference to local */
   char* string = calloc(12, 1);
   snprintf(string, 12, "$%lu", local);
-  Sexp* ref = calloc(1, sizeof(Sexp));
-  ref->value = string;
+  Sexp* ref = makeSexp(string, 0);
   s->list[index] = ref;
 
   /* make an initializer of the local */
@@ -87,11 +86,7 @@ Sexp* extractLet(Sexp* s, int index) {
   init->value = string_copy;
 
   /* create a let to insert into the definition */
-  Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = copyStr("let");
-  let->list = calloc(2, sizeof(Sexp*));
-  let->length = 2;
-  let->cap = 2;
+  Sexp* let = makeSexp(copyStr("let"), 2);
   let->list[0] = init;
   let->list[1] = arg;
 
@@ -143,7 +138,10 @@ void fCall(Sexp* s) {
   }
 }
 
-/* this should flatten every expression that contains another expression */
+/**
+ * tall expression = expression that contains another expression
+ * this should flatten every tall expression
+ */
 void fLet(Sexp* let) {
   Sexp* s = let->list[1];
   if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
@@ -187,15 +185,10 @@ void callStmt(Sexp* s) {
   /* create a initializer for the ignored stack variable */
   char* string = calloc(12, 1);
   snprintf(string, 12, "$%lu", ignored);
-  Sexp* init = calloc(1, sizeof(Sexp));
-  init->value = string;
+  Sexp* init = makeSexp(string, 0);
 
   /* create let from call */
-  Sexp* let = calloc(1, sizeof(Sexp));
-  let->value = copyStr("let");
-  let->list = calloc(2, sizeof(Sexp*));
-  let->length = 2;
-  let->cap = 2;
+  Sexp* let = makeSexp(copyStr("let"), 2);
   let->list[0] = init;
   let->list[1] = s;
 
@@ -230,24 +223,18 @@ void fBecome(Sexp* s) {
   if (strcmp(return_type->value, "void") == 0) {
     /* make return void */
     Sexp* return_sexp = makeSexp(copyStr("return"), 1);
-    return_sexp->list[0] = sexp(copyStr("void"));
+    return_sexp->list[0] = makeSexp(copyStr("void"), 0);
 
-    const int csi = currStmtIndex();
-    insertStmt(return_sexp, csi + 1);
+    insertStmt(return_sexp, currStmtIndex() + 1);
 
     /* flatten the call, the return is void */
     fCall(s);
   } else {
-    Sexp* return_sexp = calloc(1, sizeof(Sexp));
-    return_sexp->value = copyStr("return");
-    return_sexp->length = 2;
-    return_sexp->cap = 2;
-    return_sexp->list = calloc(2, sizeof(Sexp*));
+    Sexp* return_sexp = makeSexp(copyStr("return"), 2);
     return_sexp->list[0] = s;
     return_sexp->list[1] = sexp(copyStr(return_type->value));
 
-    int csi = currStmtIndex();
-    _block->list[csi] = return_sexp;
+    _block->list[currStmtIndex()] = return_sexp;
     _stmt = return_sexp;
 
     /* flatten the return, it has the call in it */
