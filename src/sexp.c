@@ -23,7 +23,7 @@ Sexp* makeSexp(char* value, size_t length) {
 }
 
 Sexp* copySexp(Sexp* s) {
-  Sexp* result = makeSexp(str_copy(s->value), s->length);
+  Sexp* result = makeSexp(copyStr(s->value), s->length);
   for (size_t i = 0; i < s->length; ++i) {
     result->list[i] = copySexp(s->list[i]);
   }
@@ -31,7 +31,7 @@ Sexp* copySexp(Sexp* s) {
 }
 
 void incrementLength(Sexp* const s) {
-  Sexp* decoy = makeSexp(str_copy("decoy"), 0);
+  Sexp* decoy = makeSexp(copyStr("decoy"), 0);
   pushSexp(s, decoy);
   s->list[s->length - 1] = NULL;
   destroySexp(decoy);
