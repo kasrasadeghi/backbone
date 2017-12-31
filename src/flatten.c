@@ -41,7 +41,7 @@ static void insertStmt(Sexp* stmt, int index) {
   /* make room for another statement in the current definition */
   /* should increase the length by 1 */
   if (_block->length == _block->cap) {
-    _block = realloc(_block, (_block->cap + 1) * sizeof(Sexp*));
+    _block->list = realloc(_block->list, (_block->cap + 1) * sizeof(Sexp*));
     _p->list[_defi] = _block;
     _block->cap = _block->cap + 1;
     _block->length = _block->cap;
