@@ -41,8 +41,16 @@ void _printSexp(Sexp* s, size_t l) {
   for (int i = 0; i < l; ++i) {
     printf("  ");
   }
+  if (s == NULL) {
+    printf("NULL");
+    return;
+  }
+  if (s->value == NULL) {
+    printf("NULL VALUE");
+  } else {
+    printf("%s\n", s->value);
+  }
 //  printf("%s %lu/%lu\n", s->value, s->length, s->cap);
-  printf("%s\n", s->value);
   for (int i = 0; i < s->length; ++i) {
     _printSexp(s->list[i], l + 1);
   }

@@ -38,14 +38,7 @@ static size_t _stack_counter = 0;
 static void insertStmt(Sexp* stmt, int csi) {
   /* make room for another statement in the current definition */
   /* should increase the length by 1 */
-  if (_block->length == _block->cap) {
-    _block->list = realloc(_block->list, (_block->cap + 1) * sizeof(Sexp*));
-    _block->cap = _block->cap + 1;
-    _block->length = _block->cap;
-  } else {
-    assert(_block->length < _block->cap);
-    _block->length = _block->length + 1;
-  }
+  incrementLength(_block);
 
   /* move everything from [csi, length) over, starting from the end */
   for (size_t si = _block->length - 1; si >= csi; --si) {
@@ -71,12 +64,11 @@ Sexp* extractLet(Sexp* s, int index) {
   size_t local = _stack_counter++;
 
   /* replace with reference to local */
-  char* string = makeStr("$%lu", local);
-  Sexp* ref = makeSexp(string, 0);
+  Sexp* ref = makeSexp(makeStr("$%lu", local), 0);
   s->list[index] = ref;
 
   /* make an initializer of the local */
-  Sexp* init = makeSexp(copyStr(string), 0);
+  Sexp* init = makeSexp(copyStr(ref->value), 0);
 
   /* create a let to insert into the definition */
   Sexp* let = makeSexp(copyStr("let"), 2);
