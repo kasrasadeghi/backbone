@@ -20,8 +20,6 @@ int isTall(Sexp* s) {
       ;
 }
 
-static Sexp* _p = NULL;
-static int   _defi = 0;
 static Sexp* _block = NULL;
 static Sexp* _stmt = NULL;
 static size_t _stack_counter = 0;
@@ -42,7 +40,6 @@ static void insertStmt(Sexp* stmt, int csi) {
   /* should increase the length by 1 */
   if (_block->length == _block->cap) {
     _block->list = realloc(_block->list, (_block->cap + 1) * sizeof(Sexp*));
-    _p->list[_defi] = _block;
     _block->cap = _block->cap + 1;
     _block->length = _block->cap;
   } else {
@@ -179,9 +176,7 @@ void callStmt(Sexp* s) {
   size_t ignored = _stack_counter++;
 
   /* create a initializer for the ignored stack variable */
-  char* string = calloc(12, 1);
-  snprintf(string, 12, "$%lu", ignored);
-  Sexp* init = makeSexp(string, 0);
+  Sexp* init = makeSexp(makeStr("$%lu", ignored), 0);
 
   /* create let from call */
   Sexp* let = makeSexp(copyStr("let"), 2);
@@ -189,8 +184,7 @@ void callStmt(Sexp* s) {
   let->list[1] = s;
 
   /* replace call with let */
-  int csi = currStmtIndex();
-  _block->list[csi] = let;
+  _block->list[currStmtIndex()] = let;
 
   /* flatten let */
   Sexp* stmt_cache = _stmt;
@@ -292,11 +286,9 @@ void fDef(Sexp* s) {
 }
 
 void flatten(Sexp* p) {
-  _p = p;
   for (int i = 0; i < p->length; ++i) {
     Sexp* child = p->list[i];
     if (strcmp(child->value, "def") == 0) {
-      _defi = i;
       fDef(child);
     }
   }
