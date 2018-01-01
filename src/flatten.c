@@ -36,8 +36,6 @@ static size_t _stack_counter = 0;
  * @param csi - the index to insert it at.
  */
 static void insertStmt(Sexp* stmt, int csi) {
-  /* make room for another statement in the current definition */
-  /* should increase the length by 1 */
   incrementLength(_block);
 
   /* move everything from [csi, length) over, starting from the end */
@@ -45,7 +43,7 @@ static void insertStmt(Sexp* stmt, int csi) {
     _block->list[si] = _block->list[si - 1];
   }
 
-  /* place statment in block */
+  /* place statement in block */
   _block->list[csi] = stmt;
 }
 
@@ -60,7 +58,7 @@ static void insertStmt(Sexp* stmt, int csi) {
  * @return the let expression to be inserted into the current definition, before the current stmt.
  */
 Sexp* extractLet(Sexp* s, int index) {
-  Sexp* arg = s->list[index];
+  Sexp* expr = s->list[index];
   size_t local = _stack_counter++;
 
   /* replace with reference to local */
@@ -73,7 +71,7 @@ Sexp* extractLet(Sexp* s, int index) {
   /* create a let to insert into the definition */
   Sexp* let = makeSexp(copyStr("let"), 2);
   let->list[0] = init;
-  let->list[1] = arg;
+  let->list[1] = expr;
 
   return let;
 }
