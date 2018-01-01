@@ -27,24 +27,23 @@ static size_t _stack_counter = 0;
 /**
  * Inserts a statement into the current definition, _def.
  *
- *  - Increases the length of _def by one.
- *  - Globals: _defi, _def, _p, _block
+ *  - Globals: _block
  *
  * Note: relies on the lack of nested definitions.
  *
  * @param stmt  - the statement to insert.
  * @param csi - the index to insert it at.
  */
-static void insertStmt(Sexp* stmt, int csi) {
-  incrementLength(_block);
+static void insertStmt(Sexp* block, Sexp* stmt, int csi) {
+  incrementLength(block);
 
   /* move everything from [csi, length) over, starting from the end */
-  for (size_t si = _block->length - 1; si >= csi; --si) {
-    _block->list[si] = _block->list[si - 1];
+  for (size_t si = block->length - 1; si >= csi; --si) {
+    block->list[si] = block->list[si - 1];
   }
 
   /* place statement in block */
-  _block->list[csi] = stmt;
+  block->list[csi] = stmt;
 }
 
 /**
@@ -79,14 +78,14 @@ Sexp* extractLet(Sexp* s, int index) {
 /**
  * Get the index of the current statement.
  *
- * @returns the index of the current statement _stmt in the current definition _def.
+ * @returns the index of the current statement in the current block.
  */
-int currStmtIndex() {
+int currStmtIndex(Sexp* block, Sexp* stmt) {
   int csi = 0;
-  for (; csi < _block->length; ++csi) { // curr statement index = csi
-    if (_block->list[csi] == _stmt) break;
+  for (; csi < block->length; ++csi) { // curr statement index = csi
+    if (block->list[csi] == stmt) break;
   }
-  if (csi == _block->length) {
+  if (csi == block->length) {
     fprintf(stderr, "backbone: could not find current statement in definition");
     exit(1);
   }
@@ -103,8 +102,8 @@ void fLet(Sexp* let);
 void fTall(Sexp* s, int i) {
   if (isTall(s->list[i])) {
     Sexp* let = extractLet(s, i);
-    int csi = currStmtIndex();
-    insertStmt(let, csi);
+    int csi = currStmtIndex(_block, _stmt);
+    insertStmt(_block, let, csi);
 
     /* recurse on the let we just inserted */
     Sexp* stmt_cache = _stmt;
@@ -157,7 +156,18 @@ void fLet(Sexp* let) {
   assert(0);
 }
 
-void callStmt(Sexp* s) {
+/**
+ * Globals:
+ *  - _block
+ *  - _stmt
+ *
+ * Transforms expr-calls (calls that do not return void) to be statements.
+ *
+ * Is a no-op on calls that return void.
+ *
+ * @param s - the call that is transformed to be a statement
+ */
+void callStmt(Sexp* block, Sexp* s) {
   if (strcmp(s->list[2]->value, "void") == 0) {
     fCall(s);
     return;
@@ -174,7 +184,7 @@ void callStmt(Sexp* s) {
   let->list[1] = s;
 
   /* replace call with let */
-  _block->list[currStmtIndex()] = let;
+  block->list[currStmtIndex(block, _stmt)] = let;
 
   /* flatten let */
   Sexp* stmt_cache = _stmt;
@@ -205,7 +215,7 @@ void fBecome(Sexp* s) {
     Sexp* return_sexp = makeSexp(copyStr("return"), 1);
     return_sexp->list[0] = makeSexp(copyStr("void"), 0);
 
-    insertStmt(return_sexp, currStmtIndex() + 1);
+    insertStmt(_block, return_sexp, currStmtIndex(_block, _stmt) + 1);
 
     /* flatten the call, the return is void */
     fCall(s);
@@ -214,7 +224,7 @@ void fBecome(Sexp* s) {
     return_sexp->list[0] = s;
     return_sexp->list[1] = sexp(copyStr(return_type->value));
 
-    _block->list[currStmtIndex()] = return_sexp;
+    _block->list[currStmtIndex(_block, _stmt)] = return_sexp;
     _stmt = return_sexp;
 
     /* flatten the return, it has the call in it */
@@ -240,7 +250,7 @@ void fStmt(Sexp* s) {
     fBlock(s, 1);
   }
   else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
-    callStmt(s);
+    callStmt(_block, s);
   }
   else if (isStore(s)) {
     /* (store Value Type Ptr) */
