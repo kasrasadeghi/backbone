@@ -111,30 +111,19 @@ class Test:
 class TestSuite:
   def __init__(s, name):
     s.name = name
-    s.test_dir = ''
-    s.input = ''
-    s.run = ''
-    s.dir_run = ''
-    s.output = ''
-    s.reference = ''
-    s.cleanup = ''
-    s.require = ''
-
-    def config(option_name):
-      if line.startswith(option_name):
-        value = line.split(option_name + ':')[1].strip()
-        setattr(s, option_name, value)
 
     with open(name + '.ktest', 'r') as f:
+      options = \
+        ['test_dir',  'input',   'run', 'dir_run', 'output',
+         'reference', 'cleanup', 'require']
+      d = {option:'' for option in options}
       for line in f:
-        config('test_dir')
-        config('input')
-        config('run')
-        config('dir_run')
-        config('output')
-        config('reference')
-        config('cleanup')
-        config('require')
+        option = line.split(':')[0]
+        value = ':'.join(line.split(':')[1:]).strip()
+        d[option] = value
+
+      for option, value in d.items():
+        setattr(s, option, value)
 
   def check_files(s, *files):
     with cd(s.test_dir):
