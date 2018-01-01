@@ -51,11 +51,11 @@ def test_output(test_name, output, reference):
     def wrap(s, color):
         return color + s + END_C
 
-    print('[ ', end='')
+    print('[  ', end='')
     if output == reference:
-        print(wrap('PASS', OK_BLUE), ']', test_name)
+        print(wrap('PASS', OK_BLUE), ' ]', test_name)
     else:
-        print(wrap('FAIL', FAIL), ']', wrap(test_name, FAIL))
+        print(wrap('FAIL', FAIL), ' ]', wrap(test_name, FAIL))
 
 
 def check_files(*files):
@@ -134,7 +134,7 @@ def testall():
 
 def print_test_suite_result(test_suite_result):
     valid, count = test_suite_result
-    print("[      ] ", end="")
+    print("[ RESULT ] ", end="")
     if valid == count:
         print("ALL OK")
     else:
@@ -178,7 +178,7 @@ def main(*args):
             config('require')
 
     if len(args) == 1:
-        print("[ TEST ]", test_suite)
+        print("[  TEST  ]", test_suite)
         test_suite_result = testall()
         print_test_suite_result(test_suite_result)
     else:
