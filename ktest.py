@@ -34,77 +34,65 @@ def basename(path):
 # endregion
 
 
-_test_dir = ''
-_input = ''
-_run = ''
-_dir_run = ''
-_output = ''
-_reference = ''
-_cleanup = ''
-_require = ''
-
 OK_GREEN = '\033[92m'
 OK_BLUE = '\033[94m'
 FAIL = '\033[91m'
 END_C = '\033[0m'
 
 
-def test_output(output, reference):
-  def wrap(s, color):
-    return color + s + END_C
-
-  print('[   ', end='')
-  if output == reference:
-    print(wrap('  OK', OK_BLUE), ']')
-  else:
-    print(wrap('FAIL', FAIL), ']')
-
-
-def test_run(test_name):
-  assert _run != '' or _dir_run != ''
-
-  if _run != '':
-    stdout = call(_run.replace('%', test_name))
-  else:
-    with cd(_test_dir):
-      stdout = call(_dir_run.replace('%', test_name))
-  return stdout
-
-
-def test_cleanup(test_name):
-  if _cleanup != '':
-    with cd(_test_dir):
-      call(_cleanup.replace('%', test_name))
-
-
-def check_result(test_name, stdout):
-  with cd(_test_dir):
-    output_name = _output.replace('%', test_name)
-    ref_name    = _reference.replace('%', test_name)
-    if not isfile(output_name):
-      assert _output == ''
-      output = stdout[0]
-      if stdout[1] != 0:
-        output += "exit code: " + str(stdout[1])
-    else:
-      with open(output_name, 'r') as f:
-        output = f.read()
-    with open(ref_name, 'r') as f:
-      reference = f.read()
-  return output.strip(), reference.strip()
-
-
 class Test:
   def __init__(s, t, name: str):
     s.name = name
     s.t = t
+  
+  def diff_result(s, stdout):
+    with cd(s.t.test_dir):
+      output_name = s.t.output.replace('%', s.name)
+      ref_name    = s.t.reference.replace('%', s.name)
+
+      if not isfile(output_name):
+        assert s.t.output == ''
+        output = stdout[0]
+        if stdout[1] != 0:
+          output += "exit code: " + str(stdout[1])
+
+      else:
+        with open(output_name, 'r') as f:
+          output = f.read()
+      with open(ref_name, 'r') as f:
+        reference = f.read()
+      return output.strip(), reference.strip()
     
   def run(s):
-    set_globals(s.t)
-    stdout = test_run(s.name)
-    output, reference = check_result(s.name, stdout)
-    test_output(output, reference)
-    test_cleanup(s.name)
+
+
+    # run command for test
+    assert s.t.run != '' or s.t.dir_run != ''
+
+    if s.t.run != '':
+      stdout = call(s.t.run.replace('%', s.name))
+    else:
+      with cd(s.t.test_dir):
+        stdout = call(s.t.dir_run.replace('%', s.name))
+
+    output, reference = s.diff_result(stdout)
+
+    # print output
+    def wrap(string, color):
+      return color + string + END_C
+
+    print('[ RUN    ]', s.name)
+
+    print('[   ', end='')
+    if output == reference:
+      print(wrap('  OK', OK_BLUE), ']')
+    else:
+      print(wrap('FAIL', FAIL), ']')
+
+    # clean up
+    if s.t.cleanup != '':
+      with cd(s.t.test_dir):
+        call(s.t.cleanup.replace('%', s.name))
     return 1 if output == reference else 0
 
 
@@ -179,33 +167,12 @@ class TestSuite:
       print(valid, "/", count, "tests passed")
 
   def test_each(s, tests):
-    set_globals(s)
     for t in tests:
       s.test(t)
 
   def test(s, test_name):
     test = Test(s, test_name)
     return test.run()
-
-
-
-def set_globals(t: TestSuite):
-  global _test_dir
-  global _input
-  global _run
-  global _dir_run
-  global _output
-  global _reference
-  global _cleanup
-  global _require
-  _test_dir  = t.test_dir
-  _input     = t.input
-  _run       = t.run
-  _dir_run   = t.dir_run
-  _output    = t.output
-  _reference = t.reference
-  _cleanup   = t.cleanup
-  _require   = t.require
 
 
 def main(*args):
