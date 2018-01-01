@@ -74,16 +74,12 @@ Sexp* extractLet(Sexp* s, int index) {
   size_t local = _stack_counter++;
 
   /* replace with reference to local */
-  char* string = calloc(12, 1);
-  snprintf(string, 12, "$%lu", local);
+  char* string = makeStr("$%lu", local);
   Sexp* ref = makeSexp(string, 0);
   s->list[index] = ref;
 
   /* make an initializer of the local */
-  char* string_copy = malloc(strlen(string) + 1);
-  strcpy(string_copy, string);
-  Sexp* init = calloc(1, sizeof(Sexp));
-  init->value = string_copy;
+  Sexp* init = makeSexp(copyStr(string), 0);
 
   /* create a let to insert into the definition */
   Sexp* let = makeSexp(copyStr("let"), 2);

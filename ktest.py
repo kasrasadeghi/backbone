@@ -98,7 +98,7 @@ class Test:
       # some weird exception
       raise e
     else:
-      print('[ ', ok('PASS'), ' ]', s.name)
+      # print('[ ', ok('PASS'), ' ]', s.name)
       # everything is fine
       return 1
     finally:

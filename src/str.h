@@ -10,11 +10,6 @@ typedef struct {
 } String;
 
 /**
- * Creates a new String.
- */
-String* str_make(void);
-
-/**
  * Uses return-value optimization to default-ctor a stack-local String.
  */
 String initStr(void);
@@ -25,15 +20,13 @@ String initStr(void);
 void pushStr(String* s, char c);
 
 /**
- * Flushes the String, return the char* it used to point to.
- * The user is required to free the string after the last str_flush.
- * The user is required to free the result of str_flush.
- */
-char* str_flush(String* s);
-
-/**
- * create a unique char* copy for another char* in order to simplify destruction
+ * Create a unique char* copy for another char* in order to simplify destruction
  */
 char* copyStr(char* value);
+
+/**
+ * Creates a string from arguments like printf.
+ */
+char* makeStr(const char* fmt, ...);
 
 #endif
