@@ -64,37 +64,48 @@ class Test:
       return output.strip(), reference.strip()
     
   def run(s):
+    def ok(string):
+      return OK_BLUE + string + END_C
+    def fail(string):
+      return FAIL + string + END_C
 
+    output = 'OUTPUT ERROR'
+    reference = 'REFERENCE ERROR'
+    try:
+      # run command for test
+      assert s.t.run != '' or s.t.dir_run != ''
 
-    # run command for test
-    assert s.t.run != '' or s.t.dir_run != ''
+      if s.t.run != '':
+        stdout = call(s.t.run.replace('%', s.name))
+      else:
+        with cd(s.t.test_dir):
+          stdout = call(s.t.dir_run.replace('%', s.name))
 
-    if s.t.run != '':
-      stdout = call(s.t.run.replace('%', s.name))
+      output, reference = s.diff_result(stdout)
+
+      if output != reference:
+        raise ValueError
+    except ValueError as e:
+      # execute failure
+      print('[ ', fail('FAIL') , ' ]', s.name)
+      print('expected:')
+      print(reference)
+      print('output:')
+      print(output)
+      return 0
+
+    except BaseException as e:
+      # some weird exception
+      raise e
     else:
-      with cd(s.t.test_dir):
-        stdout = call(s.t.dir_run.replace('%', s.name))
-
-    output, reference = s.diff_result(stdout)
-
-    # print output
-    def wrap(string, color):
-      return color + string + END_C
-
-    print('[ RUN    ]', s.name)
-
-    print('[   ', end='')
-    if output == reference:
-      print(wrap('  OK', OK_BLUE), ']')
-    else:
-      print(wrap('FAIL', FAIL), ']')
-
-    # clean up
-    if s.t.cleanup != '':
-      with cd(s.t.test_dir):
-        call(s.t.cleanup.replace('%', s.name))
-    return 1 if output == reference else 0
-
+      print('[ ', ok('PASS'), ' ]', s.name)
+      # everything is fine
+      return 1
+    finally:
+      # cleanup
+      if s.t.cleanup != '':
+        with cd(s.t.test_dir):
+          call(s.t.cleanup.replace('%', s.name))
 
 
 class TestSuite:
