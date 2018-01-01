@@ -41,32 +41,21 @@ _reference = ''
 _cleanup   = ''
 _require   = ''
 
+OK_GREEN = '\033[92m'
+OK_BLUE = '\033[94m'
+FAIL = '\033[91m'
+END_C = '\033[0m'
 
-def test_output(test_name, stdout):
-    with cd(_test_dir):
-        output_name = _output.replace('%', test_name)
-        ref_name    = _reference.replace('%', test_name)
-        if not isfile(output_name):
-            assert _output == ''
-            output = stdout[0]
-            if stdout[1] != 0:
-                output += "exit code: " + str(stdout[1])
-        else:
-            with open(output_name, 'r') as f:
-                output = f.read()
-        with open(ref_name, 'r') as f:
-            reference = f.read()
-    print(' --- ', test_name, end=' ...')
-    reference = reference.strip()
-    output = output.strip()
-    if output != reference:
-        print(' fail --- ')
-        print(' EXPECTED:')
-        print(reference)
-        print(' FOUND:')
-        print(output)
+
+def test_output(test_name, output, reference):
+    def wrap(s, color):
+        return color + s + END_C
+
+    print('[ ', end='')
+    if output == reference:
+        print(wrap('PASS', OK_BLUE), ']', test_name)
     else:
-        print(' pass --- ')
+        print(wrap('FAIL', FAIL), ']', wrap(test_name, FAIL))
 
 
 def check_files(*files):
@@ -88,7 +77,7 @@ def valid_tests():
     return sorted(list({x for x in map(basename, ls(_test_dir)) if valid_test(x)}))
 
 
-def test(test_name):
+def test_run(test_name):
     assert _run != '' or _dir_run != ''
 
     if _run != '':
@@ -96,20 +85,60 @@ def test(test_name):
     else:
         with cd(_test_dir):
             stdout = call(_dir_run.replace('%', test_name))
-    test_output(test_name, stdout)
+    return stdout
+
+
+def test_cleanup(test_name):
     if _cleanup != '':
         with cd(_test_dir):
             call(_cleanup.replace('%', test_name))
 
 
+def check_result(test_name, stdout):
+    with cd(_test_dir):
+        output_name = _output.replace('%', test_name)
+        ref_name    = _reference.replace('%', test_name)
+        if not isfile(output_name):
+            assert _output == ''
+            output = stdout[0]
+            if stdout[1] != 0:
+                output += "exit code: " + str(stdout[1])
+        else:
+            with open(output_name, 'r') as f:
+                output = f.read()
+        with open(ref_name, 'r') as f:
+            reference = f.read()
+    return output.strip(), reference.strip()
+
+
+def test(test_name):
+    stdout = test_run(test_name)
+    output, reference = check_result(test_name, stdout)
+    test_output(test_name, output, reference)
+    test_cleanup(test_name)
+    return 1 if output == reference else 0
+
+
 def testall():
     tests = valid_tests()
+    test_count = len(tests)
+    valid_count = 0
     if not tests:
         print(' nothing to do...')
         return
     else:
         for file_name in tests:
-            test(file_name)
+            valid_count += test(file_name)
+    return valid_count, test_count
+
+
+def print_test_suite_result(test_suite_result):
+    valid, count = test_suite_result
+    print("[      ] ", end="")
+    if valid == count:
+        print("ALL OK")
+    else:
+        print(valid, "/", count, "tests passed")
 
 
 def main(*args):
@@ -149,16 +178,22 @@ def main(*args):
             config('require')
 
     if len(args) == 1:
-        testall()
+        print("[ TEST ]", test_suite)
+        test_suite_result = testall()
+        print_test_suite_result(test_suite_result)
     else:
         for t in args[1:]:
             test(t)
 
 
-if __name__ == '__main__':
+def pre_main():
     if len(sys.argv) != 1:
         main(*sys.argv[1:])
     else:
         for test_file_name in [x[:-6] for x in ls('.') if x.endswith('.ktest')]:
-            print("testing", test_file_name)
+            print()
             main(test_file_name)
+
+
+if __name__ == '__main__':
+    pre_main()
