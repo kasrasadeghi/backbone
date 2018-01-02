@@ -13,11 +13,14 @@ typedef struct Sexp {
 Sexp* sexp(char* value);
 Sexp* makeSexp(char* value, size_t length);
 Sexp* copySexp(Sexp* s);
+void destroySexp(Sexp* s);
+
+size_t indexOfSexp(Sexp* parent, Sexp* child);
+void insertSexp(Sexp* parent, Sexp* stmt, size_t csi);
 void incrementLength(Sexp* s);
 
 void printSexp(Sexp*);
 void pushSexp(Sexp* s, Sexp* child);
-void destroySexp(Sexp* s);
 
 //region grammar
 

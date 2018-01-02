@@ -1,5 +1,4 @@
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "flatten.h"
@@ -21,24 +20,6 @@ int isTall(Sexp* s) {
 }
 
 static size_t _stack_counter = 0;
-
-/**
- * Inserts a stmt into a block at index csi.
- *
- * @param stmt  - the statement to insert.
- * @param csi - the index to insert it at.
- */
-static void insertStmt(Sexp* block, Sexp* stmt, int csi) {
-  incrementLength(block);
-
-  /* move everything from [csi, length) over, starting from the end */
-  for (size_t si = block->length - 1; si >= csi; --si) {
-    block->list[si] = block->list[si - 1];
-  }
-
-  /* place statement in block */
-  block->list[csi] = stmt;
-}
 
 /**
  * Extracts an expression from a Sexp s at index index.
@@ -72,24 +53,6 @@ Sexp* extractLet(Sexp* const s, const int index) {
   return let;
 }
 
-/**
- * Get the index of the current statement.
- *
- * @returns the index of the current statement in the current block.
- */
-int currStmtIndex(Sexp* block, Sexp* stmt) {
-  int csi = 0;
-  for (; csi < block->length; ++csi) { // curr statement index = csi
-    if (block->list[csi] == stmt) break;
-  }
-  if (csi == block->length) {
-    fprintf(stderr, "backbone: could not find current statement in definition");
-    exit(1);
-  }
-
-  return csi;
-}
-
 //region Forward Declarations
 
 void fLet(Sexp* block, Sexp* let);
@@ -108,8 +71,8 @@ void fLet(Sexp* block, Sexp* let);
 void fTall(Sexp* block, Sexp* stmt, Sexp* parent, int i) {
   if (isTall(parent->list[i])) {
     Sexp* let = extractLet(parent, i);
-    int csi = currStmtIndex(block, stmt);
-    insertStmt(block, let, csi);
+    size_t csi = indexOfSexp(block, stmt);
+    insertSexp(block, let, csi);
 
     /* recurse on the let we just inserted */
     fLet(block, let);
@@ -188,7 +151,7 @@ void callStmt(Sexp* block, Sexp* call) {
   let->list[1] = call;
 
   /* replace call with let */
-  block->list[currStmtIndex(block, call)] = let;
+  block->list[indexOfSexp(block, call)] = let;
 
   /* flatten let */
   fLet(block, let);
@@ -221,7 +184,7 @@ void fBecome(Sexp* block, Sexp* call_tail) {
     return_sexp->list[0] = makeSexp(copyStr("void"), 0);
 
     /* insert return_sexp after call_tail */
-    insertStmt(block, return_sexp, currStmtIndex(block, call_tail) + 1);
+    insertSexp(block, return_sexp, indexOfSexp(block, call_tail) + 1);
 
     /* flatten the call. no need to flatten the return, it is void */
     fCall(block, return_sexp, call_tail);
@@ -234,7 +197,7 @@ void fBecome(Sexp* block, Sexp* call_tail) {
     return_sexp->list[1] = makeSexp(copyStr(return_type->value), 0);
 
     /* replace call_tail with return_sexp in block */
-    block->list[currStmtIndex(block, call_tail)] = return_sexp;
+    block->list[indexOfSexp(block, call_tail)] = return_sexp;
 
     /* flatten the return, it has the call in it */
     fTall(block, return_sexp, return_sexp, 0);

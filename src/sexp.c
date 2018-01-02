@@ -30,6 +30,31 @@ Sexp* copySexp(Sexp* s) {
   return result;
 }
 
+size_t indexOfSexp(Sexp* parent, Sexp* child) {
+  size_t csi = 0;
+  for (; csi < parent->length; ++csi) { // curr statement index = csi
+    if (parent->list[csi] == child) break;
+  }
+  if (csi == parent->length) {
+    fprintf(stderr, "backbone: indexing error: child was not found in parent's list");
+    exit(1);
+  }
+
+  return csi;
+}
+
+void insertSexp(Sexp* parent, Sexp* stmt, size_t csi) {
+  incrementLength(parent);
+
+  /* move everything from [csi, length) over, starting from the end */
+  for (size_t si = parent->length - 1; si >= csi; --si) {
+    parent->list[si] = parent->list[si - 1];
+  }
+
+  /* place statement in parent */
+  parent->list[csi] = stmt;
+}
+
 void incrementLength(Sexp* const s) {
   Sexp* decoy = makeSexp(copyStr("decoy"), 0);
   pushSexp(s, decoy);
