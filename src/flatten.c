@@ -187,7 +187,7 @@ void fBecome(Sexp* block, Sexp* call_tail) {
     insertSexp(block, return_sexp, indexOfSexp(block, call_tail) + 1);
 
     /* flatten the call. no need to flatten the return, it is void */
-    fCall(block, return_sexp, call_tail);
+    fCall(block, call_tail, call_tail);
   } else {
     /* (return (call-tail 'name 'types 'return-type 'args) 'return-type)
      */
