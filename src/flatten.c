@@ -20,16 +20,10 @@ int isTall(Sexp* s) {
       ;
 }
 
-static Sexp* _block = NULL;
-static Sexp* _stmt = NULL;
 static size_t _stack_counter = 0;
 
 /**
- * Inserts a statement into the current definition, _def.
- *
- *  - Globals: _block
- *
- * Note: relies on the lack of nested definitions.
+ * Inserts a stmt into a block at index csi.
  *
  * @param stmt  - the statement to insert.
  * @param csi - the index to insert it at.
@@ -53,7 +47,7 @@ static void insertStmt(Sexp* block, Sexp* stmt, int csi) {
  *  - Creates a let expression that initializes the local, setting it to the extracted sexp.
  *
  * Globals:
- *  - _stack_counter++
+ *  - _stack_counter
  *
  * @param s
  * @param index
@@ -108,17 +102,17 @@ void fLet(Sexp* block, Sexp* let);
  * Takes a block, a statement in the block, an s-expression in the block, and an index in that s-expression.
  *
  * If flattening proceeds, the expression at s[i] is extracted into a let before stmt in the block.
+ *
+ * Note: parent will equal stmt when the s-expression to flatten is in a statement.
  */
-void fTall(Sexp* block, Sexp* stmt, Sexp* s, int i) {
-  if (isTall(s->list[i])) {
-    Sexp* let = extractLet(s, i);
+void fTall(Sexp* block, Sexp* stmt, Sexp* parent, int i) {
+  if (isTall(parent->list[i])) {
+    Sexp* let = extractLet(parent, i);
     int csi = currStmtIndex(block, stmt);
     insertStmt(block, let, csi);
 
     /* recurse on the let we just inserted */
-    _stmt = let;
     fLet(block, let);
-    _stmt = stmt;
   }
 }
 
@@ -171,10 +165,6 @@ void fLet(Sexp* block, Sexp* let) {
 }
 
 /**
- * Globals:
- *  - _block
- *  - _stmt
- *
  * Transforms expr-calls (calls that do not return void) to be statements.
  *
  * Is a no-op on calls that return void.
@@ -202,7 +192,6 @@ void callStmt(Sexp* block, Sexp* call) {
 
   /* flatten let */
   fLet(block, let);
-  _stmt = call;
 }
 
 /**
@@ -216,61 +205,68 @@ void callStmt(Sexp* block, Sexp* call) {
  *     (return (call-tail 'name 'types 'return-type 'args) 'return-type)
  *
  */
-void fBecome(Sexp* call_tail) {
+void fBecome(Sexp* block, Sexp* call_tail) {
   /* make call-tail sexp */
   Sexp* return_type = call_tail->list[2];
   free(call_tail->value);
   call_tail->value = copyStr("call-tail");
 
   if (strcmp(return_type->value, "void") == 0) {
+    /* (call-tail 'name 'types 'return-type 'args)
+     * (return void)
+     */
+
     /* make return void */
     Sexp* return_sexp = makeSexp(copyStr("return"), 1);
     return_sexp->list[0] = makeSexp(copyStr("void"), 0);
 
-    insertStmt(_block, return_sexp, currStmtIndex(_block, _stmt) + 1);
+    /* insert return_sexp after call_tail */
+    insertStmt(block, return_sexp, currStmtIndex(block, call_tail) + 1);
 
-    /* flatten the call, the return is void */
-    fCall(_block, return_sexp, call_tail);
+    /* flatten the call. no need to flatten the return, it is void */
+    fCall(block, return_sexp, call_tail);
   } else {
+    /* (return (call-tail 'name 'types 'return-type 'args) 'return-type)
+     */
+
     Sexp* return_sexp = makeSexp(copyStr("return"), 2);
     return_sexp->list[0] = call_tail;
-    return_sexp->list[1] = sexp(copyStr(return_type->value));
+    return_sexp->list[1] = makeSexp(copyStr(return_type->value), 0);
 
-    _block->list[currStmtIndex(_block, _stmt)] = return_sexp;
-    _stmt = return_sexp;
+    /* replace call_tail with return_sexp in block */
+    block->list[currStmtIndex(block, call_tail)] = return_sexp;
 
     /* flatten the return, it has the call in it */
-    fTall(_block, _stmt, return_sexp, 0);
+    fTall(block, return_sexp, return_sexp, 0);
   }
 }
 
 void fBlock(Sexp* block, int startIndex);
 
-void fStmt(Sexp* s) {
-  _stmt = s;
+void fStmt(Sexp* block, Sexp* s) {
 
   if (isLet(s)) {
-    fLet(_block, s);
+    fLet(block, s);
   }
   else if (isReturn(s)) {
     if (strcmp(s->list[0]->value, "void") != 0) {
-      fTall(_block, _stmt, s, 0);
+      fTall(block, s, s, 0);
     }
   }
   else if (isIf(s)) {
-    fTall(_block, _stmt, s, 0);
+    fTall(block, s, s, 0);
     fBlock(s, 1);
   }
   else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
-    callStmt(_block, s);
+    callStmt(block, s);
   }
   else if (isStore(s)) {
     /* (store Value Type Ptr) */
-    fTall(_block, _stmt, s, 0);
-    fTall(_block, _stmt, s, 2);
+    fTall(block, s, s, 0);
+    fTall(block, s, s, 2);
   }
   else if (isBecome(s)) {
-    fBecome(s);
+    fBecome(block, s);
   }
   else {
     /* statements without possibly tall expressions in them */
@@ -283,13 +279,9 @@ void fStmt(Sexp* s) {
 }
 
 void fBlock(Sexp* block, int startIndex) {
-  Sexp* block_cache = _block;
-  _block = block;
-
-  for (int i = startIndex; i < _block->length; ++i) {
-    fStmt(_block->list[i]);
+  for (int i = startIndex; i < block->length; ++i) {
+    fStmt(block, block->list[i]);
   }
-  _block = block_cache;
 }
 
 void fDef(Sexp* s) {
