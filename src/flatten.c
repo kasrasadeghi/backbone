@@ -98,36 +98,39 @@ int currStmtIndex(Sexp* block, Sexp* stmt) {
 
 //region Forward Declarations
 
-void fLet(Sexp* let);
+void fLet(Sexp* block, Sexp* let);
 
 //endregion
 
 /**
  * Checks if s contains an expression at i, where it expects to be a value. If it does, the it flattens it.
  *
+ * Takes a block, a statement in the block, an s-expression in the block, and an index in that s-expression.
  *
- *
- * @param s
- * @param i
+ * If flattening proceeds, the expression at s[i] is extracted into a let before stmt in the block.
  */
-void fTall(Sexp* s, int i) {
+void fTall(Sexp* block, Sexp* stmt, Sexp* s, int i) {
   if (isTall(s->list[i])) {
     Sexp* let = extractLet(s, i);
-    int csi = currStmtIndex(_block, _stmt);
-    insertStmt(_block, let, csi);
+    int csi = currStmtIndex(block, stmt);
+    insertStmt(block, let, csi);
 
     /* recurse on the let we just inserted */
-    Sexp* stmt_cache = _stmt;
     _stmt = let;
-    fLet(let);
-    _stmt = stmt_cache;
+    fLet(block, let);
+    _stmt = stmt;
   }
 }
 
-void fCall(Sexp* call) {
+/**
+ * Takes a block, a statement, and a call. Goes through the arguments of the call and flattens them.
+ *
+ * The arguments that actually needed flattening are placed in the block before stmt.
+ */
+void fCall(Sexp* block, Sexp* stmt, Sexp* call) {
   Sexp* args = call->list[3];
   for (int ai = 0; ai < args->length; ++ai) { // argument index = ai
-    fTall(args, ai);
+    fTall(block, stmt, args, ai);
   }
 }
 
@@ -135,33 +138,33 @@ void fCall(Sexp* call) {
  * tall expression = expression that contains another expression
  * this should flatten every tall expression
  */
-void fLet(Sexp* let) {
+void fLet(Sexp* block, Sexp* let) {
   Sexp* expr = let->list[1];
   if (isCall(expr) || isCallVargs(expr) || isCallTail(expr)) {
-    fCall(expr);
+    fCall(block, let, expr);
     return;
   }
   else if (isAdd(expr)) {
-    fTall(expr, 1);
-    fTall(expr, 2);
+    fTall(block, let, expr, 1);
+    fTall(block, let, expr, 2);
     return;
   }
   else if (isLoad(expr)) {
-    fTall(expr, 1);
+    fTall(block, let, expr, 1);
     return;
   }
   else if (isIndex(expr)) {
-    fTall(expr, 0);
-    fTall(expr, 2);
+    fTall(block, let, expr, 0);
+    fTall(block, let, expr, 2);
     return;
   }
   else if (isCast(expr)) {
-    fTall(expr, 2);
+    fTall(block, let, expr, 2);
     return;
   }
   else if (isIcmp(expr)) {
-    fTall(expr, 1);
-    fTall(expr, 2);
+    fTall(block, let, expr, 1);
+    fTall(block, let, expr, 2);
     return;
   }
   assert(0);
@@ -180,7 +183,7 @@ void fLet(Sexp* let) {
  */
 void callStmt(Sexp* block, Sexp* call) {
   if (strcmp(call->list[2]->value, "void") == 0) {
-    fCall(call);
+    fCall(block, call, call);
     return;
   }
 
@@ -198,8 +201,7 @@ void callStmt(Sexp* block, Sexp* call) {
   block->list[currStmtIndex(block, call)] = let;
 
   /* flatten let */
-  _stmt = let;
-  fLet(let);
+  fLet(block, let);
   _stmt = call;
 }
 
@@ -214,11 +216,11 @@ void callStmt(Sexp* block, Sexp* call) {
  *     (return (call-tail 'name 'types 'return-type 'args) 'return-type)
  *
  */
-void fBecome(Sexp* s) {
+void fBecome(Sexp* call_tail) {
   /* make call-tail sexp */
-  Sexp* return_type = s->list[2];
-  free(s->value);
-  s->value = copyStr("call-tail");
+  Sexp* return_type = call_tail->list[2];
+  free(call_tail->value);
+  call_tail->value = copyStr("call-tail");
 
   if (strcmp(return_type->value, "void") == 0) {
     /* make return void */
@@ -228,17 +230,17 @@ void fBecome(Sexp* s) {
     insertStmt(_block, return_sexp, currStmtIndex(_block, _stmt) + 1);
 
     /* flatten the call, the return is void */
-    fCall(s);
+    fCall(_block, return_sexp, call_tail);
   } else {
     Sexp* return_sexp = makeSexp(copyStr("return"), 2);
-    return_sexp->list[0] = s;
+    return_sexp->list[0] = call_tail;
     return_sexp->list[1] = sexp(copyStr(return_type->value));
 
     _block->list[currStmtIndex(_block, _stmt)] = return_sexp;
     _stmt = return_sexp;
 
     /* flatten the return, it has the call in it */
-    fTall(return_sexp, 0);
+    fTall(_block, _stmt, return_sexp, 0);
   }
 }
 
@@ -248,15 +250,15 @@ void fStmt(Sexp* s) {
   _stmt = s;
 
   if (isLet(s)) {
-    fLet(s);
+    fLet(_block, s);
   }
   else if (isReturn(s)) {
     if (strcmp(s->list[0]->value, "void") != 0) {
-      fTall(s, 0);
+      fTall(_block, _stmt, s, 0);
     }
   }
   else if (isIf(s)) {
-    fTall(s, 0);
+    fTall(_block, _stmt, s, 0);
     fBlock(s, 1);
   }
   else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
@@ -264,8 +266,8 @@ void fStmt(Sexp* s) {
   }
   else if (isStore(s)) {
     /* (store Value Type Ptr) */
-    fTall(s, 0);
-    fTall(s, 2);
+    fTall(_block, _stmt, s, 0);
+    fTall(_block, _stmt, s, 2);
   }
   else if (isBecome(s)) {
     fBecome(s);
