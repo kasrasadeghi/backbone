@@ -47,16 +47,19 @@ static void insertStmt(Sexp* block, Sexp* stmt, int csi) {
 }
 
 /**
- * Extracts an expression from an Sexp s at index index.
+ * Extracts an expression from a Sexp s at index index.
  *
  *  - Replaces the expression with a reference to a new local.
  *  - Creates a let expression that initializes the local, setting it to the extracted sexp.
+ *
+ * Globals:
+ *  - _stack_counter++
  *
  * @param s
  * @param index
  * @return the let expression to be inserted into the current definition, before the current stmt.
  */
-Sexp* extractLet(Sexp* s, int index) {
+Sexp* extractLet(Sexp* const s, const int index) {
   Sexp* expr = s->list[index];
   size_t local = _stack_counter++;
 
@@ -99,6 +102,14 @@ void fLet(Sexp* let);
 
 //endregion
 
+/**
+ * Checks if s contains an expression at i, where it expects to be a value. If it does, the it flattens it.
+ *
+ *
+ *
+ * @param s
+ * @param i
+ */
 void fTall(Sexp* s, int i) {
   if (isTall(s->list[i])) {
     Sexp* let = extractLet(s, i);
@@ -113,8 +124,8 @@ void fTall(Sexp* s, int i) {
   }
 }
 
-void fCall(Sexp* s) {
-  Sexp* args = s->list[3];
+void fCall(Sexp* call) {
+  Sexp* args = call->list[3];
   for (int ai = 0; ai < args->length; ++ai) { // argument index = ai
     fTall(args, ai);
   }
@@ -125,32 +136,32 @@ void fCall(Sexp* s) {
  * this should flatten every tall expression
  */
 void fLet(Sexp* let) {
-  Sexp* s = let->list[1];
-  if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
-    fCall(s);
+  Sexp* expr = let->list[1];
+  if (isCall(expr) || isCallVargs(expr) || isCallTail(expr)) {
+    fCall(expr);
     return;
   }
-  else if (isAdd(s)) {
-    fTall(s, 1);
-    fTall(s, 2);
+  else if (isAdd(expr)) {
+    fTall(expr, 1);
+    fTall(expr, 2);
     return;
   }
-  else if (isLoad(s)) {
-    fTall(s, 1);
+  else if (isLoad(expr)) {
+    fTall(expr, 1);
     return;
   }
-  else if (isIndex(s)) {
-    fTall(s, 0);
-    fTall(s, 2);
+  else if (isIndex(expr)) {
+    fTall(expr, 0);
+    fTall(expr, 2);
     return;
   }
-  else if (isCast(s)) {
-    fTall(s, 2);
+  else if (isCast(expr)) {
+    fTall(expr, 2);
     return;
   }
-  else if (isIcmp(s)) {
-    fTall(s, 1);
-    fTall(s, 2);
+  else if (isIcmp(expr)) {
+    fTall(expr, 1);
+    fTall(expr, 2);
     return;
   }
   assert(0);
@@ -165,11 +176,11 @@ void fLet(Sexp* let) {
  *
  * Is a no-op on calls that return void.
  *
- * @param s - the call that is transformed to be a statement
+ * @param call - the call that is transformed to be a statement
  */
-void callStmt(Sexp* block, Sexp* s) {
-  if (strcmp(s->list[2]->value, "void") == 0) {
-    fCall(s);
+void callStmt(Sexp* block, Sexp* call) {
+  if (strcmp(call->list[2]->value, "void") == 0) {
+    fCall(call);
     return;
   }
 
@@ -181,16 +192,15 @@ void callStmt(Sexp* block, Sexp* s) {
   /* create let from call */
   Sexp* let = makeSexp(copyStr("let"), 2);
   let->list[0] = init;
-  let->list[1] = s;
+  let->list[1] = call;
 
   /* replace call with let */
-  block->list[currStmtIndex(block, _stmt)] = let;
+  block->list[currStmtIndex(block, call)] = let;
 
   /* flatten let */
-  Sexp* stmt_cache = _stmt;
   _stmt = let;
   fLet(let);
-  _stmt = stmt_cache;
+  _stmt = call;
 }
 
 /**
