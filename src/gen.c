@@ -83,7 +83,11 @@ void gQualified(char* type) {
       }
     }
   }
-  printf("%%struct.%s", type);
+
+  if (type[0] != '%') {
+    fprintf(stderr, "WARNING: type was not qualified: %s\n", type);
+  }
+  printf("!!%%struct.%s", type);
 }
 
 void gStruct(Sexp* s) {
@@ -121,47 +125,17 @@ Sexp* lookupDecl(Sexp* name) {
   assert(0); // lookups should always be found
 }
 
-void gCallVargs(Sexp* s) {
-  Sexp* original = lookupDecl(s->list[0]);
-  printf("call ");
-  gQualified(s->list[2]->value);
-  printf(" (");
-
-  Sexp* decl_types = original->list[1];
+void gTypes(Sexp* decl_types) {
+  printf("(");
   for (int i = 0; i < decl_types->length; ++i) {
     gQualified(decl_types->list[i]->value);
     if (i != decl_types->length - 1) printf(", ");
   }
-  printf(") ");
-
-  printf("@%s(", s->list[0]->value);
-  Sexp* args = s->list[3];
-  Sexp* arg_types = s->list[1];
-  assert(args->length == arg_types->length);
-  for (int i = 0; i < arg_types->length; ++i) {
-    gQualified(arg_types->list[i]->value);
-    printf(" ");
-    gValue(args->list[i]);
-    if (i != arg_types->length - 1) {
-      printf(", ");
-    }
-  }
   printf(")");
 }
 
-void gCall(Sexp* s) {
-  printf("call ");
-  gQualified(s->list[2]->value);
-  printf(" (");
-  Sexp* types = s->list[1];
-  for (int i = 0; i < types->length; ++i) {
-    gQualified(types->list[i]->value);
-    if (i != types->length - 1) printf(", ");
-  }
-  printf(") ");
-
-  printf("@%s(", s->list[0]->value);
-  Sexp* args = s->list[3];
+void gArgs(Sexp* args, Sexp* types) {
+  printf("(");
   for (int i = 0; i < types->length; ++i) {
     gQualified(types->list[i]->value);
     printf(" ");
@@ -171,6 +145,39 @@ void gCall(Sexp* s) {
     }
   }
   printf(")");
+}
+
+void gCallVargs(Sexp* s) {
+  Sexp* decl = lookupDecl(s->list[0]);
+  printf("call ");
+  gQualified(s->list[2]->value);
+
+  printf(" ");
+  gTypes(decl->list[1]);
+  printf(" ");
+
+  printf("@%s", s->list[0]->value);
+  Sexp* args = s->list[3];
+  Sexp* arg_types = s->list[1];
+  assert(args->length == arg_types->length);
+
+  gArgs(args, arg_types);
+}
+
+void gCall(Sexp* s) {
+  Sexp* types = s->list[1];
+
+  printf("call ");
+  gQualified(s->list[2]->value);
+
+  printf(" ");
+  gTypes(types);
+  printf(" ");
+
+  printf("@%s", s->list[0]->value);
+
+  Sexp* args = s->list[3];
+  gArgs(args, types);
 }
 
 /* (call-tail FuncN (types Type*) Type (args Expr*)) */
@@ -463,13 +470,7 @@ void gDecl(Sexp* s) {
   printf(" @%s", s->list[0]->value);
 
   Sexp* types = s->list[1];
-  printf("(");
-  for (int i = 0; i < types->length; ++i) {
-    gQualified(types->list[i]->value);
-    if (i != types->length - 1) printf(", ");
-  }
-
-  printf(")");
+  gTypes(types);
 
   printf("\n");
 }

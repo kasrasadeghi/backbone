@@ -120,8 +120,8 @@ void fLet(Sexp* block, Sexp* let) {
     return;
   }
   else if (isIcmp(expr)) {
+    fTall(block, let, expr, 0);
     fTall(block, let, expr, 1);
-    fTall(block, let, expr, 2);
     return;
   }
   assert(0);

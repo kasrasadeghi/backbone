@@ -17,7 +17,7 @@ void qType(Sexp* s) {
     char *prim = primitive_types[i];
     size_t prim_len = strlen(prim);
     if (strncmp(type, prim, prim_len) == 0) {
-      if (*(type + prim_len) == 0         // if it is exactly equal
+      if (*(type + prim_len) == '\0'      // if it is exactly equal
           || *(type + prim_len) == '*') { // or if it is a pointer  //TODO handle i8** and arbitrary pointer redirection
         // primitive type
         s->value[0] = 'i';
@@ -48,7 +48,7 @@ void qExpr(Sexp* s) {
   } else if (isMathBinop(s) || isIcmp(s)) {
     qType(s->list[0]);
     qExpr(s->list[1]);
-    qExpr(s->list[1]);
+    qExpr(s->list[2]);
   } else if (isLoad(s)) {
     qType(s->list[0]);
     qExpr(s->list[1]);
@@ -68,7 +68,7 @@ void qCall(Sexp* s) {
   qType(s->list[2]);
   Sexp* args = s->list[3];
   for (size_t i = 0; i < args->length; ++i) {
-    qExpr(s->list[i]);
+    qExpr(args->list[i]);
   }
 }
 
@@ -98,7 +98,6 @@ void qBlock(Sexp* s, size_t startIndex) {
     qStmt(s->list[i]);
   }
 }
-
 
 void qStruct(Sexp* s) {
   for (size_t i = 1; i < s->length; ++i) {
