@@ -127,10 +127,10 @@ void gCallVargs(Sexp* s) {
   gQualified(s->list[2]->value);
   printf(" (");
 
-  Sexp* types = original->list[1];
-  for (int i = 0; i < types->length; ++i) {
-    gQualified(types->list[i]->value);
-    if (i != types->length - 1) printf(", ");
+  Sexp* decl_types = original->list[1];
+  for (int i = 0; i < decl_types->length; ++i) {
+    gQualified(decl_types->list[i]->value);
+    if (i != decl_types->length - 1) printf(", ");
   }
   printf(") ");
 
@@ -173,7 +173,7 @@ void gCall(Sexp* s) {
   printf(")");
 }
 
-/* (become FuncN (types Type*) Type (args Expr*)) */
+/* (call-tail FuncN (types Type*) Type (args Expr*)) */
 void gCallTail(Sexp* s) {
   printf("musttail ");
   gCall(s);
