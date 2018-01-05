@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
-    puts("Usage: backbone <parse|generateLLVM> <file>");
+    puts("Usage: backbone <parse|flatten|qualify|gen> <file>");
     return 1;
   }
   char* filename = argv[2];
