@@ -359,9 +359,10 @@ void gStmt(Sexp* s) {
     gAuto(s);
   }
   else {
-    fprintf(stderr, "Error: unmatched statement!\n");
+    fprintf(stderr, "FATAL: unmatched statement!\n");
     printf("  UNMATCHED STATEMENT:\n");
     printSexp(s);
+    exit(1);
   }
   printf("\n");
 }
