@@ -21,4 +21,5 @@ add_executable(backbone main.c
     sexp.c sexp.h
     reader.c reader.h
     qualify.c qualify.h
+    blockify.c blockify.h
 )
