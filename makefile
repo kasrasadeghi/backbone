@@ -3,8 +3,9 @@ B-DIR=src/cmake-build-debug
 all: build test
 
 .PHONY: clean
-clean: ${B-DIR}
-	rm -rf ${B-DIR}
+clean: 
+	-rm -rf ${B-DIR}
+	(cd gen-tests; make clean)
 
 .PHONY: build
 build:
