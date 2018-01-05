@@ -57,6 +57,8 @@ int isAdd      (Sexp* s);
 
 int isIcmp     (Sexp* s);
 
+int isBool     (Sexp* s);
+
 //endregion
 
 #endif

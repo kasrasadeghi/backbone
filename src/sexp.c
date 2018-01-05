@@ -171,4 +171,8 @@ int isIcmp(Sexp* s) {
          || strcmp(s->value, "!=") == 0;
 }
 
+int isBool(Sexp* s) {
+  return strcmp(s->value, "true") == 0 || strcmp(s->value, "false") == 0;
+}
+
 //endregion

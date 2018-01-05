@@ -29,7 +29,8 @@ Load      -> (load Type Expr)
 Index     -> (index Expr Type Expr)
 Cast      -> (cast Type Type Expr)
 
-Value     -> Literal | VarN | StrGet
+Value     -> Literal | VarN | StrGet | Bool
+Bool      -> true | false
 StrGet    -> (str-get int)
 Literal   -> int 
 

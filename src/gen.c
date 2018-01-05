@@ -243,21 +243,9 @@ void gLet(Sexp* l) {
  * Assumes that value names don't start with a digit.
  */
 void gValue(Sexp* s) {
-  if (strcmp(s->value, "true") == 0) {
-    printf("1");
-  }
-  else if (strcmp(s->value, "false") == 0) {
-    printf("0");
-  }
-  else if (strcmp(s->value, "str-get") == 0) {
-    gStrGet(s);
-  }
-  else if (isdigit(s->value[0])) {
-    printf("%s", s->value);
-  }
-  else {
-    printf("%%%s", s->value);
-  }
+  if (isStrGet(s))                       { gStrGet(s); } else
+  if (isdigit(s->value[0]) || isBool(s)) { printf("%s", s->value); }
+  else                                   { printf("%%%s", s->value); }
 }
 
 void gReturn(Sexp* s) {
