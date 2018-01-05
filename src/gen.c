@@ -218,33 +218,15 @@ void gMathBinop(Sexp* s) {
 }
 
 void gExpr(Sexp* s) {
-  if (isCall(s)) {
-    gCall(s);
-  }
-  else if (isCallVargs(s)) {
-    gCallVargs(s);
-  }
-  else if (isCallTail(s)) {
-    gCallTail(s);
-  }
-  else if (isMathBinop(s)) {
-    gMathBinop(s);
-  }
-  else if (isIcmp(s)) {
-    gIcmp(s);
-  }
-  else if (strcmp(s->value, "load") == 0) {
-    gLoad(s);
-  }
-  else if (strcmp(s->value, "index") == 0) {
-    gIndex(s);
-  }
-  else if (isCast(s)) {
-    gCast(s);
-  }
-  else {
-    gValue(s);
-  }
+  if (isCall(s))      { gCall(s);      } else
+  if (isCallVargs(s)) { gCallVargs(s); } else
+  if (isCallTail(s))  { gCallTail(s);  } else
+  if (isMathBinop(s)) { gMathBinop(s); } else
+  if (isIcmp(s))      { gIcmp(s);      } else
+  if (isLoad(s))      { gLoad(s);      } else
+  if (isIndex(s))     { gIndex(s);     } else
+  if (isCast(s))      { gCast(s);      }
+  else                { gValue(s);     }
 }
 
 void gLet(Sexp* l) {
