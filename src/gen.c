@@ -60,41 +60,11 @@ void gStrTable(Sexp* s) {
   }
 }
 
-/**
- * Takes as input a type name and writes the qualified LLVM type to the output file
- * Precondition: type satisfies [a-zA-Z0-9]+[\*]*
- */
-void gQualified(char* type) {
-  if (strcmp(type, "void") == 0 || strcmp(type, "...") == 0) {
-    printf("%s", type);
-    return;
-  }
-
-  char *primitive_types[] = {"i1", "i8", "i32", "i64", "u1", "u8", "u32", "u64"};
-
-  for (int i = 0; i < 8; i++) {
-    char *prim = primitive_types[i];
-    size_t prim_len = strlen(prim);
-    if (strncmp(type, prim, prim_len) == 0) {
-      if (*(type + prim_len) == 0 || *(type + prim_len) == '*') {
-        // primitive type
-        printf("i%s", type + 1);
-        return;
-      }
-    }
-  }
-
-  if (type[0] != '%') {
-    fprintf(stderr, "WARNING: type was not qualified: %s\n", type);
-  }
-  printf("%s", type);
-}
-
 void gStruct(Sexp* s) {
   printf("%%struct.%s = type { ", s->list[0]->value);
   for (int i = 1; i < s->length; ++i) {
     char* type = s->list[i]->list[0]->value;
-    gQualified(type);
+    printf("%s", type);
     if (i != s->length - 1) printf(", ");
   }
   printf(" }\n");
@@ -113,7 +83,7 @@ void gValue(Sexp*);
  *
  */
 Sexp* lookupDecl(Sexp* name) {
-  //TODO refactor this to lookupFunction that checks both decls and defs
+  //consider TODO refactor this to lookupFunction that checks both decls and defs
   for (int i = 0; i < _p->length; ++i) {
     Sexp* child = _p->list[i];
     if (isDecl(child)) {
@@ -128,7 +98,7 @@ Sexp* lookupDecl(Sexp* name) {
 void gTypes(Sexp* decl_types) {
   printf("(");
   for (int i = 0; i < decl_types->length; ++i) {
-    gQualified(decl_types->list[i]->value);
+    printf("%s", decl_types->list[i]->value);
     if (i != decl_types->length - 1) printf(", ");
   }
   printf(")");
@@ -137,8 +107,7 @@ void gTypes(Sexp* decl_types) {
 void gArgs(Sexp* args, Sexp* types) {
   printf("(");
   for (int i = 0; i < types->length; ++i) {
-    gQualified(types->list[i]->value);
-    printf(" ");
+    printf("%s ", types->list[i]->value);
     gValue(args->list[i]);
     if (i != types->length - 1) {
       printf(", ");
@@ -149,14 +118,9 @@ void gArgs(Sexp* args, Sexp* types) {
 
 void gCallVargs(Sexp* s) {
   Sexp* decl = lookupDecl(s->list[0]);
-  printf("call ");
-  gQualified(s->list[2]->value);
-
-  printf(" ");
+  printf("call %s ", s->list[2]->value);
   gTypes(decl->list[1]);
-  printf(" ");
-
-  printf("@%s", s->list[0]->value);
+  printf(" @%s", s->list[0]->value);
   Sexp* args = s->list[3];
   Sexp* arg_types = s->list[1];
   assert(args->length == arg_types->length);
@@ -167,14 +131,10 @@ void gCallVargs(Sexp* s) {
 void gCall(Sexp* s) {
   Sexp* types = s->list[1];
 
-  printf("call ");
-  gQualified(s->list[2]->value);
-
-  printf(" ");
+  printf("call %s ", s->list[2]->value);
   gTypes(types);
-  printf(" ");
 
-  printf("@%s", s->list[0]->value);
+  printf(" @%s", s->list[0]->value);
 
   Sexp* args = s->list[3];
   gArgs(args, types);
@@ -206,24 +166,12 @@ void gIcmp(Sexp* s) {
     }
   }
 
-  if (strcmp(s->value, "<") == 0) {
-    printf("lt");
-  }
-  else if (strcmp(s->value, "<=") == 0) {
-    printf("le");
-  }
-  else if (strcmp(s->value, ">") == 0) {
-    printf("gt");
-  }
-  else if (strcmp(s->value, ">=") == 0) {
-    printf("ge");
-  }
-  else if (strcmp(s->value, "=") == 0) {
-    printf("eq");
-  }
-  else if (strcmp(s->value, "!=") == 0) {
-    printf("ne");
-  }
+  if (strcmp(s->value, "<") == 0)  { printf("lt"); } else
+  if (strcmp(s->value, "<=") == 0) { printf("le"); } else
+  if (strcmp(s->value, ">") == 0)  { printf("gt"); } else
+  if (strcmp(s->value, ">=") == 0) { printf("ge"); } else
+  if (strcmp(s->value, "=") == 0)  { printf("eq"); } else
+  if (strcmp(s->value, "!=") == 0) { printf("ne"); }
 
   printf(" %s ", s->list[0]->value);
 
@@ -234,34 +182,22 @@ void gIcmp(Sexp* s) {
 
 /* (load Type Value) */
 void gLoad(Sexp* s) {
-  printf("load ");
-  gQualified(s->list[0]->value);
-  printf(", ");
-  gQualified(s->list[0]->value);
-  //TODO check if below is valid. is below always flattened?
-  printf("* ");
-  printf("%%%s", s->list[1]->value);
+  //TODO are all pointers qualified?
+  printf("load %s, %s* %%%s", s->list[0]->value, s->list[0]->value, s->list[1]->value);
 }
 
 /* (index PtrValue Type IntValue) */
 /* requires Value to be of-type i32 or literal */
 void gIndex(Sexp* s) {
-  printf("getelementptr inbounds ");
-  gQualified(s->list[1]->value);
-  printf(", ");
-  gQualified(s->list[1]->value);
-  printf("*");
-  //TODO check if below is valid. is below always flattened?
-  printf(" %%%s, i32 0, i32 ", s->list[0]->value);
+  //TODO are all pointers qualified?
+  printf("getelementptr inbounds %s, %s* %%%s, i32 0, i32 ", s->list[1]->value, s->list[1]->value, s->list[0]->value);
   gValue(s->list[2]);
 }
 
 /* (cast TypeTo TypeFrom PtrName) */
 void gCast(Sexp* s) {
-  printf("bitcast ");
-  gQualified(s->list[0]->value);
-  printf(" %%%s to ", s->list[2]->value);
-  gQualified(s->list[1]->value);
+  //TODO are all pointers qualified?
+  printf("bitcast %s %%%s to %s", s->list[0]->value, s->list[2]->value, s->list[1]->value);
 }
 
 /* (+ Type Value Value) */
@@ -348,9 +284,7 @@ void gReturn(Sexp* s) {
     return;
   }
 
-  printf("  ret ");
-  gQualified(s->list[1]->value);
-  printf(" ");
+  printf("  ret %s ", s->list[1]->value);
   gValue(s->list[0]);
 }
 
@@ -381,22 +315,18 @@ void gIf(Sexp* s) {
 
 /* (auto FreshName Type) */
 void gAuto(Sexp* s) {
-  printf("  %%%s = alloca ", s->list[0]->value);
-  gQualified(s->list[1]->value);
+  printf("  %%%s = alloca %s", s->list[0]->value, s->list[1]->value);
 }
 
 /* (store Value Type PtrName) */
 void gStore(Sexp* s) {
   char* type = s->list[1]->value;
-  printf("  store ");
-
-  gQualified(type);
-  printf(" ");
+  printf("  store %s ", type);
   gValue(s->list[0]);
 
-  printf(", ");
-  gQualified(type);
-  printf("*");
+  printf(", %s*", type);
+
+  //below TODO are all pointers normalized?
   printf(" %%%s", s->list[2]->value);
 }
 
@@ -440,15 +370,14 @@ void gDef(Sexp* s) {
   _if_counter = 0;
 
   printf("define ");
-  gQualified(s->list[2]->value);
+  printf("%s", s->list[2]->value);
   printf(" @%s", s->list[0]->value);
 
   printf("(");
   Sexp* params = s->list[1];
   for (int i = 0; i < params->length; ++i) {
     Sexp* param = params->list[i];
-    gQualified(param->list[0]->value);
-    printf(" %%%s", param->value);
+    printf("%s %%%s", param->list[0]->value, param->value);
     if (i != params->length - 1) {
       printf(", ");
     }
@@ -464,10 +393,7 @@ void gDef(Sexp* s) {
 }
 
 void gDecl(Sexp* s) {
-  printf("declare ");
-  gQualified(s->list[2]->value);
-
-  printf(" @%s", s->list[0]->value);
+  printf("declare %s @%s", s->list[2]->value, s->list[0]->value);
 
   Sexp* types = s->list[1];
   gTypes(types);

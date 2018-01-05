@@ -8,6 +8,9 @@
 void qBlock(Sexp* s, size_t startIndex);
 void qCall(Sexp*);
 
+/**
+ * Takes a type Sexp and qualifies non-primitive types.
+ */
 void qType(Sexp* s) {
   char* type = s->value;
 

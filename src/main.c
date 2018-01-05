@@ -24,8 +24,8 @@ int main(int argc, char *argv[]) {
     printSexp(program);
   }
   if (strcmp(argv[1], "gen") == 0) {
-    qualify(program);
     flatten(program);
+    qualify(program);
     generateLLVM(filename, program);
   }
   destroySexp(program);
