@@ -118,13 +118,15 @@ void gArgs(Sexp* args, Sexp* types) {
 
 void gCallVargs(Sexp* s) {
   Sexp* decl = lookupDecl(s->list[0]);
+
   printf("call %s ", s->list[2]->value);
   gTypes(decl->list[1]);
+
   printf(" @%s", s->list[0]->value);
+
   Sexp* args = s->list[3];
   Sexp* arg_types = s->list[1];
   assert(args->length == arg_types->length);
-
   gArgs(args, arg_types);
 }
 
@@ -148,6 +150,10 @@ void gCallTail(Sexp* s) {
 
 void gStrGet(Sexp* s) {
   size_t index = strtoul(s->list[0]->value, NULL, 10);
+  if (index > _str_table_len) {
+    fprintf(stderr, "str-get index is out of bounds\n");
+    exit(1);
+  }
   size_t len = _str_table[index];
   printf("getelementptr inbounds ([%lu x i8], [%lu x i8]* @str.%lu, i64 0, i64 0)",
          len, len, index);
@@ -407,11 +413,7 @@ void redirect_output(char* filename) {
   strncpy(out, filename, namelen);
   out[namelen - 2] = 'l';
   out[namelen - 3] = 'l';
-  //TODO figure out how to make the line below work with the python scripts. for some reason it
-  // shows up in the file when calling backbone in python. we might need to use call, not
-  // check_output.
-//  printf("default output: %s\n", out);
-  if (access(out, F_OK) != -1) {
+  if (access(out, F_OK) != -1) { // if the file exists
     remove(out);
   }
   close(STDOUT_FILENO);
