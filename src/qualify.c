@@ -83,7 +83,7 @@ void qStmt(Sexp* s) {
     qType(s->list[1]);
     qExpr(s->list[2]);
   } else if (isAuto(s)) {
-    //TODO
+    qType(s->list[1]);
   } else if (isCallLike(s)) {
     qCall(s);
   }
