@@ -9,7 +9,7 @@ void qBlock(Sexp* s, size_t startIndex);
 void qCall(Sexp*);
 
 void qType(Sexp* s) {
-  const char* type = s->value;
+  char* type = s->value;
 
   if (strcmp(type, "void") == 0 || strcmp(type, "...") == 0) {
     return;
@@ -31,6 +31,7 @@ void qType(Sexp* s) {
   }
 
   s->value = makeStr("%%struct.%s", type);
+  free(type);
 }
 
 void qTypes(Sexp* s) {
