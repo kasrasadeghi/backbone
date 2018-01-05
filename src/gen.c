@@ -87,7 +87,7 @@ void gQualified(char* type) {
   if (type[0] != '%') {
     fprintf(stderr, "WARNING: type was not qualified: %s\n", type);
   }
-  printf("!!%%struct.%s", type);
+  printf("%s", type);
 }
 
 void gStruct(Sexp* s) {

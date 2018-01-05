@@ -75,16 +75,10 @@ void qCall(Sexp* s) {
 void qStmt(Sexp* s) {
   if (isLet(s)) {
     qExpr(s->list[1]);
-  } else if (isReturn(s)) {
-    if (strcmp(s->list[0]->value, "void") == 0) {
-      /* (return void) */
-      // do nothing
-    } else {
-      /* (return Expr Type) */
-      qExpr(s->list[0]);
-      qType(s->list[1]);
-    }
-  } else if (isBecome(s) || isCall(s) || isCallTail(s) || isCallVargs(s)) {
+  } else if (isReturn(s) && strcmp(s->list[0]->value, "void") != 0) {
+    qExpr(s->list[0]);
+    qType(s->list[1]);
+  } else if (isCallLike(s)) {
     qCall(s);
   } else if (isStore(s)) {
     qExpr(s->list[0]);

@@ -124,26 +124,27 @@ int isStmt(Sexp* s) {
   return isLet(s)
          || isReturn(s)
          || isIf(s)
-         || isCallVargs(s)
-         || isCall(s)
          || isStore(s)
          || isAuto(s)
-         || isBecome(s)
+         || isCallLike(s);
       ;
 }
 int isLet(Sexp* s)       { return strcmp(s->value, "let") == 0; }
 int isReturn(Sexp* s)    { return strcmp(s->value, "return") == 0; }
 int isIf(Sexp* s)        { return strcmp(s->value, "if") == 0; }
+int isCallLike(Sexp* s)  {
+  return isCall(s) || isCallTail(s) || isCallVargs(s) || isBecome(s);
+}
+int isStore(Sexp* s)     { return strcmp(s->value, "store") == 0; }
+int isAuto(Sexp* s)      { return strcmp(s->value, "auto") == 0; }
+
 int isCall(Sexp* s)      { return strcmp(s->value, "call") == 0; }
 int isCallTail(Sexp* s)  { return strcmp(s->value, "call-tail") == 0; }
 int isCallVargs(Sexp* s) { return strcmp(s->value, "call-vargs") == 0; }
-int isStore(Sexp* s)     { return strcmp(s->value, "store") == 0; }
-int isAuto(Sexp* s)      { return strcmp(s->value, "auto") == 0; }
 int isBecome(Sexp* s)    { return strcmp(s->value, "become") == 0; }
 
 int isExpr(Sexp* s) {
   return isCall(s)
-         || isCallVargs(s)
          || isMathBinop(s)
          || isIcmp(s)
          || isLoad(s)
