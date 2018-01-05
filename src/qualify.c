@@ -3,6 +3,10 @@
 #include <assert.h>
 #include <string.h>
 #include "qualify.h"
+#include "str.h"
+
+void qBlock(Sexp* s, size_t startIndex);
+void qCall(Sexp*);
 
 void qType(Sexp* s) {
   const char* type = s->value;
@@ -26,12 +30,7 @@ void qType(Sexp* s) {
     }
   }
 
-  char cache[256];
-  snprintf(cache, 256, "%%struct.%s", type);
-  size_t cache_len = strlen(cache) + 1;
-  char* str = malloc(cache_len);
-  strncpy(str, cache, cache_len);
-  s->value = str;
+  s->value = makeStr("%%struct.%s", type);
 }
 
 void qTypes(Sexp* s) {
@@ -39,8 +38,6 @@ void qTypes(Sexp* s) {
     qType(s->list[i]);
   }
 }
-
-void qCall(Sexp*);
 
 void qExpr(Sexp* s) {
   if (isCall(s) || isCallVargs(s) || isCallTail(s) || isBecome(s)) {
@@ -78,12 +75,17 @@ void qStmt(Sexp* s) {
   } else if (isReturn(s) && strcmp(s->list[0]->value, "void") != 0) {
     qExpr(s->list[0]);
     qType(s->list[1]);
-  } else if (isCallLike(s)) {
-    qCall(s);
+  } else if (isIf(s)) {
+    qExpr(s->list[0]);
+    qBlock(s, 1);
   } else if (isStore(s)) {
     qExpr(s->list[0]);
     qType(s->list[1]);
     qExpr(s->list[2]);
+  } else if (isAuto(s)) {
+    //TODO
+  } else if (isCallLike(s)) {
+    qCall(s);
   }
 }
 
