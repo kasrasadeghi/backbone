@@ -8,7 +8,7 @@ declare i32 @puts(i8*)
 
 define i32 @main() {
 entry:
-  br i1 1, label %then0, label %post0
+  br i1 true, label %then0, label %post0
 then0:
   %ignore = call i32 (i8*) @puts(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @str.0, i64 0, i64 0))
   br label %post0

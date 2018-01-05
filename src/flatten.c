@@ -4,21 +4,6 @@
 #include "flatten.h"
 #include "str.h"
 
-/**
- * returns true for expressions that are not values.
- */
-int isTall(Sexp* s) {
-  return isCall(s)
-         || isCallVargs(s)
-         || isCallTail(s)
-         || isAdd(s)
-         || isIcmp(s)
-         || isLoad(s)
-         || isIndex(s)
-         || isCast(s)
-      ;
-}
-
 static size_t _stack_counter = 0;
 
 /**

@@ -29,10 +29,10 @@ Load      -> (load Type Expr)
 Index     -> (index Expr Type Expr)
 Cast      -> (cast Type Type Expr)
 
-Value     -> Literal | VarN | StrGet | Bool
+Value     -> Literal | VarN | StrGet
+Literal   -> int | Bool
 Bool      -> true | false
 StrGet    -> (str-get int)
-Literal   -> int 
 
 MathBinop -> Add
 Add       -> Binop[+]

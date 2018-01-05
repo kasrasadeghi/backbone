@@ -246,22 +246,27 @@ void gLet(Sexp* l) {
  *
  * TODO: check for support for struct literals and other kinds of literals.
  *
+ * Supports:
+ *  - register lookup values
+ *  - str-get values
+ *  - integer literals
+ *  - boolean literals
+ *
  * Assumes that value names don't start with a digit.
  */
 void gValue(Sexp* s) {
-  if (isStrGet(s))                       { gStrGet(s); } else
-  if (isdigit(s->value[0]) || isBool(s)) { printf("%s", s->value); }
-  else                                   { printf("%%%s", s->value); }
+  if (isStrGet(s))  { gStrGet(s); } else
+  if (isLiteral(s)) { printf("%s", s->value); }
+  else              { printf("%%%s", s->value); }
 }
 
 void gReturn(Sexp* s) {
   if (strcmp(s->list[0]->value, "void") == 0) {
     printf("  ret void");
-    return;
+  } else {
+    printf("  ret %s ", s->list[1]->value);
+    gValue(s->list[0]);
   }
-
-  printf("  ret %s ", s->list[1]->value);
-  gValue(s->list[0]);
 }
 
 void gStmt(Sexp* s);

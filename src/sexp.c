@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "sexp.h"
 #include "str.h"
 
@@ -144,14 +145,18 @@ int isCallVargs(Sexp* s) { return strcmp(s->value, "call-vargs") == 0; }
 int isBecome(Sexp* s)    { return strcmp(s->value, "become") == 0; }
 
 int isExpr(Sexp* s) {
-  return isCall(s)
+  return isTall(s)
+//         || isValue(s) // TODO fix
+          ;
+}
+int isTall(Sexp* s) {
+  return isCallLike(s)
          || isMathBinop(s)
          || isIcmp(s)
          || isLoad(s)
          || isIndex(s)
          || isCast(s)
-//         || isValue(s) // TODO fix
-          ;
+      ;
 }
 int isLoad(Sexp* s)      { return strcmp(s->value, "load") == 0; }
 int isIndex(Sexp* s)     { return strcmp(s->value, "index") == 0; }
@@ -171,8 +176,13 @@ int isIcmp(Sexp* s) {
          || strcmp(s->value, "!=") == 0;
 }
 
-int isBool(Sexp* s) {
-  return strcmp(s->value, "true") == 0 || strcmp(s->value, "false") == 0;
+int isValue(Sexp* s) {
+  return isLiteral(s) || isStrGet(s); // TODO: OR is not a keyword? what's the distinguishing factor for register lookup?
 }
+int isLiteral(Sexp* s)   { return isBool(s) || isdigit(s->value[0]); }
+int isBool(Sexp* s)      { return strcmp(s->value, "true") == 0
+                                  || strcmp(s->value, "false") == 0; }
+int isStrGet(Sexp* s)    { return strcmp(s->value, "str-get") == 0; }
+
 
 //endregion

@@ -44,6 +44,7 @@ int isCallVargs(Sexp* s);
 int isBecome   (Sexp* s);
 
 int isExpr     (Sexp* s);
+int isTall     (Sexp* s);
 int isLoad     (Sexp* s);
 int isIndex    (Sexp* s);
 int isCast     (Sexp* s);
