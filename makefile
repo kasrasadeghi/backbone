@@ -9,7 +9,7 @@ clean:
 
 .PHONY: build
 build:
-	@(cd src; make)
+	@(cd src; make --no-print-directory)
 	ln -sf ${B-DIR}/backbone backbone
 
 test:
