@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
     printSexp(program);
   }
   if (strcmp(argv[1], "flatten") == 0) {
+    blockify(program);
     flatten(program);
     printSexp(program);
   }
