@@ -6,6 +6,13 @@
 
 static size_t _stack_counter = 0;
 
+//region Forward Declarations
+
+void fBlock(Sexp* block, int startIndex);
+void fLet(Sexp* block, Sexp* let);
+
+//endregion
+
 /**
  * Extracts an expression from a Sexp s at index index.
  *
@@ -37,12 +44,6 @@ Sexp* extractLet(Sexp* const s, const int index) {
 
   return let;
 }
-
-//region Forward Declarations
-
-void fLet(Sexp* block, Sexp* let);
-
-//endregion
 
 /**
  * Checks if s contains an expression at i, where it expects to be a value. If it does, the it flattens it.
@@ -189,7 +190,7 @@ void fBecome(Sexp* block, Sexp* call_tail) {
   }
 }
 
-void fBlock(Sexp* block, int startIndex);
+
 
 void fStmt(Sexp* block, Sexp* s) {
 
