@@ -1,6 +1,5 @@
-#include "blockify.h"
 #include "str.h"
-#include <stdio.h>
+#include "blockify.h"
 
 Sexp* bDo(Sexp *);
 Sexp* bIf(Sexp*);
@@ -8,9 +7,9 @@ Sexp* bContainer(Sexp*, size_t);
 Sexp* bDef(Sexp* s);
 
 void blockify(Sexp* p) {
-  for (Sexp** el = p->list; el < p->list + p->length; ++el) {
-    if (isDef(*el)) {
-      *el = bDef(*el);
+  for (size_t i = 0; i < p->length; ++i) {
+    if (isDef(p->list[i])) {
+      p->list[i] = bDef(p->list[i]);
     }
   }
 }
@@ -36,7 +35,7 @@ Sexp* bIf(Sexp* s) {
  */
 Sexp* bContainer(Sexp* s, size_t si) { // si = starting index
   size_t stmt_count = s->length - si;
-  Sexp* block = makeSexp(str_copy("do"), stmt_count);
+  Sexp* block = makeSexp(copyStr("do"), stmt_count);
   for (size_t i = 0; i < stmt_count; ++i) {
     block->list[i] = s->list[si + i];
     s->list[si + i] = NULL;
@@ -50,18 +49,12 @@ Sexp* bContainer(Sexp* s, size_t si) { // si = starting index
 }
 
 Sexp* bDo(Sexp *b) {
-  for (Sexp** el = b->list; el < b->list + b->length; ++el) {
-    if (isIf(*el)) {
-      *el = bIf(*el);
-    } else if (isDo(*el)) {
-      *el = bDo(*el);
+  for (size_t i = 0; i < b->length; ++i) {
+    if (isIf(b->list[i])) {
+      b->list[i] = bIf(b->list[i]);
+    } else if (isDo(b->list[i])) {
+      b->list[i] = bDo(b->list[i]);
     }
   }
-
   return b;
 }
-
-
-
-
-

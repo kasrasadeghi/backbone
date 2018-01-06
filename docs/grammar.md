@@ -17,12 +17,13 @@ Call      -> (call       FuncN (types Type*) Type (args Expr*))
 CallTail  -> (call-tail  FuncN (types Type*) Type (args Expr*))
 CallVargs -> (call-vargs FuncN (types Type*) Type (args Expr*))
 
-Stmt      -> Let | Return | If | Store | Auto | CallLike
+Stmt      -> Let | Return | If | Store | Auto | CallLike | Do
 Let       -> (let ValN Expr)
 If        -> (if Expr Stmt*)
 Return    -> (return Expr Type) | (return void) 
 Store     -> (store Expr Type Expr)
 Auto      -> (auto VarN Type)
+Do        -> (do Stmt*)
 
 Expr      -> CallLike | MathBinop | Icmp | Load | Index | Cast | Value
 Load      -> (load Type Expr)

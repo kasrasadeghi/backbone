@@ -13,6 +13,7 @@ typedef struct Sexp {
 Sexp* sexp(char* value);
 Sexp* makeSexp(char* value, size_t length);
 Sexp* copySexp(Sexp* s);
+Sexp* cacheSexp(Sexp* s);
 void destroySexp(Sexp* s);
 
 size_t indexOfSexp(Sexp* parent, Sexp* child);
@@ -30,18 +31,19 @@ int isStruct   (Sexp* s);
 int isDecl     (Sexp* s);
 int isDef      (Sexp* s);
 
-int isStmt     (Sexp* s);
 int isCallLike (Sexp* s);
+int isCall     (Sexp* s);
+int isCallTail (Sexp* s);
+int isCallVargs(Sexp* s);
+int isBecome   (Sexp* s);
+
+int isStmt     (Sexp* s);
 int isLet      (Sexp* s);
 int isReturn   (Sexp* s);
 int isIf       (Sexp* s);
 int isStore    (Sexp* s);
 int isAuto     (Sexp* s);
-
-int isCall     (Sexp* s);
-int isCallTail (Sexp* s);
-int isCallVargs(Sexp* s);
-int isBecome   (Sexp* s);
+int isDo       (Sexp* s);
 
 int isExpr     (Sexp* s);
 int isTall     (Sexp* s);

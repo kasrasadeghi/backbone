@@ -4,6 +4,7 @@
 #include "flatten.h"
 #include "qualify.h"
 #include "gen.h"
+#include "blockify.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
@@ -13,6 +14,10 @@ int main(int argc, char *argv[]) {
   char* filename = argv[2];
   Sexp* program = parse(filename);
   if (strcmp(argv[1], "parse") == 0) {
+    printSexp(program);
+  }
+  if (strcmp(argv[1], "blockify") == 0) {
+    blockify(program);
     printSexp(program);
   }
   if (strcmp(argv[1], "flatten") == 0) {
