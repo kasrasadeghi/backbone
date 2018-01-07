@@ -193,39 +193,38 @@ void fBecome(Sexp* block, Sexp* call_tail) {
 
 
 void fStmt(Sexp* block, Sexp* s) {
+
   if (isLet(s)) {
     fLet(block, s);
-    return;
   }
-  else if (isReturn(s) && 3 == s->length) { // is non-void return
-    fTall(block, s, s, 0);
-    return;
+  else if (isReturn(s)) {
+    if (strcmp(s->list[0]->value, "void") != 0) {
+      fTall(block, s, s, 0);
+    }
   }
   else if (isIf(s)) {
     fTall(block, s, s, 0);
     fBlock(s, 1);
-    return;
   }
-  else if (isBecome(s)) {
-    fBecome(block, s);
-    return;
-  }
-  else if (isCallLike(s)) { // is a call-like other than become
+  else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
     callStmt(block, s);
-    return;
   }
   else if (isStore(s)) {
     /* (store Value Type Ptr) */
     fTall(block, s, s, 0);
     fTall(block, s, s, 2);
-    return;
   }
-  /* statements without possibly tall expressions in them */
-  int isOtherStatement = isAuto(s);
-  if (!isOtherStatement) {
-    printSexp(s);
+  else if (isBecome(s)) {
+    fBecome(block, s);
   }
-  assert(isOtherStatement);
+  else {
+    /* statements without possibly tall expressions in them */
+    int isOtherStatement = isAuto(s);
+    if (!isOtherStatement) {
+      printSexp(s);
+    }
+    assert(isOtherStatement);
+  }
 }
 
 void fBlock(Sexp* block, int startIndex) {

@@ -261,9 +261,9 @@ void gValue(Sexp* s) {
 }
 
 void gReturn(Sexp* s) {
-  if (s->length == 2) { // (return void)
+  if (strcmp(s->list[0]->value, "void") == 0) {
     printf("  ret void");
-  } else {              // (return Expr Type)
+  } else {
     printf("  ret %s ", s->list[1]->value);
     gValue(s->list[0]);
   }
