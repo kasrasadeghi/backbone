@@ -27,3 +27,4 @@ return_call.bb
           argc
     return
       $0
+      i32

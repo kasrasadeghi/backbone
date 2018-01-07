@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 #include "flatten.h"
 #include "str.h"
 
@@ -198,9 +199,10 @@ void fStmt(Sexp* block, Sexp* s) {
     fLet(block, s);
   }
   else if (isReturn(s)) {
-    if (strcmp(s->list[0]->value, "void") != 0) {
+    if (s->length == 2) {
       fTall(block, s, s, 0);
     }
+    // else { for void returns, do nothing. }
   }
   else if (isIf(s)) {
     fTall(block, s, s, 0);
