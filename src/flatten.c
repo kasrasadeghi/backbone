@@ -206,16 +206,16 @@ void fStmt(Sexp* block, Sexp* s) {
     fTall(block, s, s, 0);
     fBlock(s, 1);
   }
-  else if (isCall(s) || isCallVargs(s) || isCallTail(s)) {
+  else if (isBecome(s)) {
+    fBecome(block, s);
+  }
+  else if (isCallLike(s)) { // call-like other than become
     callStmt(block, s);
   }
   else if (isStore(s)) {
     /* (store Value Type Ptr) */
     fTall(block, s, s, 0);
     fTall(block, s, s, 2);
-  }
-  else if (isBecome(s)) {
-    fBecome(block, s);
   }
   else {
     /* statements without possibly tall expressions in them */
