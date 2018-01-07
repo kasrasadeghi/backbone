@@ -197,10 +197,8 @@ void fStmt(Sexp* block, Sexp* s) {
   if (isLet(s)) {
     fLet(block, s);
   }
-  else if (isReturn(s)) {
-    if (strcmp(s->list[0]->value, "void") != 0) {
-      fTall(block, s, s, 0);
-    }
+  else if (isReturn(s) && strcmp(s->list[0]->value, "void") != 0) {
+    fTall(block, s, s, 0);
   }
   else if (isIf(s)) {
     fTall(block, s, s, 0);
