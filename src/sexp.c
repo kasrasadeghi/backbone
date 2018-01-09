@@ -50,6 +50,7 @@ void insertSexp(Sexp* parent, Sexp* stmt, size_t csi) {
   /* move everything from [csi, length) over, starting from the end */
   for (size_t si = parent->length - 1; si >= csi; --si) {
     parent->list[si] = parent->list[si - 1];
+    if (si == 0) break; // prevent size_t rollover from 0 to extremely positive value
   }
 
   /* place statement in parent */
@@ -57,10 +58,7 @@ void insertSexp(Sexp* parent, Sexp* stmt, size_t csi) {
 }
 
 void incrementLength(Sexp* const s) {
-  Sexp* decoy = makeSexp(copyStr("decoy"), 0);
-  pushSexp(s, decoy);
-  s->list[s->length - 1] = NULL;
-  destroySexp(decoy);
+  pushSexp(s, NULL);
 }
 
 void _printSexp(Sexp* s, size_t l) {
@@ -68,15 +66,15 @@ void _printSexp(Sexp* s, size_t l) {
     printf("  ");
   }
   if (s == NULL) {
-    printf("NULL");
+    printf("NULL\n");
     return;
   }
   if (s->value == NULL) {
-    printf("NULL VALUE");
+    printf("NULL VALUE\n");
   } else {
     printf("%s\n", s->value);
+//    printf("%s %lu/%lu\n", s->value, s->length, s->cap);
   }
-//  printf("%s %lu/%lu\n", s->value, s->length, s->cap);
   for (int i = 0; i < s->length; ++i) {
     _printSexp(s->list[i], l + 1);
   }
@@ -89,7 +87,7 @@ void printSexp(Sexp* s) {
 void pushSexp(Sexp* const s, Sexp* child) {
   s->list[s->length] = child;
   ++s->length;
-  if (s->length == s->cap) {
+  if (s->length >= s->cap) {
     s->cap *= 2;
     s->list = realloc(s->list, s->cap * sizeof(Sexp*));
   }
