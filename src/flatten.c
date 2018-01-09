@@ -9,7 +9,7 @@ static size_t _stack_counter = 0;
 
 //region Forward Declarations
 
-void fBlock(Sexp* block, int startIndex);
+void fBlock(Sexp* block);
 void fLet(Sexp* block, Sexp* let);
 
 //endregion
@@ -84,7 +84,7 @@ void fCall(Sexp* block, Sexp* stmt, Sexp* call) {
  */
 void fLet(Sexp* block, Sexp* let) {
   Sexp* expr = let->list[1];
-  if (isCall(expr) || isCallVargs(expr) || isCallTail(expr)) {
+  if (isCall(expr) || isCallVargs(expr) || isCallTail(expr)) { //TODO use isCallLike && !isBecome
     fCall(block, let, expr);
     return;
   }
@@ -191,12 +191,12 @@ void fBecome(Sexp* block, Sexp* call_tail) {
   }
 }
 
-
-
 void fStmt(Sexp* block, Sexp* s) {
-
   if (isLet(s)) {
     fLet(block, s);
+  }
+  else if (isDo(s)) {
+    fBlock(s);
   }
   else if (isReturn(s)) {
     if (s->length == 2) {
@@ -206,7 +206,7 @@ void fStmt(Sexp* block, Sexp* s) {
   }
   else if (isIf(s)) {
     fTall(block, s, s, 0);
-    fBlock(s, 1);
+    fBlock(s->list[1]);
   }
   else if (isBecome(s)) {
     fBecome(block, s);
@@ -229,15 +229,15 @@ void fStmt(Sexp* block, Sexp* s) {
   }
 }
 
-void fBlock(Sexp* block, int startIndex) {
-  for (int i = startIndex; i < block->length; ++i) {
+void fBlock(Sexp* block) {
+  for (int i = 0; i < block->length; ++i) {
     fStmt(block, block->list[i]);
   }
 }
 
 void fDef(Sexp* s) {
   _stack_counter = 0;
-  fBlock(s, 3);
+  fBlock(s->list[3]);
 }
 
 void flatten(Sexp* p) {
