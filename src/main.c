@@ -4,7 +4,9 @@
 #include "normalize.h"
 #include "qualify.h"
 #include "gen.h"
+#include "become.h"
 #include "blockify.h"
+#include "callstmt.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
@@ -22,6 +24,8 @@ int main(int argc, char *argv[]) {
   }
   if (strcmp(argv[1], "normalize") == 0) {
     blockify(program);
+    become(program);
+    callStmt(program);
     normalize(program);
     printSexp(program);
   }
@@ -31,6 +35,8 @@ int main(int argc, char *argv[]) {
   }
   if (strcmp(argv[1], "gen") == 0) {
     blockify(program);
+    become(program);
+    callStmt(program);
     normalize(program);
     qualify(program);
     generateLLVM(filename, program);

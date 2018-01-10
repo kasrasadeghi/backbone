@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include "normalize.h"
 #include "str.h"
-
-static size_t _stack_counter = 0;
+#include "locals.h"
 
 //region Forward Declarations
 
@@ -20,8 +19,6 @@ void nLet(Sexp* block, Sexp* let);
  *  - Replaces the expression with a reference to a new local.
  *  - Creates a let expression that initializes the local, setting it to the extracted sexp.
  *
- * Globals:
- *  - _stack_counter
  *
  * @param s
  * @param index
@@ -29,7 +26,7 @@ void nLet(Sexp* block, Sexp* let);
  */
 Sexp* extractLet(Sexp* const s, const int index) {
   Sexp* expr = s->list[index];
-  size_t local = _stack_counter++;
+  size_t local = newLocal();
 
   /* replace with reference to local */
   Sexp* ref = makeSexp(makeStr("$%lu", local), 0);
@@ -114,82 +111,6 @@ void nLet(Sexp* block, Sexp* let) {
   assert(0);
 }
 
-/**
- * Transforms expr-calls (calls that do not return void) to be statements.
- *
- * Is a no-op on calls that return void.
- *
- * @param call - the call that is transformed to be a statement
- */
-void callStmt(Sexp* block, Sexp* call) {
-  if (strcmp(call->list[2]->value, "void") == 0) {
-    nCall(block, call, call);
-    return;
-  }
-
-  size_t ignored = _stack_counter++;
-
-  /* create a initializer for the ignored stack variable */
-  Sexp* init = makeSexp(makeStr("$%lu", ignored), 0);
-
-  /* create let from call */
-  Sexp* let = makeSexp(copyStr("let"), 2);
-  let->list[0] = init;
-  let->list[1] = call;
-
-  /* replace call with let */
-  block->list[indexOfSexp(block, call)] = let;
-
-  /* normalize let */
-  nLet(block, let);
-}
-
-/**
- * (become 'name 'types 'return-type 'args)
- *
- * if 'return-type == void
- *  => (call-tail 'name 'types 'return-type 'args)
- *     (return void)
- *
- * otherwise
- *     (return (call-tail 'name 'types 'return-type 'args) 'return-type)
- *
- */
-void nBecome(Sexp* block, Sexp* call_tail) {
-  /* make call-tail sexp */
-  Sexp* return_type = call_tail->list[2];
-  replaceValue(call_tail, copyStr("call-tail"));
-
-  if (strcmp(return_type->value, "void") == 0) {
-    /* (call-tail 'name 'types 'return-type 'args)
-     * (return void)
-     */
-
-    /* make return void */
-    Sexp* return_sexp = makeSexp(copyStr("return"), 1);
-    return_sexp->list[0] = makeSexp(copyStr("void"), 0);
-
-    /* insert return_sexp after call_tail */
-    insertSexp(block, return_sexp, indexOfSexp(block, call_tail) + 1);
-
-    /* flatten the call. no need to normalize the return, it is void */
-    nCall(block, call_tail, call_tail);
-  } else {
-    /* (return (call-tail 'name 'types 'return-type 'args) 'return-type)
-     */
-
-    Sexp* return_sexp = makeSexp(copyStr("return"), 2);
-    return_sexp->list[0] = call_tail;
-    return_sexp->list[1] = makeSexp(copyStr(return_type->value), 0);
-
-    /* replace call_tail with return_sexp in block */
-    block->list[indexOfSexp(block, call_tail)] = return_sexp;
-
-    /* normalize the return, it has the call in it */
-    nTall(block, return_sexp, return_sexp, 0);
-  }
-}
-
 void nStmt(Sexp* block, Sexp* s) {
   if (isLet(s)) {
     nLet(block, s);
@@ -207,11 +128,10 @@ void nStmt(Sexp* block, Sexp* s) {
     nTall(block, s, s, 0);
     nBlock(s->list[1]);
   }
-  else if (isBecome(s)) {
-    nBecome(block, s);
-  }
-  else if (isCallLike(s)) { // call-like other than become
-    callStmt(block, s);
+  else if (isCallLike(s)) {
+    assert(strcmp(s->list[2]->value, "void") == 0);
+    assert(!isBecome(s)); // become should no longer exist because become.c comes before
+    nCall(block, s, s);
   }
   else if (isStore(s)) {
     /* (store Value Type Ptr) */
@@ -235,7 +155,7 @@ void nBlock(Sexp* block) {
 }
 
 void fDef(Sexp* s) {
-  _stack_counter = 0;
+  initLocals(s);
   nBlock(s->list[3]);
 }
 

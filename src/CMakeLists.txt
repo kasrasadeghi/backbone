@@ -22,4 +22,7 @@ add_executable(backbone main.c
     reader.c reader.h
     qualify.c qualify.h
     blockify.c blockify.h
+    callstmt.c callstmt.h
+    become.c become.h
+    locals.c locals.h
 )
