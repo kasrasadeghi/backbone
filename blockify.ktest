@@ -1,0 +1,5 @@
+test_dir: blockify-tests
+input: %.bb
+
+run: ./backbone blockify blockify-tests/%.bb
+reference: %.ok

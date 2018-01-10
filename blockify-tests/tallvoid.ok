@@ -25,18 +25,16 @@ tallvoid.bb
         i32
     void
     do
-      let
-        $0
-        call
-          printf
-          types
-            i8*
-            i32
+      call
+        printf
+        types
+          i8*
           i32
-          args
-            str-get
-              0
-            a
+        i32
+        args
+          str-get
+            0
+          a
       return
         void
   def
@@ -48,22 +46,19 @@ tallvoid.bb
         i8**
     i32
     do
-      let
-        $0
-        call
-          i
-          types
-            i32
-          i32
-          args
-            5
       call
         v
         types
           i32
         void
         args
-          $0
+          call
+            i
+            types
+              i32
+            i32
+            args
+              5
       return
         0
         i32

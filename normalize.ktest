@@ -1,0 +1,5 @@
+test_dir: normalize-tests
+input: %.bb
+
+run: ./backbone normalize normalize-tests/%.bb
+reference: %.ok

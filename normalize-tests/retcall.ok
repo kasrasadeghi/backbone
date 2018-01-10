@@ -1,13 +1,14 @@
-return_call.bb
+retcall.bb
   def
     iden
     params
       i
         i32
     i32
-    return
-      i
-      i32
+    do
+      return
+        i
+        i32
   def
     main
     params
@@ -16,15 +17,16 @@ return_call.bb
       argv
         i8**
     i32
-    let
-      $0
-      call
-        iden
-        types
+    do
+      let
+        $0
+        call
+          iden
+          types
+            i32
           i32
+          args
+            argc
+      return
+        $0
         i32
-        args
-          argc
-    return
-      $0
-      i32

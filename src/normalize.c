@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#include "flatten.h"
+#include "normalize.h"
 #include "str.h"
 
 static size_t _stack_counter = 0;
 
 //region Forward Declarations
 
-void fBlock(Sexp* block);
-void fLet(Sexp* block, Sexp* let);
+void nBlock(Sexp* block);
+void nLet(Sexp* block, Sexp* let);
 
 //endregion
 
@@ -55,14 +55,14 @@ Sexp* extractLet(Sexp* const s, const int index) {
  *
  * Note: parent will equal stmt when the s-expression to flatten is in a statement.
  */
-void fTall(Sexp* block, Sexp* stmt, Sexp* parent, int i) {
+void nTall(Sexp* block, Sexp* stmt, Sexp* parent, int i) {
   if (isTall(parent->list[i])) {
     Sexp* let = extractLet(parent, i);
     size_t csi = indexOfSexp(block, stmt);
     insertSexp(block, let, csi);
 
     /* recurse on the let we just inserted */
-    fLet(block, let);
+    nLet(block, let);
   }
 }
 
@@ -71,10 +71,10 @@ void fTall(Sexp* block, Sexp* stmt, Sexp* parent, int i) {
  *
  * The arguments that actually needed flattening are placed in the block before stmt.
  */
-void fCall(Sexp* block, Sexp* stmt, Sexp* call) {
+void nCall(Sexp* block, Sexp* stmt, Sexp* call) {
   Sexp* args = call->list[3];
   for (int ai = 0; ai < args->length; ++ai) { // argument index = ai
-    fTall(block, stmt, args, ai);
+    nTall(block, stmt, args, ai);
   }
 }
 
@@ -82,33 +82,33 @@ void fCall(Sexp* block, Sexp* stmt, Sexp* call) {
  * tall expression = expression that contains another expression
  * this should flatten every tall expression
  */
-void fLet(Sexp* block, Sexp* let) {
+void nLet(Sexp* block, Sexp* let) {
   Sexp* expr = let->list[1];
   if (isCall(expr) || isCallVargs(expr) || isCallTail(expr)) { //TODO use isCallLike && !isBecome
-    fCall(block, let, expr);
+    nCall(block, let, expr);
     return;
   }
   else if (isAdd(expr)) {
-    fTall(block, let, expr, 1);
-    fTall(block, let, expr, 2);
+    nTall(block, let, expr, 1);
+    nTall(block, let, expr, 2);
     return;
   }
   else if (isLoad(expr)) {
-    fTall(block, let, expr, 1);
+    nTall(block, let, expr, 1);
     return;
   }
   else if (isIndex(expr)) {
-    fTall(block, let, expr, 0);
-    fTall(block, let, expr, 2);
+    nTall(block, let, expr, 0);
+    nTall(block, let, expr, 2);
     return;
   }
   else if (isCast(expr)) {
-    fTall(block, let, expr, 2);
+    nTall(block, let, expr, 2);
     return;
   }
   else if (isIcmp(expr)) {
-    fTall(block, let, expr, 0);
-    fTall(block, let, expr, 1);
+    nTall(block, let, expr, 0);
+    nTall(block, let, expr, 1);
     return;
   }
   assert(0);
@@ -123,7 +123,7 @@ void fLet(Sexp* block, Sexp* let) {
  */
 void callStmt(Sexp* block, Sexp* call) {
   if (strcmp(call->list[2]->value, "void") == 0) {
-    fCall(block, call, call);
+    nCall(block, call, call);
     return;
   }
 
@@ -140,8 +140,8 @@ void callStmt(Sexp* block, Sexp* call) {
   /* replace call with let */
   block->list[indexOfSexp(block, call)] = let;
 
-  /* flatten let */
-  fLet(block, let);
+  /* normalize let */
+  nLet(block, let);
 }
 
 /**
@@ -155,7 +155,7 @@ void callStmt(Sexp* block, Sexp* call) {
  *     (return (call-tail 'name 'types 'return-type 'args) 'return-type)
  *
  */
-void fBecome(Sexp* block, Sexp* call_tail) {
+void nBecome(Sexp* block, Sexp* call_tail) {
   /* make call-tail sexp */
   Sexp* return_type = call_tail->list[2];
   free(call_tail->value);
@@ -173,8 +173,8 @@ void fBecome(Sexp* block, Sexp* call_tail) {
     /* insert return_sexp after call_tail */
     insertSexp(block, return_sexp, indexOfSexp(block, call_tail) + 1);
 
-    /* flatten the call. no need to flatten the return, it is void */
-    fCall(block, call_tail, call_tail);
+    /* flatten the call. no need to normalize the return, it is void */
+    nCall(block, call_tail, call_tail);
   } else {
     /* (return (call-tail 'name 'types 'return-type 'args) 'return-type)
      */
@@ -186,38 +186,38 @@ void fBecome(Sexp* block, Sexp* call_tail) {
     /* replace call_tail with return_sexp in block */
     block->list[indexOfSexp(block, call_tail)] = return_sexp;
 
-    /* flatten the return, it has the call in it */
-    fTall(block, return_sexp, return_sexp, 0);
+    /* normalize the return, it has the call in it */
+    nTall(block, return_sexp, return_sexp, 0);
   }
 }
 
-void fStmt(Sexp* block, Sexp* s) {
+void nStmt(Sexp* block, Sexp* s) {
   if (isLet(s)) {
-    fLet(block, s);
+    nLet(block, s);
   }
   else if (isDo(s)) {
-    fBlock(s);
+    nBlock(s);
   }
   else if (isReturn(s)) {
     if (s->length == 2) {
-      fTall(block, s, s, 0);
+      nTall(block, s, s, 0);
     }
     // else { for void returns, do nothing. }
   }
   else if (isIf(s)) {
-    fTall(block, s, s, 0);
-    fBlock(s->list[1]);
+    nTall(block, s, s, 0);
+    nBlock(s->list[1]);
   }
   else if (isBecome(s)) {
-    fBecome(block, s);
+    nBecome(block, s);
   }
   else if (isCallLike(s)) { // call-like other than become
     callStmt(block, s);
   }
   else if (isStore(s)) {
     /* (store Value Type Ptr) */
-    fTall(block, s, s, 0);
-    fTall(block, s, s, 2);
+    nTall(block, s, s, 0);
+    nTall(block, s, s, 2);
   }
   else {
     /* statements without possibly tall expressions in them */
@@ -229,18 +229,18 @@ void fStmt(Sexp* block, Sexp* s) {
   }
 }
 
-void fBlock(Sexp* block) {
+void nBlock(Sexp* block) {
   for (int i = 0; i < block->length; ++i) {
-    fStmt(block, block->list[i]);
+    nStmt(block, block->list[i]);
   }
 }
 
 void fDef(Sexp* s) {
   _stack_counter = 0;
-  fBlock(s->list[3]);
+  nBlock(s->list[3]);
 }
 
-void flatten(Sexp* p) {
+void normalize(Sexp* p) {
   for (int i = 0; i < p->length; ++i) {
     Sexp* child = p->list[i];
     if (strcmp(child->value, "def") == 0) {

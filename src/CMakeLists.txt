@@ -17,7 +17,7 @@ add_executable(backbone main.c
     parser.c parser.h
     str.c str.h
     gen.c gen.h
-    flatten.c flatten.h
+    normalize.c normalize.h
     sexp.c sexp.h
     reader.c reader.h
     qualify.c qualify.h

@@ -10,13 +10,13 @@ These are shown in 3 different functions with the following signatures:
 
 ```c
 Sexp* parse(char* filename);
-void flatten(Sexp* program); 
+void normalize(Sexp* program); 
 void generateLLVM(char* filename, Sexp* program);
-//Note: flatten should be Sexp* flatten(Sexp*), but for efficiency it modifies in place. 
+//Note: flatten should be Sexp* normalize(Sexp*), but for efficiency it modifies in place. 
 ```
 
 `parse()` is gone over in the parser section of the report.
 
-`flatten()` is gone over in the flatten section of the report.
+`normalize()` is gone over in the normalize section of the report.
 
 `generateLLVM()` is gone over in the generation section of the report. 

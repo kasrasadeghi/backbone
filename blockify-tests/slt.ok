@@ -8,12 +8,9 @@ slt.bb
         i8**
     i32
     do
-      let
-        $0
+      return
         <
           i32
           argc
           2
-      return
-        $0
         i32

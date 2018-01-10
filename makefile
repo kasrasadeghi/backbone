@@ -1,6 +1,6 @@
 B-DIR=src/cmake-build-debug
 
-all: build test
+all: clean build test
 
 .PHONY: clean
 clean: 
@@ -13,30 +13,23 @@ build:
 	ln -sf ${B-DIR}/backbone backbone
 
 test:
-	@python3 ktest.py
+	@python3 ktest.py parse
+	@python3 ktest.py blockify
+	@python3 ktest.py normalize
+	@python3 ktest.py qualify
+	@python3 ktest.py gen
 
-parse: build
-	python3 ktest.py parse
 parse\:%: build
 	./backbone parse parser-tests/$*.bb
 
-flatten: build
-	python3 ktest.py flatten
-flatten\:%: build
-	./backbone flatten flatten-tests/$*.bb
+normalize\:%: build
+	./backbone normalize normalize-tests/$*.bb
 
-qualify: build
-	python3 ktest.py qualify
 qualify\:%: build
 	./backbone qualify qualify-tests/$*.bb
 
-gen: build
-	python3 ktest.py gen
 gen\:%: build
 	./backbone gen gen-tests/$*.bb
-
-output: build
-	python3 ktest.py output
 
 help:
 	@echo "  version   - check versions"
@@ -58,3 +51,6 @@ docker-run: clean
 docker-clean:
 	-docker ps -a -q | xargs docker rm
 	-docker images | grep "^<none>" | awk "{print $3}" | xargs docker rmi -f
+
+%: build %.ktest
+	python3 ktest.py $*

@@ -99,7 +99,7 @@ the statement we extracted it from with the name received from the local counter
 To keep invariants consistent, the size of the encompassing block must be increased by one,
 and with the introduction of if-statements we have recursive search through blocks, so we
 have to keep track of the current block and cache it every time we recurse inwards
-(fBlock).
+(nBlock).
 
 Once we've inserted the let statement, we also need to recurse into it to make sure that
 the expression we just flattened does not need further flattening 
@@ -115,7 +115,7 @@ expression children, i.e. they are Tall. This is also where we do \hyperref[sec:
 
 Flatten also has a Call-as-a-Statement call as it traverses through statements as a
 convenience. Sometimes we call a function and we want to ignore the result. So we just
-place the call into a let, replace it, and use the local counter that flatten has available to
+place the call into a let, replace it, and use the local counter that normalize has available to
 it to ease the work.
 
 \section{Parser}

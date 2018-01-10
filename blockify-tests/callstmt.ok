@@ -12,16 +12,14 @@ callstmt.bb
     params
     i32
     do
-      let
-        $0
-        call
-          puts
-          types
-            i8*
-          i32
-          args
-            str-get
-              0
+      call
+        puts
+        types
+          i8*
+        i32
+        args
+          str-get
+            0
       return
         0
         i32

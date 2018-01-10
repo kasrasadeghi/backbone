@@ -1,13 +1,13 @@
-argcall.bb
+cc.bb
   def
-    call
+    iden
     params
-      argc
+      c
         i32
     i32
     do
       return
-        argc
+        c
         i32
   def
     main
@@ -21,12 +21,18 @@ argcall.bb
       let
         check
         call
-          call
+          iden
           types
             i32
           i32
           args
-            argc
+            call
+              iden
+              types
+                i32
+              i32
+              args
+                argc
       return
         check
         i32

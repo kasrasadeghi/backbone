@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "parser.h"
-#include "flatten.h"
+#include "normalize.h"
 #include "qualify.h"
 #include "gen.h"
 #include "blockify.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
-    puts("Usage: backbone <parse|flatten|qualify|gen> <file>");
+    puts("Usage: backbone <parse|normalize|qualify|gen> <file>");
     return 1;
   }
   char* filename = argv[2];
@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
     blockify(program);
     printSexp(program);
   }
-  if (strcmp(argv[1], "flatten") == 0) {
+  if (strcmp(argv[1], "normalize") == 0) {
     blockify(program);
-    flatten(program);
+    normalize(program);
     printSexp(program);
   }
   if (strcmp(argv[1], "qualify") == 0) {
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     printSexp(program);
   }
   if (strcmp(argv[1], "gen") == 0) {
-    flatten(program);
+    normalize(program);
     qualify(program);
     generateLLVM(filename, program);
   }

@@ -6,6 +6,12 @@ import sys
 
 # region  === util ===
 
+def ok(string):
+  return OK_BLUE + string + END_C
+def good(string):
+  return OK_GREEN + string + END_C
+def fail(string):
+  return FAIL + string + END_C
 
 def call(cmd):
   try:
@@ -41,75 +47,85 @@ END_C = '\033[0m'
 
 
 class Test:
-  def __init__(s, t, name: str):
-    s.name = name
-    s.t = t
+  def __init__(t, s, name: str):
+    t.name = name
+    t.s = s
+
+  def output(t):
+    return t.s.output.replace('%', t.name)
+
+  def reference(t):
+    return t.s.reference.replace('%', t.name)
   
-  def diff_result(s, stdout):
-    with cd(s.t.test_dir):
-      output_name = s.t.output.replace('%', s.name)
-      ref_name    = s.t.reference.replace('%', s.name)
+  def diff_result(t, stdout):
+    with cd(t.s.test_dir):
+      output_name = t.output()
+      ref_name    = t.reference()
 
-      if not isfile(output_name):
-        assert s.t.output == ''
-        output = stdout[0]
-        if stdout[1] != 0:
-          output += "exit code: " + str(stdout[1])
-
-      else:
+      if isfile(output_name):
         with open(output_name, 'r') as f:
           output = f.read()
+        with open(ref_name, 'r') as f:
+          reference = f.read()
+
+        return output.strip(), reference.strip()
+
+
+      output = stdout[0]
+      if stdout[1] != 0:
+        output += "exit code: " + str(stdout[1])
+
       with open(ref_name, 'r') as f:
         reference = f.read()
+
       return output.strip(), reference.strip()
-    
-  def run(s):
-    def ok(string):
-      return OK_BLUE + string + END_C
-    def fail(string):
-      return FAIL + string + END_C
+
+  def run(t):
 
     output = 'OUTPUT ERROR'
     reference = 'REFERENCE ERROR'
     try:
       # run command for test
-      assert s.t.run != '' or s.t.dir_run != ''
+      assert t.s.run != '' or t.s.dir_run != ''
 
-      if s.t.run != '':
-        stdout = call(s.t.run.replace('%', s.name))
+      if t.s.run != '':
+        stdout = call(t.s.run.replace('%', t.name))
       else:
-        with cd(s.t.test_dir):
-          stdout = call(s.t.dir_run.replace('%', s.name))
+        with cd(t.s.test_dir):
+          stdout = call(t.s.dir_run.replace('%', t.name))
 
-      output, reference = s.diff_result(stdout)
+      output, reference = t.diff_result(stdout)
 
       if output != reference:
         raise ValueError
     except ValueError as e:
       # execute failure
-      print('[ ', fail('FAIL') , ' ]', s.name)
-      print('expected:')
-      print(reference)
-      print('output:')
-      print(output)
+      print('[ ', fail('FAIL'), ' ]', t.name)
+      if t.s.print_fail:
+        print('expected:')
+        print(reference)
+        print('output:')
+        print(output)
       return 0
 
     except BaseException as e:
       # some weird exception
       raise e
     else:
-      # print('[ ', ok('PASS'), ' ]', s.name)
-      # everything is fine
+      if t.s.print_pass:
+        print('[ ', ok('PASS'), ' ]', s.name)
       return 1
     finally:
       # cleanup
-      if s.t.cleanup != '':
-        with cd(s.t.test_dir):
-          call(s.t.cleanup.replace('%', s.name))
+      if t.s.cleanup != '':
+        with cd(t.s.test_dir):
+          call(t.s.cleanup.replace('%', t.name))
 
 
 class TestSuite:
   def __init__(s, name):
+    s.print_fail = False
+    s.print_pass = False
     s.name = name
 
     with open(name + '.ktest', 'r') as f:
@@ -125,27 +141,27 @@ class TestSuite:
       for option, value in d.items():
         setattr(s, option, value)
 
-  def check_files(s, *files):
-    with cd(s.test_dir):
+  def check_files(t, *files):
+    with cd(t.test_dir):
       result = all(isfile(f) for f in files)
     return result
 
-  def valid_test(s, name):
+  def valid_test(t, name):
     def p(string):
       return string.replace('%', name)
 
-    if s.require == '':
-      return s.check_files(p(s.input), p(s.reference))
+    if t.require == '':
+      return t.check_files(p(t.input), p(t.reference))
     else:
-      return s.check_files(*list(map(p, s.require.split())))
+      return t.check_files(*list(map(p, t.require.split())))
 
   def valid_tests(s):
     return sorted(list({x for x in map(basename, ls(s.test_dir)) if s.valid_test(x)}))
 
-  def test_all(s):
-    print("[  TEST  ]", s.name)
+  def test_all(t):
+    print("[  TEST  ]", t.name)
 
-    tests = s.valid_tests()
+    tests = t.valid_tests()
     test_count = len(tests)
     valid_count = 0
     if not tests:
@@ -153,16 +169,16 @@ class TestSuite:
       exit(0)
     else:
       for file_name in tests:
-        valid_count += s.test(file_name)
+        valid_count += t.test(file_name)
     result = valid_count, test_count
 
-    s.print_result(result)
+    t.print_result(result)
 
   def print_result(s, result):
     valid, count = result
     print("[ RESULT ] ", end="")
     if valid == count:
-      print("ALL OK")
+      print(ok("ALL OK"))
     else:
       print(valid, "/", count, "tests passed")
 
@@ -175,22 +191,16 @@ class TestSuite:
     return test.run()
 
 
-def main(*args):
-  test_suite = TestSuite(args[0])
-  if len(args) == 1:
-    test_suite.test_all()
-  else:
-    test_suite.test_each(args[1:])
-
-
-def pre_main():
-  if len(sys.argv) != 1:
-    main(*sys.argv[1:])
-  else:
-    for suite_name in [x[:-6] for x in ls('.') if x.endswith('.ktest')]:
+def main():
+  for arg in sys.argv:
+    if '.' not in arg:
       print()
-      main(suite_name)
+      test_suite = TestSuite(arg)
+      test_suite.test_all()
 
+  #TODO if %.suite then set test_suite?
+  #TODO if %.test then test name?
+  #TODO if {test}/{name} test name in test_suite?
 
 if __name__ == '__main__':
-  pre_main()
+  main()
