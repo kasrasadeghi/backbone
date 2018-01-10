@@ -1,5 +1,33 @@
 slt.bb
   def
+    signext
+    params
+      a
+        i1
+    i32
+    do
+      if
+        a
+        do
+          return
+            1
+            i32
+      let
+        $0
+        +
+          i1
+          a
+          1
+      if
+        $0
+        do
+          return
+            0
+            i32
+      return
+        20
+        i32
+  def
     main
     params
       argc
@@ -9,11 +37,20 @@ slt.bb
     i32
     do
       let
-        $0
+        $1
         <
           i32
           argc
           2
+      let
+        $0
+        call
+          signext
+          types
+            i1
+          i32
+          args
+            $1
       return
         $0
         i32
