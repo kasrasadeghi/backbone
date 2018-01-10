@@ -158,8 +158,7 @@ void callStmt(Sexp* block, Sexp* call) {
 void nBecome(Sexp* block, Sexp* call_tail) {
   /* make call-tail sexp */
   Sexp* return_type = call_tail->list[2];
-  free(call_tail->value);
-  call_tail->value = copyStr("call-tail");
+  replaceValue(call_tail, copyStr("call-tail"));
 
   if (strcmp(return_type->value, "void") == 0) {
     /* (call-tail 'name 'types 'return-type 'args)

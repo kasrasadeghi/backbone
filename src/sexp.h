@@ -10,18 +10,21 @@ typedef struct Sexp {
   size_t cap;
 } Sexp;
 
+/* ctors and dtors */
 Sexp* sexp(char* value);
 Sexp* makeSexp(char* value, size_t length);
 Sexp* copySexp(Sexp* s);
-Sexp* cacheSexp(Sexp* s);
 void destroySexp(Sexp* s);
 
-size_t indexOfSexp(Sexp* parent, Sexp* child);
+/* modifiers */
+void pushSexp(Sexp* s, Sexp* child);
 void insertSexp(Sexp* parent, Sexp* stmt, size_t csi);
 void incrementLength(Sexp* s);
+void replaceValue(Sexp* s, char* newValue);
 
+/* accessors */
+size_t indexOfSexp(Sexp* parent, Sexp* child);
 void printSexp(Sexp*);
-void pushSexp(Sexp* s, Sexp* child);
 
 //region grammar
 

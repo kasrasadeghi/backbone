@@ -33,8 +33,7 @@ void qType(Sexp* s) {
     }
   }
 
-  s->value = makeStr("%%struct.%s", type);
-  free(type);
+  replaceValue(s, makeStr("%%struct.%s", type));
 }
 
 void qTypes(Sexp* s) {
