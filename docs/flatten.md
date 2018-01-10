@@ -1,4 +1,6 @@
 
+# Note: This documentation is out of date. It will remain here until replaced by normalize.md and blockify.md
+
 ### Overview
 
 Flatten is unique in that it is the only Sexp* to Sexp* transformation. It is unlike the 

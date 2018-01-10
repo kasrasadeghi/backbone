@@ -85,12 +85,13 @@ void printSexp(Sexp* s) {
 }
 
 void pushSexp(Sexp* const s, Sexp* child) {
-  s->list[s->length] = child;
-  ++s->length;
-  if (s->length >= s->cap) {
+  if (s->length == s->cap) {
     s->cap *= 2;
     s->list = realloc(s->list, s->cap * sizeof(Sexp*));
   }
+
+  s->list[s->length] = child;
+  ++s->length;
 }
 
 void replaceValue(Sexp* s, char* newValue) {
