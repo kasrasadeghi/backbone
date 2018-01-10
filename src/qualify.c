@@ -136,17 +136,10 @@ void qDef(Sexp* s) {
 }
 
 void qTopLevel(Sexp* s) {
-  if (isStruct(s)) {
-    qStruct(s);
-  }
-  else if (isDecl(s)) {
-    qDecl(s);
-  }
-  else if (isDef(s)) {
-    qDef(s);
-  } else {
-    assert(isStrTable(s));
-  }
+  if (isStruct(s)) { qStruct(s);            } else
+  if (isDecl(s))   { qDecl(s);              } else
+  if (isDef(s))    { qDef(s);               }
+  else             { assert(isStrTable(s)); }
 }
 
 void qualify(Sexp* s) {
