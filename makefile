@@ -18,6 +18,7 @@ test:
 	@python3 ktest.py normalize
 	@python3 ktest.py qualify
 	@python3 ktest.py gen
+	@python3 ktest.py output
 
 parse\:%: build
 	./backbone parse parser-tests/$*.bb

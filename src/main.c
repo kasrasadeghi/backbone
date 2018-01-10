@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
     printSexp(program);
   }
   if (strcmp(argv[1], "gen") == 0) {
+    blockify(program);
     normalize(program);
     qualify(program);
     generateLLVM(filename, program);

@@ -76,21 +76,35 @@ void qCall(Sexp* s) {
 void qStmt(Sexp* s) {
   if (isLet(s)) {
     qExpr(s->list[1]);
-  } else if (isReturn(s) && strcmp(s->list[0]->value, "void") != 0) {
-    qExpr(s->list[0]);
-    qType(s->list[1]);
+    return;
+  } else if (isReturn(s)) {
+    if (strcmp(s->list[0]->value, "void") != 0) {
+      qExpr(s->list[0]);
+      qType(s->list[1]);
+    }
+    return;
   } else if (isIf(s)) {
     qExpr(s->list[0]);
     qBlock(s, 1);
+    return;
   } else if (isStore(s)) {
     qExpr(s->list[0]);
     qType(s->list[1]);
     qExpr(s->list[2]);
+    return;
   } else if (isAuto(s)) {
     qType(s->list[1]);
+    return;
   } else if (isCallLike(s)) {
     qCall(s);
+    return;
+  } else if (isDo(s)) {
+    qBlock(s, 0);
+    return;
   }
+  int matchAllStatements = 0;
+  printSexp(s);
+  assert(matchAllStatements);
 }
 
 void qBlock(Sexp* s, size_t startIndex) {

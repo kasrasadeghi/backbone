@@ -18,6 +18,14 @@ static Sexp* _p = NULL;        // the program sexp
 
 //endregion
 
+//region forward declarations
+
+void gStmt(Sexp* s);
+
+void gValue(Sexp*);
+
+//endregion
+
 /**
  * Calculates the length of the given string, counting escaped characters only once.
  * The string must be well formed:
@@ -69,8 +77,6 @@ void gStruct(Sexp* s) {
   }
   printf(" }\n");
 }
-
-void gValue(Sexp*);
 
 /**
  * Looks up the name of a declaration and returns a pointer to it.
@@ -269,7 +275,11 @@ void gReturn(Sexp* s) {
   }
 }
 
-void gStmt(Sexp* s);
+void gDo(Sexp* s) {
+  for (int i = 0; i < s->length; ++i) {
+    gStmt(s->list[i]);
+  }
+}
 
 /**
  * Globals:
@@ -284,10 +294,7 @@ void gIf(Sexp* s) {
          label, label);
 
   printf("then%lu:\n", label);
-  /* statements */
-  for (int i = 1; i < s->length; ++i) {
-    gStmt(s->list[i]);
-  }
+  gDo(s->list[1]);
 
   printf("  br label %%post%lu\n", label);
 
@@ -368,9 +375,7 @@ void gDef(Sexp* s) {
 
   printf("{\n");
   printf("entry:\n");
-  for (int i = 3; i < s->length; ++i) {
-    gStmt(s->list[i]);
-  }
+  gDo(s->list[3]);
   printf("}\n");
 }
 
@@ -382,7 +387,6 @@ void gDecl(Sexp* s) {
 
   printf("\n");
 }
-
 
 void gProgram(Sexp* program) {
   _p = program;

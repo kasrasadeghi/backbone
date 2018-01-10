@@ -124,7 +124,7 @@ class Test:
 
 class TestSuite:
   def __init__(s, name):
-    s.print_fail = False
+    s.print_fail = True
     s.print_pass = False
     s.name = name
 
