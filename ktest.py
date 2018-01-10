@@ -113,7 +113,7 @@ class Test:
       raise e
     else:
       if t.s.print_pass:
-        print('[ ', ok('PASS'), ' ]', s.name)
+        print('[ ', ok('PASS'), ' ]', t.name)
       return 1
     finally:
       # cleanup
