@@ -18,7 +18,7 @@ void csBlock(Sexp* block);
  * @param call - the call that is transformed to be a statement
  */
 void csCall(Sexp* block, Sexp* call) {
-  if (strcmp(call->list[2]->value, "void") == 0) return;
+  if (isVoid(call->list[2])) return;
   size_t ignored = newLocal();
 
   /* create a initializer for the ignored stack variable */

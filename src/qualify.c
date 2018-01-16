@@ -12,11 +12,11 @@ void qCall(Sexp*);
  * Takes a type Sexp and qualifies non-primitive types.
  */
 void qType(Sexp* s) {
-  char* type = s->value;
-
-  if (strcmp(type, "void") == 0 || strcmp(type, "...") == 0) {
+  if (isVoid(s) || strcmp(s->value, "...") == 0) {
     return;
   }
+
+  char* type = s->value;
 
   char *primitive_types[] = {"i1", "i8", "i32", "i64", "u1", "u8", "u32", "u64"};
 
@@ -77,7 +77,7 @@ void qStmt(Sexp* s) {
     qExpr(s->list[1]);
     return;
   } else if (isReturn(s)) {
-    if (strcmp(s->list[0]->value, "void") != 0) {
+    if (!isVoid(s->list[0])) {
       qExpr(s->list[0]);
       qType(s->list[1]);
     }

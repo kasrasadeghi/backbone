@@ -19,7 +19,7 @@ void becomeBecome(Sexp* block, Sexp* call_tail) {
   Sexp* return_type = call_tail->list[2];
   replaceValue(call_tail, copyStr("call-tail"));
 
-  if (strcmp(return_type->value, "void") == 0) {
+  if (isVoid(return_type)) {
     /* (call-tail 'name 'types 'return-type 'args) *
      * (return void)                               */
 

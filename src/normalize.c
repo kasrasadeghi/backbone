@@ -129,7 +129,7 @@ void nStmt(Sexp* block, Sexp* s) {
     nBlock(s->list[1]);
   }
   else if (isCallLike(s)) {
-    assert(strcmp(s->list[2]->value, "void") == 0);
+    assert(isVoid(s->list[2]));
     assert(!isBecome(s)); // become should no longer exist because become.c comes before
     nCall(block, s, s);
   }

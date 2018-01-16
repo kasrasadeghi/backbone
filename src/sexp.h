@@ -65,6 +65,8 @@ int isIcmp     (Sexp* s);
 
 int isBool     (Sexp* s);
 
+int isVoid     (Sexp* s);
+
 //endregion
 
 #endif

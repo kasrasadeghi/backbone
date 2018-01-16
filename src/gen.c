@@ -267,7 +267,7 @@ void gValue(Sexp* s) {
 }
 
 void gReturn(Sexp* s) {
-  if (strcmp(s->list[0]->value, "void") == 0) {
+  if (isVoid(s->list[0])) {
     printf("  ret void");
   } else {
     printf("  ret %s ", s->list[1]->value);
@@ -328,15 +328,15 @@ void gStmt(Sexp* s) {
   else if (isIf(s)) {
     gIf(s);
   }
-  else if (isCall(s) && strcmp(s->list[2]->value, "void") == 0) {
+  else if (isCall(s) && isVoid(s->list[2])) {
     printf("  ");
     gCall(s);
   }
-  else if (isCallVargs(s) && strcmp(s->list[2]->value, "void") == 0) {
+  else if (isCallVargs(s) && isVoid(s->list[2])) {
     printf("  ");
     gCallVargs(s);
   }
-  else if (isCallTail(s) && strcmp(s->list[2]->value, "void") == 0) {
+  else if (isCallTail(s) && isVoid(s->list[2])) {
     printf("  ");
     gCallTail(s);
   }

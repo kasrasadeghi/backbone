@@ -184,5 +184,6 @@ int isBool(Sexp* s)      { return strcmp(s->value, "true") == 0
                                   || strcmp(s->value, "false") == 0; }
 int isStrGet(Sexp* s)    { return strcmp(s->value, "str-get") == 0; }
 
+int isVoid(Sexp* s)      { return strcmp(s->value, "void") == 0; }
 
 //endregion
