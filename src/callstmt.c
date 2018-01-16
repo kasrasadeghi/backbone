@@ -55,13 +55,13 @@ void csStmt(Sexp* block, Sexp* s) {
 }
 
 void csBlock(Sexp* block) {
-  for (int i = 0; i < block->length; ++i) {
+  for (int i = 0; i < block->len; ++i) {
     csStmt(block, block->list[i]);
   }
 }
 
 void callStmt(Sexp* p) {
-  for (int i = 0; i < p->length; ++i) {
+  for (int i = 0; i < p->len; ++i) {
     Sexp* child = p->list[i];
     if (isDef(child)) {
       initLocals(child);

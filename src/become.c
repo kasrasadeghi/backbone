@@ -45,7 +45,7 @@ void becomeBecome(Sexp* block, Sexp* call_tail) {
 void becomeStmt(Sexp* block, Sexp* s);
 
 void becomeDo(Sexp* block) {
-  for (int i = 0; i < block->length; ++i) {
+  for (int i = 0; i < block->len; ++i) {
     becomeStmt(block, block->list[i]);
   }
 }
@@ -68,7 +68,7 @@ void becomeStmt(Sexp* block, Sexp* s) {
 }
 
 void becomeBlock(Sexp* block) {
-  for (int i = 0; i < block->length; ++i) {
+  for (int i = 0; i < block->len; ++i) {
     becomeStmt(block, block->list[i]);
   }
 }
@@ -78,7 +78,7 @@ void becomeDef(Sexp* s) {
 }
 
 void become(Sexp* p) {
-  for (int i = 0; i < p->length; ++i) {
+  for (int i = 0; i < p->len; ++i) {
     Sexp* child = p->list[i];
     if (isDef(child)) {
       becomeDef(child);

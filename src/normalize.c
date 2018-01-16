@@ -70,7 +70,7 @@ void nTall(Sexp* block, Sexp* stmt, Sexp* parent, int i) {
  */
 void nCall(Sexp* block, Sexp* stmt, Sexp* call) {
   Sexp* args = call->list[3];
-  for (int ai = 0; ai < args->length; ++ai) { // argument index = ai
+  for (int ai = 0; ai < args->len; ++ai) { // argument index = ai
     nTall(block, stmt, args, ai);
   }
 }
@@ -119,7 +119,7 @@ void nStmt(Sexp* block, Sexp* s) {
     nBlock(s);
   }
   else if (isReturn(s)) {
-    if (s->length == 2) {
+    if (s->len == 2) {
       nTall(block, s, s, 0);
     }
     // else { for void returns, do nothing. }
@@ -149,7 +149,7 @@ void nStmt(Sexp* block, Sexp* s) {
 }
 
 void nBlock(Sexp* block) {
-  for (int i = 0; i < block->length; ++i) {
+  for (int i = 0; i < block->len; ++i) {
     nStmt(block, block->list[i]);
   }
 }
@@ -160,7 +160,7 @@ void fDef(Sexp* s) {
 }
 
 void normalize(Sexp* p) {
-  for (int i = 0; i < p->length; ++i) {
+  for (int i = 0; i < p->len; ++i) {
     Sexp* child = p->list[i];
     if (isDef(child)) {
       fDef(child);

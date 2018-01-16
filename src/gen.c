@@ -57,9 +57,9 @@ size_t atomStrLen(char* s) {
  *  - _str_table_len
  */
 void gStrTable(Sexp* s) {
-  _str_table_len = s->length;
+  _str_table_len = s->len;
   _str_table = calloc(_str_table_len, sizeof(long));
-  for (int i = 0; i < s->length; ++i) {
+  for (int i = 0; i < s->len; ++i) {
     char* string_entry = s->list[i]->list[0]->value;
     size_t len = atomStrLen(string_entry) - 2;
     printf("@str.%d = private unnamed_addr constant [%lu x i8] c%s, align 1\n",
@@ -70,10 +70,10 @@ void gStrTable(Sexp* s) {
 
 void gStruct(Sexp* s) {
   printf("%%struct.%s = type { ", s->list[0]->value);
-  for (int i = 1; i < s->length; ++i) {
+  for (int i = 1; i < s->len; ++i) {
     char* type = s->list[i]->list[0]->value;
     printf("%s", type);
-    if (i != s->length - 1) printf(", ");
+    if (i != s->len - 1) printf(", ");
   }
   printf(" }\n");
 }
@@ -90,7 +90,7 @@ void gStruct(Sexp* s) {
  */
 Sexp* lookupDecl(Sexp* name) {
   //consider TODO refactor this to lookupFunction that checks both decls and defs
-  for (int i = 0; i < _p->length; ++i) {
+  for (int i = 0; i < _p->len; ++i) {
     Sexp* child = _p->list[i];
     if (isDecl(child)) {
       if (strcmp(child->list[0]->value, name->value) == 0) {
@@ -103,19 +103,19 @@ Sexp* lookupDecl(Sexp* name) {
 
 void gTypes(Sexp* decl_types) {
   printf("(");
-  for (int i = 0; i < decl_types->length; ++i) {
+  for (int i = 0; i < decl_types->len; ++i) {
     printf("%s", decl_types->list[i]->value);
-    if (i != decl_types->length - 1) printf(", ");
+    if (i != decl_types->len - 1) printf(", ");
   }
   printf(")");
 }
 
 void gArgs(Sexp* args, Sexp* types) {
   printf("(");
-  for (int i = 0; i < types->length; ++i) {
+  for (int i = 0; i < types->len; ++i) {
     printf("%s ", types->list[i]->value);
     gValue(args->list[i]);
-    if (i != types->length - 1) {
+    if (i != types->len - 1) {
       printf(", ");
     }
   }
@@ -132,7 +132,7 @@ void gCallVargs(Sexp* s) {
 
   Sexp* args = s->list[3];
   Sexp* arg_types = s->list[1];
-  assert(args->length == arg_types->length);
+  assert(args->len == arg_types->len);
   gArgs(args, arg_types);
 }
 
@@ -276,7 +276,7 @@ void gReturn(Sexp* s) {
 }
 
 void gDo(Sexp* s) {
-  for (int i = 0; i < s->length; ++i) {
+  for (int i = 0; i < s->len; ++i) {
     gStmt(s->list[i]);
   }
 }
@@ -364,10 +364,10 @@ void gDef(Sexp* s) {
 
   printf("(");
   Sexp* params = s->list[1];
-  for (int i = 0; i < params->length; ++i) {
+  for (int i = 0; i < params->len; ++i) {
     Sexp* param = params->list[i];
     printf("%s %%%s", param->list[0]->value, param->value);
-    if (i != params->length - 1) {
+    if (i != params->len - 1) {
       printf(", ");
     }
   }
@@ -394,7 +394,7 @@ void gProgram(Sexp* program) {
   printf("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\""
       "\ntarget triple = \"x86_64-unknown-linux-gnu\"\n");
 
-  for (int i = 0; i < program->length; ++i) {
+  for (int i = 0; i < program->len; ++i) {
     printf("\n");
     Sexp* s = program->list[i];
     if (isStrTable(s)) {

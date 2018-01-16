@@ -37,7 +37,7 @@ void qType(Sexp* s) {
 }
 
 void qTypes(Sexp* s) {
-  for (size_t i = 0; i < s->length; ++i) {
+  for (size_t i = 0; i < s->len; ++i) {
     qType(s->list[i]);
   }
 }
@@ -67,7 +67,7 @@ void qCall(Sexp* s) {
   qTypes(s->list[1]);
   qType(s->list[2]);
   Sexp* args = s->list[3];
-  for (size_t i = 0; i < args->length; ++i) {
+  for (size_t i = 0; i < args->len; ++i) {
     qExpr(args->list[i]);
   }
 }
@@ -107,13 +107,13 @@ void qStmt(Sexp* s) {
 }
 
 void qBlock(Sexp* s, size_t startIndex) {
-  for (size_t i = startIndex; i < s->length; ++i) {
+  for (size_t i = startIndex; i < s->len; ++i) {
     qStmt(s->list[i]);
   }
 }
 
 void qStruct(Sexp* s) {
-  for (size_t i = 1; i < s->length; ++i) {
+  for (size_t i = 1; i < s->len; ++i) {
     qType(s->list[i]->list[0]);
   }
 }
@@ -124,7 +124,7 @@ void qDecl(Sexp* s) {
 }
 
 void qParams(Sexp* s) {
-  for (size_t i = 0; i < s->length; ++i) {
+  for (size_t i = 0; i < s->len; ++i) {
     qType(s->list[i]->list[0]);
   }
 }
@@ -143,7 +143,7 @@ void qTopLevel(Sexp* s) {
 }
 
 void qualify(Sexp* s) {
-  for (size_t i = 0; i < s->length; ++i) {
+  for (size_t i = 0; i < s->len; ++i) {
     qTopLevel(s->list[i]);
   }
 }

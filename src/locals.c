@@ -60,7 +60,7 @@ void countStmt(Sexp* s) {
 }
 
 void countDo(Sexp* s) {
-  for (int i = 0; i < s->length; ++i) {
+  for (int i = 0; i < s->len; ++i) {
     countStmt(s->list[i]);
   }
 }

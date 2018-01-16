@@ -9,7 +9,7 @@ Sexp* sexp(char* value) {
   Sexp* result = calloc(1, sizeof(Sexp));
   result->value = value;
   result->list = calloc(2, sizeof(Sexp*));
-  result->length = 0;
+  result->len = 0;
   result->cap = 2;
   return result;
 };
@@ -18,14 +18,14 @@ Sexp* makeSexp(char* value, size_t length) {
   Sexp* r = malloc(sizeof(Sexp));
   r->value = value;
   r->list = length == 0 ? NULL : calloc(length, sizeof(Sexp*));
-  r->length = length;
+  r->len = length;
   r->cap = length;
   return r;
 }
 
 Sexp* copySexp(Sexp* s) {
-  Sexp* result = makeSexp(copyStr(s->value), s->length);
-  for (size_t i = 0; i < s->length; ++i) {
+  Sexp* result = makeSexp(copyStr(s->value), s->len);
+  for (size_t i = 0; i < s->len; ++i) {
     result->list[i] = copySexp(s->list[i]);
   }
   return result;
@@ -33,10 +33,10 @@ Sexp* copySexp(Sexp* s) {
 
 size_t indexOfSexp(Sexp* parent, Sexp* child) {
   size_t csi = 0;
-  for (; csi < parent->length; ++csi) { // curr statement index = csi
+  for (; csi < parent->len; ++csi) { // curr statement index = csi
     if (parent->list[csi] == child) break;
   }
-  if (csi == parent->length) {
+  if (csi == parent->len) {
     fprintf(stderr, "backbone: indexing error: child was not found in parent's list");
     exit(1);
   }
@@ -48,7 +48,7 @@ void insertSexp(Sexp* parent, Sexp* stmt, size_t csi) {
   incrementLength(parent);
 
   /* move everything from [csi, length) over, starting from the end */
-  for (size_t si = parent->length - 1; si >= csi; --si) {
+  for (size_t si = parent->len - 1; si >= csi; --si) {
     parent->list[si] = parent->list[si - 1];
     if (si == 0) break; // prevent size_t rollover from 0 to extremely positive value
   }
@@ -73,9 +73,9 @@ void _printSexp(Sexp* s, size_t l) {
     printf("NULL VALUE\n");
   } else {
     printf("%s\n", s->value);
-//    printf("%s %lu/%lu\n", s->value, s->length, s->cap);
+//    printf("%s %lu/%lu\n", s->value, s->len, s->cap);
   }
-  for (int i = 0; i < s->length; ++i) {
+  for (int i = 0; i < s->len; ++i) {
     _printSexp(s->list[i], l + 1);
   }
 }
@@ -85,13 +85,13 @@ void printSexp(Sexp* s) {
 }
 
 void pushSexp(Sexp* const s, Sexp* child) {
-  if (s->length == s->cap) {
+  if (s->len == s->cap) {
     s->cap *= 2;
     s->list = realloc(s->list, s->cap * sizeof(Sexp*));
   }
 
-  s->list[s->length] = child;
-  ++s->length;
+  s->list[s->len] = child;
+  ++s->len;
 }
 
 void replaceValue(Sexp* s, char* newValue) {
@@ -103,7 +103,7 @@ void destroySexp(Sexp* s) {
 //  printf("free(%lu): %s\n", (size_t)s->value, s->value); // useful for debugging
 
   free(s->value);
-  for (size_t i = 0; i < s->length; ++i) {
+  for (size_t i = 0; i < s->len; ++i) {
     destroySexp(s->list[i]);
   }
   free(s->list);

@@ -6,7 +6,7 @@
 typedef struct Sexp {
   char* value;
   struct Sexp** list;
-  size_t length;
+  size_t len;
   size_t cap;
 } Sexp;
 
