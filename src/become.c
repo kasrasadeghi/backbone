@@ -80,7 +80,7 @@ void becomeDef(Sexp* s) {
 void become(Sexp* p) {
   for (int i = 0; i < p->length; ++i) {
     Sexp* child = p->list[i];
-    if (strcmp(child->value, "def") == 0) {
+    if (isDef(child)) {
       becomeDef(child);
     }
   }

@@ -319,13 +319,13 @@ void gStore(Sexp* s) {
 }
 
 void gStmt(Sexp* s) {
-  if (strcmp(s->value, "let") == 0) {
+  if (isLet(s)) {
     gLet(s);
   }
-  else if (strcmp(s->value, "return") == 0) {
+  else if (isReturn(s)) {
     gReturn(s);
   }
-  else if (strcmp(s->value, "if") == 0) {
+  else if (isIf(s)) {
     gIf(s);
   }
   else if (isCall(s) && strcmp(s->list[2]->value, "void") == 0) {
@@ -340,7 +340,7 @@ void gStmt(Sexp* s) {
     printf("  ");
     gCallTail(s);
   }
-  else if (strcmp(s->value, "store") == 0) {
+  else if (isStore(s)) {
     gStore(s);
   }
   else if (isAuto(s)) {
